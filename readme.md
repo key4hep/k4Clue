@@ -6,7 +6,7 @@ Z.Chen[1], A. Di Pilato[2,3], F. Pantaleo[4], M. Rovere[4], C. Seez[5]
 
 ## 1. Setup
 
-The prequesite dependencies are `>=gcc7`, `>=cuda10`, `Boost`, `TBB`. Fork this reop if developers.
+The pre-requisite dependencies are `>=gcc7`, `>=cuda10`, `Boost`, `TBB`. Fork this repo if developers.
 
 * **On a CERN machine with GPUs:** Source the LCG View containing the correct version of GCC and Boost:
 ```bash
@@ -39,7 +39,7 @@ _deltac_ is the minimum distance for a local high density point to be promoted
 as a Seed.
 _rhoc_ is the minimum local density for a point to be promoted as a Seed.
 
-If the projects compiles without errors, you can go run CLUEAlgo by
+If the projects compiles without errors, you can go run the CLUE algorithm by
 ```bash
 # ./main [fileName] [dc] [deltao] [deltac] [rhoc] [useGPU] [totalNumberOfEvent] [verbose]
 ./main aniso_1000 20 20 50 50 0 10 1
@@ -51,14 +51,15 @@ The input files are `data/input/*.csv` with columns
 The output files are `data/output/*.csv` with columns
 * x, y, layer, weight, rho, delta, nh, isSeed, clusterId
 
-If you meet any error when compiling or running this project, contact us
+If you encounter any error when compiling or running this project, please
+contact us.
 
 ## 3. Examples
-The clustering result of a few sythetic dataset is shown below
-<p align=center><img width="100%" src=https://github.com/ZihengChen/CLUEAlgo/blob/master/plots/Figure3.png/></p> 
+The clustering result of a few synthetic dataset is shown below
+![Datasets](Figure3.png)
 
-## 4. Performannce on Toy Events
+## 4. Performance on Toy Events
 We generate toy events on toy detector consist of 100 layers.
 The average execution time of toy events on CPU and GPU are shown below
-<p align=center><img width="80%" src=https://github.com/ZihengChen/CLUEAlgo/blob/master/plots/Figure5_1.png/></p> 
+![Execution Time](Figure5_1.png)
 

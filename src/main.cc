@@ -45,7 +45,7 @@ void mainRun( std::string inputFileName, std::string outputFileName,
   //////////////////////////////
   std::cout << "Start to run CLUE algorithm" << std::endl;
   if (useGPU) {
-    #ifndef USE_CUPLA
+#ifndef USE_CUPLA
     CLUEAlgoGPU clueAlgo(dc, deltao, deltac, rhoc, verbose);
     for (int r = 0; r<repeats; r++){
       clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]);
@@ -59,7 +59,7 @@ void mainRun( std::string inputFileName, std::string outputFileName,
   // output result to outputFileName. -1 means all points.
   clueAlgo.verboseResults(outputFileName, -1);
 
-  #else
+#else
   CLUEAlgoCupla<cupla::Acc> clueAlgo(dc, deltao, deltac, rhoc, verbose);
   for (int r = 0; r<repeats; r++){
     clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]);
@@ -72,7 +72,7 @@ void mainRun( std::string inputFileName, std::string outputFileName,
   }
   // output result to outputFileName. -1 means all points.
   clueAlgo.verboseResults(outputFileName, -1);
-  #endif
+#endif
 
 
   } else {
@@ -119,15 +119,21 @@ int main(int argc, char *argv[]) {
     verbose = (std::stoi(argv[8])==1)? true:false;
     if (argc == 10) {
       TBBNumberOfThread = std::stoi(argv[9]);
+      if (verbose) {
+        std::cout << "Using " << TBBNumberOfThread << " TBB Threads" << std::endl;
+      }
     }
   } else {
     std::cout << "bin/main [fileName] [dc] [deltao] [deltac] [rhoc] [useGPU] [totalNumberOfEvent] [verbose]" << std::endl;
     return 0;
   }
 
-  #ifdef USE_CUPLA
-    tbb::task_scheduler_init init(TBBNumberOfThread);
-  #endif
+#ifdef USE_CUPLA
+  if (verbose) {
+    std::cout << "Setting up " << TBBNumberOfThread << " TBB Threads" << std::endl;
+  }
+  tbb::task_scheduler_init init(TBBNumberOfThread);
+#endif
 
   //////////////////////////////
   // MARK -- set input and output files
