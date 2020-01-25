@@ -13,8 +13,8 @@ The prequesite dependencies are `>=gcc7`, `>=cuda10`, `Boost`, `TBB`. Fork this 
 source /cvmfs/sft.cern.ch/lcg/views/LCG_96/x86_64-centos7-gcc8-opt/setup.sh
 
 # then setup this project
-git clone --recurse-submodules https://github.com/ZihengChen/CLUEAlgo.git
-cd CLUEAlgo
+git clone --recurse-submodules https://gitlab.cern.ch/kalos/clue.git
+cd clue
 make
 ```
 
@@ -24,8 +24,8 @@ sudo apt-get install libtbb-dev
 sudo apt-get install libboost-all-dev
 
 # then setup this project
-git clone --recurse-submodules https://github.com/ZihengChen/CLUEAlgo.git
-cd CLUEAlgo
+git clone --recurse-submodules https://gitlab.cern.ch/kalos/clue.git
+cd clue
 make
 ```
 
