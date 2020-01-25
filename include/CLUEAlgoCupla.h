@@ -122,10 +122,26 @@ class CLUEAlgoCupla : public CLUEAlgo {
         // other variables, copy only when verbose_==True
         cudaMemcpy(points_.rho.data(), d_points.rho, sizeof(float)*points_.n, cudaMemcpyDeviceToHost);
         cudaMemcpy(points_.delta.data(), d_points.delta, sizeof(float)*points_.n, cudaMemcpyDeviceToHost);
-        cudaMemcpy(points_.nearestHigher.data(), d_points.nearestHigher, sizeof(int)*points_.n, cudaMemcpyDeviceToHost);      
+        cudaMemcpy(points_.nearestHigher.data(), d_points.nearestHigher, sizeof(int)*points_.n, cudaMemcpyDeviceToHost);
         cudaMemcpy(points_.isSeed.data(), d_points.isSeed, sizeof(int)*points_.n, cudaMemcpyDeviceToHost);
       }
     }
+};
+
+struct kernel_compute_histogram_opti {
+  template <typename T_Acc>
+  ALPAKA_FN_ACC
+  void operator()(T_Acc const &acc, LayerTilesCupla<T_Acc> *d_hist,
+      PointsPtr d_points, int numberOfPoints) const {
+
+    int32_t first = (threadIdx.x + blockIdx.x * blockDim.x) * elemDim.x;
+    for(int i = first; i < first + elemDim.x; ++i) {
+      if (i < numberOfPoints) {
+        // push index of points into tiles
+        d_hist[d_points.layer[i]].fill(d_points.x[i], d_points.y[i], i);
+      }
+    }
+  }
 };
 
 struct kernel_compute_histogram {
@@ -336,17 +352,27 @@ void CLUEAlgoCupla<Acc>::makeClusters() {
   const dim3 blockSize(1024, 1, 1);
 #else
   const dim3 blockSize(1, 1, 1);
+  const dim3 blockSize_opti(4096, 1, 1);
 #endif
   const dim3 gridSize(ceil(points_.n/ (float)blockSize.x), 1, 1);
-
+  const dim3 gridSize_opti(ceil(points_.n/ (float)blockSize_opti.x), 1, 1);
 
 
 
   auto start = std::chrono::high_resolution_clock::now();
-  CUPLA_KERNEL(kernel_compute_histogram)(gridSize, blockSize, 0, 0)(d_hist, d_points, points_.n);
+//  CUPLA_KERNEL(kernel_compute_histogram)(gridSize, blockSize, 0, 0)(d_hist, d_points, points_.n);
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
   std::cout << "--- prepareDataStructures:     " << elapsed.count() *1000 << " ms\n";
+
+
+  start = std::chrono::high_resolution_clock::now();
+  CUPLA_KERNEL_OPTI(kernel_compute_histogram_opti)(gridSize_opti, blockSize_opti, 0, 0)(d_hist, d_points, points_.n);
+  finish = std::chrono::high_resolution_clock::now();
+//  std::chrono::duration<double> elapsed = finish - start;
+  elapsed = finish - start;
+  std::cout << "--- prepareDataStructures_opti:     " << elapsed.count() *1000 << " ms\n";
+
 
   start = std::chrono::high_resolution_clock::now();
   CUPLA_KERNEL(kernel_compute_density)(gridSize, blockSize, 0, 0)(d_hist, d_points, dc_, points_.n);
@@ -360,7 +386,7 @@ void CLUEAlgoCupla<Acc>::makeClusters() {
   finish = std::chrono::high_resolution_clock::now();
   elapsed = finish - start;
   std::cout << "--- calculateLocalDensity:     " << elapsed.count() *1000 << " ms\n";
- 
+
   start = std::chrono::high_resolution_clock::now();
   CUPLA_KERNEL(kernel_find_clusters)(gridSize, blockSize, 0, 0)(d_seeds, d_followers, d_points, deltac_, deltao_, rhoc_, points_.n);
   finish = std::chrono::high_resolution_clock::now();
