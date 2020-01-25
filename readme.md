@@ -57,11 +57,9 @@ contact us.
 ## 3. Examples
 The clustering result of a few synthetic dataset is shown below
 ![Datasets](Figure3.png)
-<p align=center><img width="100%" src=https://github.com/ZihengChen/CLUEAlgo/blob/master/plots/Figure3.png/></p> 
 
 ## 4. Performance on Toy Events
 We generate toy events on toy detector consist of 100 layers.
 The average execution time of toy events on CPU and GPU are shown below
 ![Execution Time](Figure5_1.png)
-<p align=center><img width="80%" src=https://github.com/ZihengChen/CLUEAlgo/blob/master/plots/Figure5_1.png/></p> 
 
