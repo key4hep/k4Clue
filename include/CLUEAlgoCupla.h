@@ -17,9 +17,19 @@
 #include "LayerTilesCupla.h"
 #include "CLUEAlgo.h"
 
-static const int maxNSeedsCupla = 100000;
-static const int maxNFollowersCupla = 20;
-static const int localStackSizePerSeedCupla = 20;
+// Maximum number of uniques seeds that could be handled. A higher number of
+// potential seed will trigger and exception.
+static const int maxNSeedsCupla = 8192;
+
+// Maximum number of followers that could be handled. A higher number of
+// followers will trigger an exception.
+static const int maxNFollowersCupla = 128;
+
+// Maximum size of the local stack used to assign clusters to seeds and
+// followers. It should be at least as big as the maximum allowed number of
+// followers. Adding more elements with respect to the reserved size will
+// trigger and exception.
+static const int localStackSizePerSeedCupla = 128;
 
 struct PointsPtr {
   float *x;
@@ -308,20 +318,23 @@ struct kernel_assign_clusters {
       int localStack[localStackSizePerSeedCupla] = {-1};
       int localStackSize = 0;
 
-      // asgine cluster to seed[idxCls]
+      // assign cluster to seed[idxCls]
       int idxThisSeed = d_seeds[0][idxCls];
       d_points.clusterIndex[idxThisSeed] = idxCls;
       // push_back idThisSeed to localStack
+      assert(("Local stack size too small", localStackSize < localStackSizePerSeedCupla));
       localStack[localStackSize] = idxThisSeed;
       localStackSize++;
 
       // process all elements in localStack
       while (localStackSize > 0) {
         // get last element of localStack
+        assert(("Local stack size too small", localStackSize-1 < localStackSizePerSeedCupla));
         int idxEndOflocalStack = localStack[localStackSize - 1];
 
         int temp_clusterIndex = d_points.clusterIndex[idxEndOflocalStack];
         // pop_back last element of localStack
+        assert(("Local stack size too small", localStackSize-1 < localStackSizePerSeedCupla));
         localStack[localStackSize - 1] = -1;
         localStackSize--;
 
@@ -330,6 +343,7 @@ struct kernel_assign_clusters {
           // pass id to follower
           d_points.clusterIndex[j] = temp_clusterIndex;
           // push_back follower to localStack
+          assert(("Local stack size too small", localStackSize < localStackSizePerSeedCupla));
           localStack[localStackSize] = j;
           localStackSize++;
         }
@@ -350,28 +364,32 @@ void CLUEAlgoCupla<Acc>::makeClusters() {
   ////////////////////////////////////////////
 #ifdef FOR_CUDA
   const dim3 blockSize(1024, 1, 1);
-#else
+  const dim3 blockSize_opti(1024, 1, 1);
+#endif
+
+#ifdef FOR_TBB
   const dim3 blockSize(1, 1, 1);
   const dim3 blockSize_opti(4096, 1, 1);
 #endif
+
   const dim3 gridSize(ceil(points_.n/ (float)blockSize.x), 1, 1);
   const dim3 gridSize_opti(ceil(points_.n/ (float)blockSize_opti.x), 1, 1);
 
-
-
+#ifdef FOR_CUDA
   auto start = std::chrono::high_resolution_clock::now();
-//  CUPLA_KERNEL(kernel_compute_histogram)(gridSize, blockSize, 0, 0)(d_hist, d_points, points_.n);
+  CUPLA_KERNEL(kernel_compute_histogram)(gridSize, blockSize, 0, 0)(d_hist, d_points, points_.n);
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
   std::cout << "--- prepareDataStructures:     " << elapsed.count() *1000 << " ms\n";
+#endif
 
-
-  start = std::chrono::high_resolution_clock::now();
+#ifdef FOR_TBB
+  auto start = std::chrono::high_resolution_clock::now();
   CUPLA_KERNEL_OPTI(kernel_compute_histogram_opti)(gridSize_opti, blockSize_opti, 0, 0)(d_hist, d_points, points_.n);
-  finish = std::chrono::high_resolution_clock::now();
-//  std::chrono::duration<double> elapsed = finish - start;
-  elapsed = finish - start;
+  auto finish = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> elapsed = finish - start;
   std::cout << "--- prepareDataStructures_opti:     " << elapsed.count() *1000 << " ms\n";
+#endif
 
 
   start = std::chrono::high_resolution_clock::now();
@@ -402,7 +420,7 @@ void CLUEAlgoCupla<Acc>::makeClusters() {
   CUPLA_KERNEL(kernel_assign_clusters)(gridSize_nseeds, blockSize, 0, 0)(d_seeds, d_followers, d_points);
   finish = std::chrono::high_resolution_clock::now();
   elapsed = finish - start;
-  std::cout << "--- assignClusters:            " << elapsed.count() *1000 << " ms\n";
+  std::cout << "--- assignClusters:            " << elapsed.count() *1000 << " ms" << std::endl;
 
   copy_tohost();
 }

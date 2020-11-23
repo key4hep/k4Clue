@@ -11,6 +11,13 @@
 
 using GPUVect = GPUCupla::VecArray<int, LayerTilesConstants::maxTileDepth>;
 
+#if !defined(ALPAKA_ACC_GPU_CUDA_ENABLED) && !defined(ALPAKA_ACC_GPU_HIP_ENABLED)
+struct int4
+{
+    int x, y, z, w;
+};
+#endif
+
 template <typename Acc>
 class LayerTilesCupla {
 
@@ -18,11 +25,6 @@ class LayerTilesCupla {
 
     // constructor
     LayerTilesCupla(const Acc & acc){acc_=acc;};
-
-    // #ifdef __CUDACC__
-    // overload the fill function on device
-    // __device__
-
 
     ALPAKA_FN_ACC
     void fill(const std::vector<float>& x, const std::vector<float>& y) {
@@ -75,7 +77,4 @@ class LayerTilesCupla {
     GPUCupla::VecArray<GPUCupla::VecArray<int, LayerTilesConstants::maxTileDepth>, LayerTilesConstants::nColumns * LayerTilesConstants::nRows > layerTiles_;
     const Acc & acc_;
 };
-
-
-
 #endif
