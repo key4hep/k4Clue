@@ -18,7 +18,7 @@
 #include "CLUEAlgo.h"
 
 // Maximum number of uniques seeds that could be handled. A higher number of
-// potential seed will trigger and exception.
+// potential seed will trigger an exception.
 static const int maxNSeedsCupla = 8192;
 
 // Maximum number of followers that could be handled. A higher number of
@@ -28,7 +28,7 @@ static const int maxNFollowersCupla = 128;
 // Maximum size of the local stack used to assign clusters to seeds and
 // followers. It should be at least as big as the maximum allowed number of
 // followers. Adding more elements with respect to the reserved size will
-// trigger and exception.
+// trigger an exception.
 static const int localStackSizePerSeedCupla = 128;
 
 struct PointsPtr {
