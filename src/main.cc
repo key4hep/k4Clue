@@ -7,7 +7,9 @@
 #include "CLUEAlgoGPU.h"
 #else
 #include "CLUEAlgoCupla.h"
+#ifdef FOR_TBB
 #include "tbb/task_scheduler_init.h"
+#endif
 #endif
 
 
@@ -109,7 +111,7 @@ int main(int argc, char *argv[]) {
 
   int TBBNumberOfThread = 1;
 
-  if (argc == 9 | argc == 10) {
+  if (argc == 9 || argc == 10) {
     dc = std::stof(argv[2]);
     deltao = std::stof(argv[3]);
     deltac = std::stof(argv[4]);
@@ -124,11 +126,11 @@ int main(int argc, char *argv[]) {
       }
     }
   } else {
-    std::cout << "bin/main [fileName] [dc] [deltao] [deltac] [rhoc] [useGPU] [totalNumberOfEvent] [verbose]" << std::endl;
-    return 0;
+    std::cout << "bin/main [fileName] [dc] [deltao] [deltac] [rhoc] [useGPU] [totalNumberOfEvent] [verbose] [NumTBBThreads]" << std::endl;
+    return 1;
   }
 
-#ifdef USE_CUPLA
+#ifdef FOR_TBB
   if (verbose) {
     std::cout << "Setting up " << TBBNumberOfThread << " TBB Threads" << std::endl;
   }
