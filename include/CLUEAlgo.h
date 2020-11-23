@@ -18,18 +18,18 @@ class CLUEAlgo{
 
   public:
     // constructor
-    CLUEAlgo(float dc, float deltao, float deltac, float rhoc, bool verbose=false ){ 
-      dc_ = dc; 
-      deltao_ = deltao; 
-      deltac_ = deltac; 
+    CLUEAlgo(float dc, float deltao, float deltac, float rhoc, bool verbose=false ){
+      dc_ = dc;
+      deltao_ = deltao;
+      deltac_ = deltac;
       rhoc_ = rhoc;
       dm_ = std::max(deltao_, deltac_);
       verbose_ = verbose;
-    
+
     }
     // distrcutor
-    ~CLUEAlgo(){} 
-    
+    ~CLUEAlgo(){}
+
     // public variables
     float dc_, dm_, deltao_, deltac_, rhoc_;
     bool verbose_;
@@ -58,10 +58,10 @@ class CLUEAlgo{
 
     void makeClusters();
 
-    void verboseResults( std::string outputFileName = "cout", int nVerbose = -1){ 
-      
+    void verboseResults( std::string outputFileName = "cout", int nVerbose = -1){
+
       if (verbose_) {
-      
+
         if (nVerbose ==-1) nVerbose=points_.n;
 
         // verbose to screen
@@ -70,7 +70,7 @@ class CLUEAlgo{
           for(int i = 0; i < nVerbose; i++) {
             std::cout << i << ","<<points_.x[i]<< ","<<points_.y[i]<< ","<<points_.layer[i] << ","<<points_.weight[i];
             std::cout << "," << points_.rho[i];
-            if (points_.delta[i] <= 999) 
+            if (points_.delta[i] <= 999)
               std::cout << ","<<points_.delta[i];
             else
               std::cout << ",999"; // convert +inf to 999 in verbose
@@ -88,7 +88,7 @@ class CLUEAlgo{
           for(int i = 0; i < nVerbose; i++) {
             oFile << i << ","<<points_.x[i]<< ","<<points_.y[i]<< ","<<points_.layer[i] << ","<<points_.weight[i];
             oFile << "," << points_.rho[i];
-            if (points_.delta[i] <= 999) 
+            if (points_.delta[i] <= 999)
               oFile << ","<<points_.delta[i];
             else
               oFile << ",999"; // convert +inf to 999 in verbose
@@ -100,14 +100,9 @@ class CLUEAlgo{
           oFile.close();
         }
       }// end of if verbose_
-        
     }
-    
-    
+
   private:
-
-    // private variables
-
 
     // private member methods
     void prepareDataStructures(std::array<LayerTiles, NLAYERS> & );

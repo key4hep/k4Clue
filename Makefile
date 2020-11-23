@@ -1,4 +1,3 @@
-
 COMPUTER_NAME := $(shell uname -n)
 
 # Location of the CUDA Toolkit
@@ -16,31 +15,22 @@ NVCC          := $(CUDA_PATH)/bin/nvcc -ccbin $(HOST_COMPILER)
 # internal flags
 TARGET_SIZE := 64
 NVCCFLAGS   := -m${TARGET_SIZE}
-CCFLAGS     := -std=c++14 -O2 -g 
+CCFLAGS     := -std=c++14
 LDFLAGS     :=
 
 # Debug build flags
 ifeq ($(dbg),1)
       NVCCFLAGS += -g -G
-      BUILD_TYPE := debug
-else
-      BUILD_TYPE := release
 endif
 
-ALL_CCFLAGS := --expt-relaxed-constexpr -w
-ALL_CCFLAGS += $(NVCCFLAGS)
-ALL_CCFLAGS += $(EXTRA_NVCCFLAGS)
-ALL_CCFLAGS += $(addprefix -Xcompiler ,$(CCFLAGS))
-ALL_CCFLAGS += $(addprefix -Xcompiler ,$(EXTRA_CCFLAGS))
+NVCCFLAGS  += --expt-relaxed-constexpr -w
+NVCCFLAGS += $(addprefix -Xcompiler ,$(CCFLAGS))
 
 ALL_LDFLAGS :=
-ALL_LDFLAGS += $(ALL_CCFLAGS)
-ALL_LDFLAGS += $(addprefix -Xlinker ,$(LDFLAGS))
-ALL_LDFLAGS += $(addprefix -Xlinker ,$(EXTRA_LDFLAGS))
-
+NVCC_LDFLAGS += $(addprefix -Xlinker ,$(LDFLAGS))
 
 # Common includes and paths for CUDA
-INCLUDES   := -I../../common/inc -I include -I cupla/include -I cupla/alpaka/include
+INCLUDES   := -I include -I cupla/include -I cupla/alpaka/include
 LIBRARIES  :=
 CUDA_FLAGS := -x cu
 
@@ -51,9 +41,8 @@ $(info >>> TBB_BASE=$(TBB_BASE))
 CUPLA_CPUTBB_ACC := -DFOR_TBB -I $(TBB_BASE)/include -L $(TBB_BASE)/lib -ltbb
 endif
 
-
 CUPLA_FLAGS := -DUSE_CUPLA
-CUPLA_CUDA_ACC := -DFOR_CUDA
+CUPLA_CUDA_ACC := -DFOR_CUDA -DALPAKA_ACC_GPU_CUDA_ENABLED=1
 
 ################################################################################
 
@@ -68,55 +57,67 @@ endif
 # Generate SASS code for each SM architecture listed in $(SMS)
 $(foreach sm,$(SMS),$(eval GENCODE_FLAGS += -gencode arch=compute_$(sm),code=sm_$(sm)))
 
-# Generate PTX code from the highest SM architecture in $(SMS) to guarantee forward-compatibility
-HIGHEST_SM := $(lastword $(sort $(SMS)))
-ifneq ($(HIGHEST_SM),)
-GENCODE_FLAGS += -gencode arch=compute_$(HIGHEST_SM),code=compute_$(HIGHEST_SM)
-endif
-
 ################################################################################
 
 # Target rules
 all: build
 
-build: main mainCuplaCPUTBB 
-#mainCuplaCUDA mainCuplaCPUSerial 
 
-CLUEAlgo.o:src/CLUEAlgo.cc
-	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
+# TARGET EXPLANATION
+#
+# main: this will build the native C++ implementation of CLUE and its
+#       corresponding native CUDA one. Which one to use must be selected at
+#       runtime via a flag.
+#
+# mainCuplaCPUTBB: this will build the native C++ implementation of CLUE and
+#       its corresponding TBB one  built using CUPLA. Which one to use must be
+#       selected at runtime via a flag (misleadingly enough called useGPU in
+#       the help text).
+#
+# mainCuplaCUDA: this will build the native C++ implementation of CLUE and its
+#       corresponding CUDA one built using CUPLA. Which one to use must be
+#       selected at runtime via a flag.
 
-CLUEAlgoGPU.o:src/CLUEAlgoGPU.cu
-	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
+build: main mainCuplaCPUTBB mainCuplaCUDA
+
+# Native C++ implementation bundled with native CUDA
+CLUEAlgo.cuda.o:src/CLUEAlgoGPU.cu include/CLUEAlgoGPU.h
+	$(EXEC) $(NVCC) $(INCLUDES) $(NVCCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
+
+CLUEAlgo.o:src/CLUEAlgo.cc include/CLUEAlgo.h
+	$(EXEC) $(NVCC) $(INCLUDES) $(NVCCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
 main.o:src/main.cc
-	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
+	$(EXEC) $(NVCC) $(INCLUDES) $(NVCCFLAGS) $(CUDA_FLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
-mainCuplaCUDA.o:src/main.cc
-	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(CUDA_FLAGS) $(CUPLA_CUDA_ACC) $(GENCODE_FLAGS) $(CUPLA_FLAGS) -o $@ -c $<
+main: main.o CLUEAlgo.cuda.o CLUEAlgo.o
+	$(EXEC) $(NVCC) $(NVCC_LDFLAGS) $(GENCODE_FLAGS) -o $@ $^ $(LIBRARIES)
 
-mainCuplaCPUSerial.o:src/main.cc
-	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(CUDA_FLAGS) $(CUPLA_CPUSERIAL_ACC) $(GENCODE_FLAGS) $(CUPLA_FLAGS) -o $@ -c $<
+# Native C++ implementation bundled TBB via CUPLA
+CLUEAlgo.tbb.o:src/CLUEAlgo.cc include/CLUEAlgo.h
+	$(EXEC) $(HOST_COMPILER) $(INCLUDES) -g $(CUPLA_CPUTBB_ACC) $(CUPLA_FLAGS) -o $@ -c $<
 
-mainCuplaCPUTBB.o:src/main.cc
-	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(CUDA_FLAGS) $(CUPLA_CPUTBB_ACC) $(GENCODE_FLAGS) $(CUPLA_FLAGS) -o $@ -c $<
+mainCuplaCPUTBB.o:src/main.cc include/CLUEAlgoCupla.h include/GPUVecArrayCupla.h
+	$(EXEC) $(HOST_COMPILER) $(INCLUDES) -g $(CUPLA_CPUTBB_ACC) $(CUPLA_FLAGS) -o $@ -c $<
 
-main: main.o CLUEAlgoGPU.o CLUEAlgo.o
-	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
+mainCuplaCPUTBB: mainCuplaCPUTBB.o CLUEAlgo.tbb.o
+	$(EXEC) $(HOST_COMPILER) -o $@ $^ $(LIBRARIES) $(CUPLA_CPUTBB_ACC)
 
-mainCuplaCPUTBB: mainCuplaCPUTBB.o include/CLUEAlgoCupla.h CLUEAlgo.o
-	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ mainCuplaCPUTBB.o CLUEAlgo.o $(LIBRARIES) $(CUPLA_CPUTBB_ACC)
 
-#mainCuplaCUDA: mainCuplaCUDA.o include/CLUEAlgoCupla.h CLUEAlgo.o
-#	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ mainCuplaCUDA.o CLUEAlgo.o $(LIBRARIES)
+# Native C++ implementation bundled with CUDA via CUPLA
+CLUEAlgo.gpu.o:src/CLUEAlgo.cc include/CLUEAlgo.h
+	$(EXEC) $(NVCC) $(INCLUDES) $(NVCCFLAGS) $(CUPLA_FLAGS) -o $@ -c $<
 
-#mainCuplaCPUSerial: mainCuplaCPUSerial.o include/CLUEAlgoCupla.h CLUEAlgo.o
-#	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ mainCuplaCPUSerial.o CLUEAlgo.o $(LIBRARIES) $(CUPLA_CPUSERIAL_ACC)
+mainCuplaCUDA.o:src/main.cc include/CLUEAlgoCupla.h include/GPUVecArrayCupla.h
+	$(EXEC) $(NVCC) $(INCLUDES) $(NVCCFLAGS) $(CUDA_FLAGS) $(CUPLA_CUDA_ACC) $(GENCODE_FLAGS) $(CUPLA_FLAGS) -o $@ -c $<
 
+mainCuplaCUDA:mainCuplaCUDA.o CLUEAlgo.gpu.o
+	$(EXEC) $(NVCC) $(INCLUDES) $(NVCCFLAGS) $(CUPLA_CUDA_ACC) $(GENCODE_FLAGS) $(CUPLA_FLAGS) -o $@ $^
 
 run: build
 	$(EXEC) main
 
 clean:
-	rm -f main main.o mainCupla mainCupla.o mainCuplaCUDA mainCuplaCUDA.o mainCuplaCPUSerial mainCuplaCPUSerial.o mainCuplaCPUTBB mainCuplaCPUTBB.o CLUEAlgo.o CLUEAlgoGPU.o
+	rm -f main mainCuplaCPUTBB mainCuplaCUDA *.o
 
 clobber: clean
