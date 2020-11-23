@@ -35,23 +35,23 @@ void CLUEAlgo::prepareDataStructures( std::array<LayerTiles, NLAYERS> & allLayer
 
 
 void CLUEAlgo::calculateLocalDensity( std::array<LayerTiles, NLAYERS> & allLayerTiles ){
-  
+
   // loop over all points
   for(int i = 0; i < points_.n; i++) {
     LayerTiles& lt = allLayerTiles[points_.layer[i]];
-    
+
     // get search box
     std::array<int,4> search_box = lt.searchBox(points_.x[i]-dc_, points_.x[i]+dc_, points_.y[i]-dc_, points_.y[i]+dc_);
-    
+
     // loop over bins in the search box
     for(int xBin = search_box[0]; xBin < search_box[1]+1; ++xBin) {
       for(int yBin = search_box[2]; yBin < search_box[3]+1; ++yBin) {
-        
+
         // get the id of this bin
         int binId = lt.getGlobalBinByBin(xBin,yBin);
         // get the size of this bin
         int binSize = lt[binId].size();
-        
+
         // interate inside this bin
         for (int binIter = 0; binIter < binSize; binIter++) {
           int j = lt[binId][binIter];
@@ -62,7 +62,7 @@ void CLUEAlgo::calculateLocalDensity( std::array<LayerTiles, NLAYERS> & allLayer
             points_.rho[i] += points_.weight[j];
           }
         } // end of interate inside this bin
-      
+
       }
     } // end of loop over bins in search box
   } // end of loop over points
@@ -79,13 +79,13 @@ void CLUEAlgo::calculateDistanceToHigher( std::array<LayerTiles, NLAYERS> & allL
 
     LayerTiles& lt = allLayerTiles[points_.layer[i]];
 
-    // get search box 
+    // get search box
     std::array<int,4> search_box = lt.searchBox(points_.x[i]-dm_, points_.x[i]+dm_, points_.y[i]-dm_, points_.y[i]+dm_);
-    
+
     // loop over all bins in the search box
     for(int xBin = search_box[0]; xBin < search_box[1]+1; ++xBin) {
       for(int yBin = search_box[2]; yBin < search_box[3]+1; ++yBin) {
-        
+
         // get the id of this bin
         int binId = lt.getGlobalBinByBin(xBin,yBin);
         // get the size of this bin
@@ -110,7 +110,7 @@ void CLUEAlgo::calculateDistanceToHigher( std::array<LayerTiles, NLAYERS> & allL
         } // end of interate inside this bin
       }
     } // end of loop over bins in search box
-    
+
     points_.delta[i] = delta_i;
     points_.nearestHigher[i] = nearestHigher_i;
   } // end of loop over points
@@ -118,10 +118,10 @@ void CLUEAlgo::calculateDistanceToHigher( std::array<LayerTiles, NLAYERS> & allL
 
 void CLUEAlgo::findAndAssignClusters(){
   auto start = std::chrono::high_resolution_clock::now();
-  
+
   int nClusters = 0;
-  
-  // find cluster seeds and outlier  
+
+  // find cluster seeds and outlier
   std::vector<int> localStack;
   // loop over all points
   for(unsigned int i = 0; i < points_.n; i++) {
@@ -141,14 +141,14 @@ void CLUEAlgo::findAndAssignClusters(){
       localStack.push_back(i);
     } else if (!isOutlier) {
       // register as follower at its nearest higher
-      points_.followers[points_.nearestHigher[i]].push_back(i);   
+      points_.followers[points_.nearestHigher[i]].push_back(i);
     }
   }
 
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
   std::cout << "--- findSeedAndFollowers:      " << elapsed.count() *1000 << " ms\n";
-  
+
   start = std::chrono::high_resolution_clock::now();
   // expend clusters from seeds
   while (!localStack.empty()) {
