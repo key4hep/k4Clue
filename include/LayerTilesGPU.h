@@ -20,16 +20,12 @@ class LayerTilesGPU {
     // constructor
     LayerTilesGPU(){};
 
-    #ifdef __CUDACC__
-    // overload the fill function on device
     __device__
     void fill(float x, float y, int i)
-    { 
+    {
       layerTiles_[getGlobalBin(x,y)].push_back(i);
     }
-    #endif //__CUDACC__
-    
-    
+
     __host__ __device__
     int getXBin(float x) const {
       int xBin = (x-LayerTilesConstants::minX)*LayerTilesConstants::rX;
@@ -70,13 +66,10 @@ class LayerTilesGPU {
     GPU::VecArray<int, LayerTilesConstants::maxTileDepth>& operator[](int globalBinId) {
       return layerTiles_[globalBinId];
     }
-    
-   
+
+
 
   private:
     GPU::VecArray<GPU::VecArray<int, LayerTilesConstants::maxTileDepth>, LayerTilesConstants::nColumns * LayerTilesConstants::nRows > layerTiles_;
 };
-
-
-  
-#endif 
+#endif

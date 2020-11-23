@@ -5,8 +5,6 @@
 // Author: Felice Pantaleo, CERN
 //
 
-
-
 namespace GPUCupla {
 
 template <class T, int maxSize> struct VecArray {
@@ -41,8 +39,6 @@ template <class T, int maxSize> struct VecArray {
       return T(); //undefined behaviour
   }
 
-#ifdef __CUDACC__
-
   // thread-safe version of the vector, when used in a CUDA kernel
   template<typename T_Acc>
   ALPAKA_FN_ACC
@@ -53,6 +49,7 @@ template <class T, int maxSize> struct VecArray {
       return previousSize;
     } else {
       atomicSub(&m_size, 1);
+      assert(("Too few elemets reserved", 0));
       return -1;
     }
   }
@@ -70,9 +67,8 @@ template <class T, int maxSize> struct VecArray {
     }
   }
 
-#endif // __CUDACC__
-
-  __host__ __device__
+  template <typename T_Acc, class... Ts>
+  ALPAKA_FN_ACC
   inline T pop_back() {
     if (m_size > 0) {
       auto previousSize = m_size--;

@@ -88,7 +88,7 @@ CLUEAlgo.o:src/CLUEAlgo.cc include/CLUEAlgo.h
 	$(EXEC) $(NVCC) $(INCLUDES) $(NVCCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
 main.o:src/main.cc
-	$(EXEC) $(NVCC) $(INCLUDES) $(NVCCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
+	$(EXEC) $(NVCC) $(INCLUDES) $(NVCCFLAGS) $(CUDA_FLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
 main: main.o CLUEAlgo.cuda.o CLUEAlgo.o
 	$(EXEC) $(NVCC) $(NVCC_LDFLAGS) $(GENCODE_FLAGS) -o $@ $^ $(LIBRARIES)
