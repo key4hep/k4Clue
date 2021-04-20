@@ -1,7 +1,7 @@
 COMPUTER_NAME := $(shell uname -n)
 
 # Location of the CUDA Toolkit
-CUDA_PATH ?= /usr/local/cuda
+CUDA_PATH ?= /usr/local/cuda-10.2
 
 # architecture
 HOST_ARCH   := $(shell uname -m)
@@ -34,9 +34,9 @@ INCLUDES   := -I include -I cupla/include -I cupla/alpaka/include
 LIBRARIES  :=
 CUDA_FLAGS := -x cu
 
-CUPLA_CPUTBB_ACC := -DFOR_TBB -I /usr/include/tbb -L /usr/lib/x86_64-linux-gnu -ltbb
+CUPLA_CPUTBB_ACC := -DFOR_TBB -I /usr/include/tbb -L /usr/lib/x86_64-linux-gnu -ltbb 
 ifeq ($(COMPUTER_NAME), patatrack02.cern.ch)
-TBB_BASE := /home/cmssw/slc7_amd64_gcc820/external/tbb/2019_U8
+TBB_BASE := /cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/tbb/2019_U8
 $(info >>> TBB_BASE=$(TBB_BASE))
 CUPLA_CPUTBB_ACC := -DFOR_TBB -I $(TBB_BASE)/include -L $(TBB_BASE)/lib -ltbb
 endif
