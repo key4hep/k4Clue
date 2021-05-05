@@ -1,3 +1,5 @@
+![Logo](clue_logo.png)
+
 # Standalone CLUE Algorithm on GPU and CPU
 
 Z.Chen[1], A. Di Pilato[2,3], F. Pantaleo[4], M. Rovere[4], C. Seez[5]
