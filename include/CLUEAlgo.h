@@ -23,7 +23,7 @@ class CLUEAlgo{
       //dm_ =  std::max(deltao_, deltac_);
       outlierDeltaFactor_ = 2.;
       verbose_ = verbose;
-    
+
     }
     // destructor
     ~CLUEAlgo(){} 
@@ -83,7 +83,7 @@ class CLUEAlgo{
     void verboseResults( std::string outputFileName = "cout", int nVerbose = -1) { 
       
       if (verbose_) {
-      
+
         if (nVerbose ==-1) nVerbose=points_.n;
 
         // verbose to screen
@@ -92,7 +92,7 @@ class CLUEAlgo{
           for(int i = 0; i < nVerbose; i++) {
             std::cout << i << ","<<points_.x[i]<< ","<<points_.y[i]<< ","<<points_.layer[i]+1 << ","<<points_.weight[i];
             std::cout << "," << points_.rho[i];
-            if (points_.delta[i] <= 999) 
+            if (points_.delta[i] <= 999)
               std::cout << ","<<points_.delta[i];
             else
               std::cout << ",999"; // convert +inf to 999 in verbose
@@ -110,7 +110,7 @@ class CLUEAlgo{
           for(int i = 0; i < nVerbose; i++) {
             oFile << i << ","<<points_.x[i]<< ","<<points_.y[i]<< ","<<points_.layer[i]+1 << ","<<points_.weight[i];
             oFile << "," << points_.rho[i];
-            if (points_.delta[i] <= 999) 
+            if (points_.delta[i] <= 999)
               oFile << ","<<points_.delta[i];
             else
               oFile << ",999"; // convert +inf to 999 in verbose

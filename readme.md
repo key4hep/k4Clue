@@ -6,11 +6,12 @@ Z.Chen[1], A. Di Pilato[2,3], F. Pantaleo[4], M. Rovere[4], C. Seez[5]
 
 ## 1. Setup
 
-The pre-requisite dependencies are `>=gcc7`, `>=cuda10`, `Boost`, `TBB`. Fork this repo if developers.
+The pre-requisite dependencies are `>=gcc7`, `<=gcc8.3`, `>=cuda10`, `Boost`, `TBB`. Fork this repo if developers.
 
 * **On a CERN machine with GPUs:** Source the LCG View containing the correct version of GCC and Boost:
 ```bash
 source /cvmfs/sft.cern.ch/lcg/views/LCG_96/x86_64-centos7-gcc8-opt/setup.sh
+source /cvmfs/sft.cern.ch/lcg/contrib/gcc/8.3.0/x86_64-centos7/setup.sh
 
 # then setup this project
 git clone --recurse-submodules https://gitlab.cern.ch/kalos/clue.git
