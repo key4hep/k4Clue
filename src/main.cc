@@ -2,15 +2,18 @@
 #include <fstream>
 #include <string>
 #include <chrono>
+#include <filesystem>
 #include "CLUEAlgo.h"
+/*
 #ifndef USE_CUPLA
 #include "CLUEAlgoGPU.h"
 #else
 #include "CLUEAlgoCupla.h"
+*/
 #ifdef FOR_TBB
 #include "tbb/task_scheduler_init.h"
 #endif
-#endif
+//#endif
 
 
 void mainRun( std::string inputFileName, std::string outputFileName,
@@ -30,6 +33,10 @@ void mainRun( std::string inputFileName, std::string outputFileName,
   for (int l=0; l<NLAYERS; l++){
     // open csv file
     std::ifstream iFile(inputFileName);
+    if( !iFile.is_open() ){
+      std::cerr << "Failed to open the file" << std::endl;
+      return ;
+    }
     std::string value = "";
     // Iterate through each line and split the content using delimeter
     while (getline(iFile, value, ',')) {
@@ -46,6 +53,7 @@ void mainRun( std::string inputFileName, std::string outputFileName,
   // run CLUE algorithm
   //////////////////////////////
   std::cout << "Start to run CLUE algorithm" << std::endl;
+/*
   if (useGPU) {
 #ifndef USE_CUPLA
     CLUEAlgoGPU clueAlgo(dc, deltao, deltac, rhoc, verbose);
@@ -78,6 +86,7 @@ void mainRun( std::string inputFileName, std::string outputFileName,
 
 
   } else {
+*/
     CLUEAlgo clueAlgo(dc, deltao, deltac, rhoc, verbose);
     for (int r = 0; r<repeats; r++){
       clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]);
@@ -90,7 +99,7 @@ void mainRun( std::string inputFileName, std::string outputFileName,
     }
     // output result to outputFileName. -1 means all points.
     clueAlgo.verboseResults(outputFileName, -1);
-  }
+//  }
 
 
   std::cout << "Finished running CLUE algorithm" << std::endl;
@@ -141,14 +150,16 @@ int main(int argc, char *argv[]) {
   // MARK -- set input and output files
   //////////////////////////////
   std::string underscore="_", suffix = ".csv";
+  std::cout << "Current path is " << std::filesystem::current_path() << '\n';
 
-  std::string inputFileName = "data/input/";
+
+  std::string inputFileName = "../../data/input/";
   inputFileName.append(argv[1]);
   inputFileName.append(suffix);
   std::cout << "input file " << inputFileName << std::endl;
 
 
-  std::string outputFileName = "data/output/";
+  std::string outputFileName = "../../data/output/";
   outputFileName.append(argv[1]);
   outputFileName.append(underscore);
   outputFileName.append(std::to_string(int(dc)));

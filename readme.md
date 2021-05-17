@@ -1,4 +1,4 @@
-![Logo](clue_logo.png)
+![Logo](plots/clue_logo.png)
 
 # Standalone CLUE Algorithm on GPU and CPU
 
