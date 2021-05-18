@@ -6,15 +6,12 @@ set(HEADER_LIST "${PROJECT_SOURCE_DIR}/include/CLUEAlgo.h")
 add_library(CLUEAlgo_lib CLUEAlgo.cc ${HEADER_LIST})
 
 # We need this directory, and users of our library will need it too
-target_include_directories(CLUEAlgo_lib PUBLIC ../include)
+target_include_directories(CLUEAlgo_lib PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 # This depends on (header only) boost
 target_link_libraries(CLUEAlgo_lib PRIVATE Boost::boost)
-
-# All users of this library will need at least C++14
-target_compile_features(CLUEAlgo_lib PUBLIC cxx_std_14)
-
-message(STATUS "Project folder: ${PROJECT_SOURCE_DIR}")
 
 # IDEs should put the headers in a nice place
 source_group(
@@ -27,3 +24,6 @@ target_compile_features(main PRIVATE cxx_std_17)
 
 target_link_libraries(main PRIVATE CLUEAlgo_lib)
 
+install(TARGETS CLUEAlgo_lib ${INSTALL_LIBRARIES}
+  EXPORT CLUEAlgoTarget
+  DESTINATION "${CMAKE_INSTALL_LIBDIR}")

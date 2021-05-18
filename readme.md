@@ -19,7 +19,12 @@ source /cvmfs/sft.cern.ch/lcg/contrib/gcc/8.3.0/x86_64-centos7/setup.sh
 # then setup this project
 git clone --recurse-submodules https://gitlab.cern.ch/kalos/clue.git
 cd clue
-make
+cmake -S . -B build
+cmake --build build
+
+# if installation is needed
+mkdir install
+cd build/ ; cmake .. -DCMAKE_INSTALL_PREFIX=../install; make install
 ```
 
 * **On an Ubuntu machine with GPUs:** Install Boost and TBB first.
