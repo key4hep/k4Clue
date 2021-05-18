@@ -2,7 +2,6 @@
 #include <fstream>
 #include <string>
 #include <chrono>
-#include <filesystem>
 #include "CLUEAlgo.h"
 /*
 #ifndef USE_CUPLA
@@ -150,15 +149,16 @@ int main(int argc, char *argv[]) {
   // MARK -- set input and output files
   //////////////////////////////
   std::string underscore="_", suffix = ".csv";
-  std::cout << "Current path is " << std::filesystem::current_path() << '\n';
 
 
+  //TO BE FIXED: Use current path
   std::string inputFileName = "../../data/input/";
   inputFileName.append(argv[1]);
   inputFileName.append(suffix);
   std::cout << "input file " << inputFileName << std::endl;
 
 
+  //TO BE FIXED: Use current path
   std::string outputFileName = "../../data/output/";
   outputFileName.append(argv[1]);
   outputFileName.append(underscore);

@@ -12,6 +12,7 @@ The pre-requisite dependencies are `>=gcc7`, `<=gcc8.3`, `>=cuda10`, `Boost`, `T
 
 * **On a CERN machine with GPUs:** Source the LCG View containing the correct version of GCC and Boost:
 ```bash
+source /cvmfs/sw.hsf.org/key4hep/setup.sh
 source /cvmfs/sft.cern.ch/lcg/views/LCG_96/x86_64-centos7-gcc8-opt/setup.sh
 source /cvmfs/sft.cern.ch/lcg/contrib/gcc/8.3.0/x86_64-centos7/setup.sh
 

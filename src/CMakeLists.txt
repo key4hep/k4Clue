@@ -1,8 +1,3 @@
-#scheleton from hsf-training-cmake-webpage/blob/gh-pages/_includes/code/03-structure/src/CMakeLists.txt
-
-# Note that headers are optional, and do not affect add_library, but they will
-# not show up in IDEs unless they are listed in add_library.
-
 # Optionally glob, but only for CMake 3.12 or later: file(GLOB HEADER_LIST
 # CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/include/modern/*.hpp")
 set(HEADER_LIST "${PROJECT_SOURCE_DIR}/include/CLUEAlgo.h")

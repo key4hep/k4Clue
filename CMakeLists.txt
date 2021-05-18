@@ -20,7 +20,6 @@ endif()
 find_package(Boost REQUIRED)
 find_package(TBB REQUIRED)
 
-link_libraries(stdc++fs)
 add_subdirectory(src)
 
 message(STATUS "Finished!")
