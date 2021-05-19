@@ -11,7 +11,7 @@ target_include_directories(CLUEAlgo_lib PUBLIC
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 # This depends on (header only) boost
-target_link_libraries(CLUEAlgo_lib PRIVATE Boost::boost)
+#target_link_libraries(CLUEAlgo_lib PRIVATE Boost::boost)
 
 # IDEs should put the headers in a nice place
 source_group(
@@ -19,11 +19,32 @@ source_group(
   PREFIX "Header Files"
   FILES ${HEADER_LIST})
 
+install(TARGETS CLUEAlgo_lib ${INSTALL_LIBRARIES}
+  EXPORT CLUEAlgoTarget
+  DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+
+# main: this will build the native C++ implementation of CLUE and its
+#       corresponding native CUDA one. Which one to use must be selected at
+#       runtime via a flag.
+#
 add_executable(main main.cc)
 target_compile_features(main PRIVATE cxx_std_17)
 
 target_link_libraries(main PRIVATE CLUEAlgo_lib)
 
-install(TARGETS CLUEAlgo_lib ${INSTALL_LIBRARIES}
-  EXPORT CLUEAlgoTarget
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+# mainCuplaCPUTBB: this will build the native C++ implementation of CLUE and
+#       its corresponding TBB one  built using CUPLA. Which one to use must be
+#       selected at runtime via a flag (misleadingly enough called useGPU in
+#       the help text).
+add_executable(mainCuplaCPUTBB main.cc)
+target_compile_features(mainCuplaCPUTBB PRIVATE cxx_std_17)
+target_compile_options(mainCuplaCPUTBB PRIVATE -DUSE_CUPLA -DFOR_TBB)
+
+target_link_libraries(mainCuplaCPUTBB PRIVATE CLUEAlgo_lib tbb)
+
+
+# mainCuplaCUDA: this will build the native C++ implementation of CLUE and its
+#       corresponding CUDA one built using CUPLA. Which one to use must be
+#       selected at runtime via a flag.
+
+

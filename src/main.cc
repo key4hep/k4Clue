@@ -12,8 +12,9 @@
 #ifdef FOR_TBB
 #include "tbb/task_scheduler_init.h"
 #endif
-//#endif
-
+/*
+#endif
+*/
 
 void mainRun( std::string inputFileName, std::string outputFileName,
               float dc, float deltao, float deltac, float rhoc,
@@ -27,7 +28,6 @@ void mainRun( std::string inputFileName, std::string outputFileName,
   std::vector<float> y;
   std::vector<int> layer;
   std::vector<float> weight;
-
   // make dummy layers
   for (int l=0; l<NLAYERS; l++){
     // open csv file
@@ -52,9 +52,10 @@ void mainRun( std::string inputFileName, std::string outputFileName,
   // run CLUE algorithm
   //////////////////////////////
   std::cout << "Start to run CLUE algorithm" << std::endl;
-/*
   if (useGPU) {
+/*
 #ifndef USE_CUPLA
+  std::cout << "Using CLUEAlgoGPU ... " << std::endl;
     CLUEAlgoGPU clueAlgo(dc, deltao, deltac, rhoc, verbose);
     for (int r = 0; r<repeats; r++){
       clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]);
@@ -69,6 +70,7 @@ void mainRun( std::string inputFileName, std::string outputFileName,
   clueAlgo.verboseResults(outputFileName, -1);
 
 #else
+  std::cout << "Using CLUEAlgoCupla ... " << std::endl;
   CLUEAlgoCupla<cupla::Acc> clueAlgo(dc, deltao, deltac, rhoc, verbose);
   for (int r = 0; r<repeats; r++){
     clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]);
@@ -82,10 +84,10 @@ void mainRun( std::string inputFileName, std::string outputFileName,
   // output result to outputFileName. -1 means all points.
   clueAlgo.verboseResults(outputFileName, -1);
 #endif
-
+*/
 
   } else {
-*/
+  std::cout << "Using CLUEAlgo ... " << std::endl;
     CLUEAlgo clueAlgo(dc, deltao, deltac, rhoc, verbose);
     for (int r = 0; r<repeats; r++){
       clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]);
@@ -98,7 +100,7 @@ void mainRun( std::string inputFileName, std::string outputFileName,
     }
     // output result to outputFileName. -1 means all points.
     clueAlgo.verboseResults(outputFileName, -1);
-//  }
+  }
 
 
   std::cout << "Finished running CLUE algorithm" << std::endl;
