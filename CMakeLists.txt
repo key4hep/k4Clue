@@ -1,15 +1,17 @@
 cmake_minimum_required(VERSION 3.14...3.18)
 
+# Location of the CUDA Toolkit
+set(CMAKE_CUDA_COMPILER "/usr/local/cuda-10.2/bin/nvcc")
+
 project(
   CLUE
   VERSION 1.0
   DESCRIPTION "The CLUstering by Energy algorithm"
-  LANGUAGES CXX)
+  LANGUAGES CUDA CXX)
 
 include(GNUInstallDirs)
 
 # Set up C++ Standard
-# ``-DCMAKE_CXX_STANDARD=<standard>`` when invoking CMake
 set(CMAKE_CXX_STANDARD 17 CACHE STRING "")
 
 if(NOT CMAKE_CXX_STANDARD MATCHES "14|17|20")
