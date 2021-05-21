@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.14...3.18)
 
 # Location of the CUDA Toolkit
 set(CMAKE_CUDA_COMPILER "/usr/local/cuda-10.2/bin/nvcc")
+set(CMAKE_CUDA_HOST_COMPILER "g++")
+
+# Location of the cupla
+set(cupla_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cupla)
 
 project(
   CLUE

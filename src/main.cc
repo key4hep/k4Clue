@@ -6,9 +6,7 @@
 #ifndef USE_CUPLA
 #include "CLUEAlgoGPU.h"
 #else
-/*
 #include "CLUEAlgoCupla.h"
-*/
 #ifdef FOR_TBB
 #include "tbb/task_scheduler_init.h"
 #endif
@@ -67,7 +65,6 @@ void mainRun( std::string inputFileName, std::string outputFileName,
   clueAlgo.verboseResults(outputFileName, -1);
 #else
   std::cout << "Using CLUEAlgoCupla ... " << std::endl;
-/*
   CLUEAlgoCupla<cupla::Acc> clueAlgo(dc, deltao, deltac, rhoc, verbose);
   for (int r = 0; r<repeats; r++){
     clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]);
@@ -80,7 +77,6 @@ void mainRun( std::string inputFileName, std::string outputFileName,
   }
   // output result to outputFileName. -1 means all points.
   clueAlgo.verboseResults(outputFileName, -1);
-*/
 #endif
 
   } else {
