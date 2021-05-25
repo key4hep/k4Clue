@@ -57,40 +57,37 @@ install(TARGETS CLUEAlgo_lib CLUEAlgoGPU_lib ${INSTALL_LIBRARIES}
 #       corresponding native CUDA one. Which one to use must be selected at
 #       runtime via a flag.
 #
-set_source_files_properties(main.cc PROPERTIES LANGUAGE CUDA)
-add_executable(main main.cc)
+set_source_files_properties(main.cu PROPERTIES LANGUAGE CUDA)
+add_executable(main main.cu)
 
 target_link_libraries(main PRIVATE CLUEAlgo_lib CLUEAlgoGPU_lib)
 
 # mainCuplaCPUTBB: this will build the native C++ implementation of CLUE and
-#       its corresponding TBB one  built using CUPLA. Which one to use must be
+#       its corresponding TBB one built using CUPLA. Which one to use must be
 #       selected at runtime via a flag (misleadingly enough called useGPU in
 #       the help text).
+set(tbb_lib -L${TBB_BASE}/lib -ltbb)
 
-#set_source_files_properties(main.cc PROPERTIES LANGUAGE C++)
-#ERROR: 
-#[ 55%] Building C++ object src/CMakeFiles/mainCuplaCPUTBB.dir/main.cc
-#[ 66%] Linking CXX executable mainCuplaCPUTBB
-#cd /afs/cern.ch/user/e/ebrondol/work/key4hep/20210517/clue/build/src && /cvmfs/sft.cern.ch/lcg/releases/CMake/3.14.3-34449/x86_64-centos7-gcc8-opt/bin/cmake -E cmake_link_script CMakeFiles/mainCuplaCPUTBB.dir/link.txt --verbose=1
-#/cvmfs/sft.cern.ch/lcg/releases/gcc/8.3.0-cebb0/x86_64-centos7/bin/g++     CMakeFiles/mainCuplaCPUTBB.dir/main.cc  -o mainCuplaCPUTBB libCLUEAlgo_lib.a -ltbb 
+set_source_files_properties(main.cc PROPERTIES LANGUAGE CXX)
+add_executable(mainCuplaCPUTBB main.cc)
 
-#add_executable(mainCuplaCPUTBB main.cc)
-#target_compile_options(mainCuplaCPUTBB PRIVATE -DUSE_CUPLA -DFOR_TBB)
-#
-#target_link_libraries(mainCuplaCPUTBB PRIVATE CLUEAlgo_lib tbb)# cupla_lib)
-#
-#target_include_directories(mainCuplaCPUTBB PUBLIC
-#  $<BUILD_INTERFACE:${cupla_DIR}/include>
-#  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-#  PUBLIC
-#  $<BUILD_INTERFACE:${cupla_DIR}/alpaka/include>
-#  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+target_compile_options(mainCuplaCPUTBB PRIVATE -DUSE_CUPLA -DFOR_TBB ${tbb_lib})
+target_link_libraries(mainCuplaCPUTBB PRIVATE CLUEAlgo_lib tbb)
+
+target_include_directories(mainCuplaCPUTBB PUBLIC
+  $<BUILD_INTERFACE:${cupla_DIR}/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  PUBLIC
+  $<BUILD_INTERFACE:${cupla_DIR}/alpaka/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  PUBLIC
+  $<BUILD_INTERFACE:${TBB_BASE}/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 # mainCuplaCUDA: this will build the native C++ implementation of CLUE and its
 #       corresponding CUDA one built using CUPLA. Which one to use must be
 #       selected at runtime via a flag.
-
-add_executable(mainCuplaCUDA main.cc)
+add_executable(mainCuplaCUDA main.cu)
 target_compile_options(mainCuplaCUDA PRIVATE -DUSE_CUPLA -DFOR_CUDA -DALPAKA_ACC_GPU_CUDA_ENABLED=1)
 
 target_link_libraries(mainCuplaCUDA PRIVATE CLUEAlgo_lib)

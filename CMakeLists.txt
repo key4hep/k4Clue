@@ -7,6 +7,9 @@ set(CMAKE_CUDA_HOST_COMPILER "g++")
 # Location of the cupla
 set(cupla_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cupla)
 
+# Location of TBB
+set(TBB_BASE "/cvmfs/cms.cern.ch/slc7_amd64_gcc820/external/tbb/2019_U8")
+
 project(
   CLUE
   VERSION 1.0
@@ -22,13 +25,20 @@ if(NOT CMAKE_CXX_STANDARD MATCHES "14|17|20")
   message(FATAL_ERROR "Unsupported C++ standard: ${CMAKE_CXX_STANDARD}")
 endif()
 
-#Disable tests when ready
-#include(CTest)
-
 find_package(Boost REQUIRED)
+if(Boost_FOUND)
+  message(STATUS "Boost package found!")
+endif()
+
 find_package(TBB REQUIRED)
+if(TBB_FOUND)
+  message(STATUS "TBB package found!")
+endif()
 
 add_subdirectory(src)
+
+#Disable tests when ready
+#include(CTest)
 
 message(STATUS "Finished!")
 
