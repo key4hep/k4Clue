@@ -53,7 +53,11 @@ install(TARGETS CLUEAlgo_lib CLUEAlgoGPU_lib ${INSTALL_LIBRARIES}
 # main: this will build the native C++ implementation of CLUE and its
 #       corresponding native CUDA one. Which one to use must be selected at
 #       runtime via a flag.
-#
+
+# A copy with extension cu is needed to set the same source file in 
+# both languages (C++/CUDA)
+configure_file(main.cc main.cu)
+
 set_source_files_properties(main.cu PROPERTIES LANGUAGE CUDA)
 add_executable(main main.cu)
 
