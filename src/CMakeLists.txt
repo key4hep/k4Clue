@@ -38,9 +38,6 @@ target_include_directories(CLUEAlgoGPU_lib PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
-# This depends on (header only) boost
-#target_link_libraries(CLUEAlgo_lib PRIVATE Boost::boost)
-
 # IDEs should put the headers in a nice place
 source_group(
   TREE "${PROJECT_SOURCE_DIR}/include"
