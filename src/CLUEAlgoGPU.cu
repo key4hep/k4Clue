@@ -26,11 +26,11 @@ __global__ void kernel_compute_histogram( LayerTilesGPU *d_hist,
 } //kernel
 
 
-__global__ void kernel_compute_density( LayerTilesGPU *d_hist, 
-                                        PointsPtr d_points, 
-                                        float dc,
-                                        int numberOfPoints
-                                        ) 
+__global__ void kernel_calculate_density( LayerTilesGPU *d_hist, 
+					  PointsPtr d_points, 
+					  float dc,
+					  int numberOfPoints
+					  ) 
 { 
   int i = blockIdx.x * blockDim.x + threadIdx.x;
   if (i < numberOfPoints){
@@ -60,7 +60,7 @@ __global__ void kernel_compute_density( LayerTilesGPU *d_hist,
           float dist_ij = std::sqrt((xi-xj)*(xi-xj) + (yi-yj)*(yi-yj));
           if(dist_ij <= dc) { 
             // sum weights within N_{dc_}(i)
-            rhoi += d_points.weight[j];
+            rhoi += (i == j ? 1.f : 0.5f) * d_points.weight[j];
           }
         } // end of interate inside this bin
       }
@@ -70,13 +70,16 @@ __global__ void kernel_compute_density( LayerTilesGPU *d_hist,
 } //kernel
 
 
-__global__ void kernel_compute_distanceToHigher(LayerTilesGPU* d_hist, 
-                                                PointsPtr d_points, 
-                                                float dm,
-                                                int numberOfPoints
-                                                ) 
+__global__ void kernel_calculate_distanceToHigher(LayerTilesGPU* d_hist, 
+						  PointsPtr d_points,
+						  float outlierDeltaFactor,
+						  float dc,
+						  int numberOfPoints
+						  )
 {
   int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+  float dm = outlierDeltaFactor * dc;
 
   if (i < numberOfPoints){
     int layeri = d_points.layer[i];
@@ -129,7 +132,7 @@ __global__ void kernel_compute_distanceToHigher(LayerTilesGPU* d_hist,
 __global__ void kernel_find_clusters( GPU::VecArray<int,maxNSeeds>* d_seeds,
                                       GPU::VecArray<int,maxNFollowers>* d_followers,
                                       PointsPtr d_points,
-                                      float deltac, float deltao, float rhoc,
+                                      float outlierDeltaFactor, float dc, float rhoc,
                                       int numberOfPoints
                                       ) 
 {
@@ -141,8 +144,8 @@ __global__ void kernel_find_clusters( GPU::VecArray<int,maxNSeeds>* d_seeds,
     // determine seed or outlier
     float deltai = d_points.delta[i];
     float rhoi = d_points.rho[i];
-    bool isSeed = (deltai > deltac) && (rhoi >= rhoc);
-    bool isOutlier = (deltai > deltao) && (rhoi < rhoc);
+    bool isSeed = (deltai > dc) && (rhoi >= rhoc);
+    bool isOutlier = (deltai > outlierDeltaFactor * dc) && (rhoi < rhoc);
 
     if (isSeed) {
       // set isSeed as 1
@@ -201,32 +204,32 @@ __global__ void kernel_assign_clusters( const GPU::VecArray<int,maxNSeeds>* d_se
 } //kernel
 
 
-
-
-
-
 void CLUEAlgoGPU::makeClusters( ) {
 
   copy_todevice();
   clear_set();
 
   ////////////////////////////////////////////
-  // calcualte rho, delta and find seeds 
+  // calculate rho, delta and find seeds
   // 1 point per thread
   ////////////////////////////////////////////
   const dim3 blockSize(1024,1,1);
-  const dim3 gridSize(ceil(points_.n/1024.0),1,1);
-  kernel_compute_histogram <<<gridSize,blockSize>>>(d_hist, d_points, points_.n);
-  kernel_compute_density <<<gridSize,blockSize>>>(d_hist, d_points, dc_, points_.n);
-  kernel_compute_distanceToHigher <<<gridSize,blockSize>>>(d_hist, d_points, dm_, points_.n);
-  kernel_find_clusters <<<gridSize,blockSize>>>(d_seeds, d_followers, d_points, deltac_,deltao_,rhoc_, points_.n);  
+  const dim3 gridSize(ceil(points_.n/static_cast<float>(blockSize.x)),1,1);
+  kernel_compute_histogram<<<gridSize,blockSize>>>(d_hist, d_points, points_.n);
+  kernel_calculate_density<<<gridSize,blockSize>>>(d_hist, d_points, dc_, points_.n);
+  kernel_calculate_distanceToHigher<<<gridSize,blockSize>>>(d_hist, d_points,
+							    outlierDeltaFactor_, dc_,
+							    points_.n);
+  kernel_find_clusters<<<gridSize,blockSize>>>(d_seeds, d_followers, d_points,
+					       outlierDeltaFactor_, dc_, rhoc_,
+					       points_.n);
   
   ////////////////////////////////////////////
   // assign clusters
   // 1 point per seeds
   ////////////////////////////////////////////
   const dim3 gridSize_nseeds(ceil(maxNSeeds/1024.0),1,1);
-  kernel_assign_clusters <<<gridSize_nseeds,blockSize>>>(d_seeds, d_followers, d_points, points_.n);
+  kernel_assign_clusters<<<gridSize_nseeds,blockSize>>>(d_seeds, d_followers, d_points, points_.n);
 
   copy_tohost();
 }

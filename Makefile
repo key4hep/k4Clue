@@ -87,7 +87,7 @@ CLUEAlgo.cuda.o:src/CLUEAlgoGPU.cu include/CLUEAlgoGPU.h
 CLUEAlgo.o:src/CLUEAlgo.cc include/CLUEAlgo.h
 	$(EXEC) $(NVCC) $(INCLUDES) $(NVCCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
-main.o:src/main.cc
+main.o:src/main.cc include/CLUEAlgo.h include/CLUEAlgoGPU.h
 	$(EXEC) $(NVCC) $(INCLUDES) $(NVCCFLAGS) $(CUDA_FLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
 main: main.o CLUEAlgo.cuda.o CLUEAlgo.o

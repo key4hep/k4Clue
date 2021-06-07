@@ -14,7 +14,7 @@
 
 
 void mainRun( std::string inputFileName, std::string outputFileName,
-              float dc, float deltao, float deltac, float rhoc,
+              float dc, float rhoc,
               bool useGPU, int repeats, bool verbose  ) {
 
   //////////////////////////////
@@ -48,9 +48,9 @@ void mainRun( std::string inputFileName, std::string outputFileName,
   std::cout << "Start to run CLUE algorithm" << std::endl;
   if (useGPU) {
 #ifndef USE_CUPLA
-    CLUEAlgoGPU clueAlgo(dc, deltao, deltac, rhoc, verbose);
+    CLUEAlgoGPU clueAlgo(dc, rhoc, verbose);
     for (int r = 0; r<repeats; r++){
-      clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]);
+      clueAlgo.setPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0]);
       // measure excution time of makeClusters
       auto start = std::chrono::high_resolution_clock::now();
       clueAlgo.makeClusters();
@@ -62,9 +62,9 @@ void mainRun( std::string inputFileName, std::string outputFileName,
   clueAlgo.verboseResults(outputFileName, -1);
 
 #else
-  CLUEAlgoCupla<cupla::Acc> clueAlgo(dc, deltao, deltac, rhoc, verbose);
+  CLUEAlgoCupla<cupla::Acc> clueAlgo(dc, rhoc, verbose);
   for (int r = 0; r<repeats; r++){
-    clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]);
+    clueAlgo.setPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0]);
     // measure excution time of makeClusters
     auto start = std::chrono::high_resolution_clock::now();
     clueAlgo.makeClusters();
@@ -78,9 +78,9 @@ void mainRun( std::string inputFileName, std::string outputFileName,
 
 
   } else {
-    CLUEAlgo clueAlgo(dc, deltao, deltac, rhoc, verbose);
+    CLUEAlgo clueAlgo(dc, rhoc, verbose);
     for (int r = 0; r<repeats; r++){
-      clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]);
+      clueAlgo.setPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0]);
       // measure excution time of makeClusters
       auto start = std::chrono::high_resolution_clock::now();
       clueAlgo.makeClusters();
@@ -104,29 +104,27 @@ int main(int argc, char *argv[]) {
   //////////////////////////////
   // MARK -- set algorithm parameters
   //////////////////////////////
-  float dc=20, deltao=20, deltac=20, rhoc=80;
+  float dc=20, rhoc=80;
   bool useGPU=false;
   int totalNumberOfEvent = 10;
   bool verbose=false;
 
   int TBBNumberOfThread = 1;
 
-  if (argc == 9 || argc == 10) {
+  if (argc == 7 || argc == 8) {
     dc = std::stof(argv[2]);
-    deltao = std::stof(argv[3]);
-    deltac = std::stof(argv[4]);
-    rhoc = std::stof(argv[5]);
-    useGPU = (std::stoi(argv[6])==1)? true:false;
-    totalNumberOfEvent = std::stoi(argv[7]);
-    verbose = (std::stoi(argv[8])==1)? true:false;
-    if (argc == 10) {
-      TBBNumberOfThread = std::stoi(argv[9]);
+    rhoc = std::stof(argv[3]);
+    useGPU = (std::stoi(argv[4])==1)? true:false;
+    totalNumberOfEvent = std::stoi(argv[5]);
+    verbose = (std::stoi(argv[6])==1)? true:false;
+    if (argc == 8) {
+      TBBNumberOfThread = std::stoi(argv[7]);
       if (verbose) {
         std::cout << "Using " << TBBNumberOfThread << " TBB Threads" << std::endl;
       }
     }
   } else {
-    std::cout << "bin/main [fileName] [dc] [deltao] [deltac] [rhoc] [useGPU] [totalNumberOfEvent] [verbose] [NumTBBThreads]" << std::endl;
+    std::cout << "bin/main [fileName] [dc] [rhoc] [useGPU] [totalNumberOfEvent] [verbose] [NumTBBThreads]" << std::endl;
     return 1;
   }
 
@@ -153,10 +151,6 @@ int main(int argc, char *argv[]) {
   outputFileName.append(underscore);
   outputFileName.append(std::to_string(int(dc)));
   outputFileName.append(underscore);
-  outputFileName.append(std::to_string(int(deltao)));
-  outputFileName.append(underscore);
-  outputFileName.append(std::to_string(int(deltac)));
-  outputFileName.append(underscore);
   outputFileName.append(std::to_string(int(rhoc)));
   outputFileName.append(suffix);
   std::cout << "output file " << outputFileName << std::endl;
@@ -166,7 +160,7 @@ int main(int argc, char *argv[]) {
   // MARK -- test run
   //////////////////////////////
   mainRun(inputFileName, outputFileName,
-          dc, deltao, deltac, rhoc,
+          dc, rhoc,
           useGPU, totalNumberOfEvent,verbose);
 
   return 0;

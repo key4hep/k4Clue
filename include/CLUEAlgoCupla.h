@@ -48,8 +48,8 @@ template<typename Acc>
 class CLUEAlgoCupla : public CLUEAlgo {
 
   public:
-    CLUEAlgoCupla(float dc, float d0, float deltac, float rhoc, bool verbose)
-      : CLUEAlgo(dc,d0,deltac,rhoc,verbose)
+    CLUEAlgoCupla(float dc, float rhoc, bool verbose)
+      : CLUEAlgo(dc, rhoc, verbose)
       {
       init_device();
     }
@@ -203,7 +203,7 @@ struct kernel_compute_density {
                 std::sqrt((xi - xj) * (xi - xj) + (yi - yj) * (yi - yj));
             if (dist_ij <= dc) {
               // sum weights within N_{dc_}(i)
-              rhoi += d_points.weight[j];
+              rhoi += (i == j ? 1.f : 0.5f) * d_points.weight[j];
             }
           } // end of interate inside this bin
         }
@@ -217,10 +217,14 @@ struct kernel_compute_distanceToHigher {
   template <typename T_Acc>
   ALPAKA_FN_ACC
   void operator()(T_Acc const &acc, LayerTilesCupla<T_Acc> *d_hist,
-      PointsPtr d_points, float dm,
-      int numberOfPoints) const {
+		  PointsPtr d_points,
+		  float outlierDeltaFactor,
+		  float dc,
+		  int numberOfPoints) const {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
+    float dm = outlierDeltaFactor * dc;
+    
     if (i < numberOfPoints) {
       int layeri = d_points.layer[i];
 
@@ -274,8 +278,8 @@ struct kernel_find_clusters {
   template <typename T_Acc>
   ALPAKA_FN_ACC
   void operator()(T_Acc const &acc, GPUCupla::VecArray<int, maxNSeedsCupla> *d_seeds,
-             GPUCupla::VecArray<int, maxNFollowersCupla> *d_followers, PointsPtr d_points,
-             float deltac, float deltao, float rhoc, int numberOfPoints) const {
+		  GPUCupla::VecArray<int, maxNFollowersCupla> *d_followers, PointsPtr d_points,
+		  float outlierDeltaFactor, float dc, float rhoc, int numberOfPoints) const {
 
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -285,8 +289,8 @@ struct kernel_find_clusters {
       // determine seed or outlier
       float deltai = d_points.delta[i];
       float rhoi = d_points.rho[i];
-      bool isSeed = (deltai > deltac) && (rhoi >= rhoc);
-      bool isOutlier = (deltai > deltao) && (rhoi < rhoc);
+      bool isSeed = (deltai > dc) && (rhoi >= rhoc);
+      bool isOutlier = (deltai > outlierDeltaFactor * dc) && (rhoi < rhoc);
 
       if (isSeed) {
         // set isSeed as 1
@@ -400,13 +404,13 @@ void CLUEAlgoCupla<Acc>::makeClusters() {
 
 
   start = std::chrono::high_resolution_clock::now();
-  CUPLA_KERNEL(kernel_compute_distanceToHigher)(gridSize, blockSize, 0, 0)(d_hist, d_points, dm_, points_.n);
+  CUPLA_KERNEL(kernel_compute_distanceToHigher)(gridSize, blockSize, 0, 0)(d_hist, d_points, outlierDeltaFactor_, dc_, points_.n);
   finish = std::chrono::high_resolution_clock::now();
   elapsed = finish - start;
   std::cout << "--- calculateLocalDensity:     " << elapsed.count() *1000 << " ms\n";
 
   start = std::chrono::high_resolution_clock::now();
-  CUPLA_KERNEL(kernel_find_clusters)(gridSize, blockSize, 0, 0)(d_seeds, d_followers, d_points, deltac_, deltao_, rhoc_, points_.n);
+  CUPLA_KERNEL(kernel_find_clusters)(gridSize, blockSize, 0, 0)(d_seeds, d_followers, d_points, outlierDeltaFactor_, dc_, rhoc_, points_.n);
   finish = std::chrono::high_resolution_clock::now();
   elapsed = finish - start;
   std::cout << "--- findSeedAndFollowers:      " << elapsed.count() *1000 << " ms\n";

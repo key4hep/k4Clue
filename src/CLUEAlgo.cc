@@ -4,11 +4,11 @@ void CLUEAlgo::makeClusters(){
   std::array<LayerTiles, NLAYERS> allLayerTiles;
   // start clustering
   auto start = std::chrono::high_resolution_clock::now();
+
   prepareDataStructures(allLayerTiles);
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
   std::cout << "--- prepareDataStructures:     " << elapsed.count() *1000 << " ms\n";
-
 
   start = std::chrono::high_resolution_clock::now();
   calculateLocalDensity(allLayerTiles);
@@ -74,14 +74,15 @@ void CLUEAlgo::calculateDistanceToHigher( std::array<LayerTiles, NLAYERS> & allL
   float dm = outlierDeltaFactor_ * dc_;
   for(int i = 0; i < points_.n; i++) {
     // default values of delta and nearest higher for i
-    float maxDelta = std::numeric_limits<float>::max();
-    float delta_i = maxDelta;
+    float delta_i = std::numeric_limits<float>::max();
     int nearestHigher_i = -1;
+    float xi = points_.x[i];
+    float yi = points_.y[i];
+    float rho_i = points_.rho[i];
 
+    //get search box
     LayerTiles& lt = allLayerTiles[points_.layer[i]];
-
-    // get search box 
-    std::array<int,4> search_box = lt.searchBox(points_.x[i]-dm, points_.x[i]+dm, points_.y[i]-dm, points_.y[i]+dm);
+    std::array<int,4> search_box = lt.searchBox(xi-dm, xi+dm, yi-dm, yi+dm);
     
     // loop over all bins in the search box
     for(int xBin = search_box[0]; xBin < search_box[1]+1; ++xBin) {
@@ -96,9 +97,9 @@ void CLUEAlgo::calculateDistanceToHigher( std::array<LayerTiles, NLAYERS> & allL
         for (int binIter = 0; binIter < binSize; binIter++) {
           int j = lt[binId][binIter];
           // query N'_{dm}(i)
-          bool foundHigher = (points_.rho[j] > points_.rho[i]);
+          bool foundHigher = (points_.rho[j] > rho_i);
           // in the rare case where rho is the same, use detid
-          foundHigher = foundHigher || ((points_.rho[j] == points_.rho[i]) && (j>i) );
+          foundHigher = foundHigher || ((points_.rho[j] == rho_i) && (j>i) );
           float dist_ij = distance(i, j);
           if(foundHigher && dist_ij <= dm) { // definition of N'_{dm}(i)
             // find the nearest point within N'_{dm}(i)
@@ -128,9 +129,13 @@ void CLUEAlgo::findAndAssignClusters(){
   for(int i = 0; i < points_.n; i++) {
     // initialize clusterIndex
     points_.clusterIndex[i] = -1;
+
+    float deltai = points_.delta[i];
+    float rhoi = points_.rho[i];
+
     // determine seed or outlier 
-    bool isSeed = (points_.delta[i] > dc_) and (points_.rho[i] >= rhoc_);
-    bool isOutlier = (points_.delta[i] > outlierDeltaFactor_ * dc_) and (points_.rho[i] < rhoc_);
+    bool isSeed = (deltai > dc_) and (rhoi >= rhoc_);
+    bool isOutlier = (deltai > outlierDeltaFactor_ * dc_) and (rhoi < rhoc_);
     if (isSeed)
       {
 	// set isSeed as 1
@@ -172,141 +177,6 @@ void CLUEAlgo::findAndAssignClusters(){
   elapsed = finish - start;
   std::cout << "--- assignClusters:            " << elapsed.count() *1000 << " ms\n";
 
-}
-
-//get an array that tells which hits are seeds, based on their density and assigned cluster
-//only works if the function makeClusters() was run first
-void CLUEAlgo::infoSeeds()
-{
-  int noutliers = 0;
-  std::vector<int> clusterIdxUsed;
-  for(int i = 0; i < points_.n; i++)
-    {
-      if(points_.clusterIndex[i] == -1) { //no outliers
-	noutliers += 1;
-	continue;
-      }
-      if( std::find(clusterIdxUsed.begin(), clusterIdxUsed.end(), points_.clusterIndex[i]) == clusterIdxUsed.end() ) //not found
-	{
-	  clusterIdxUsed.push_back( points_.clusterIndex[i] );
-	  float maxrho = -1.f; //a negative density is lower than any physical hit density
-	  int seedIdx = i; //by default the first hit is the seed (always true when the cluster only has one hit)
-	  for(int j = i+1; j < points_.n; j++)
-	    {
-	      if(points_.clusterIndex[j] == points_.clusterIndex[i] and points_.rho[j] > maxrho)
-		{
-		  maxrho = points_.rho[j];
-		  seedIdx = j;
-		}
-	    }
-	  points_.isSeed[seedIdx] = true;
-	} 
-    }
-}
-
-void CLUEAlgo::infoHits()
-{
-  for(int i = 0; i < points_.n; i++)
-    {
-      if(points_.clusterIndex[i] == -1) //no outliers
-	continue;
-      for(int j = 0; j < points_.n; j++)
-	{
-	  if(points_.clusterIndex[j] == points_.clusterIndex[i])
-	    points_.nHitsCluster[i] += 1;
-	}
-    }
-}
-  
-std::vector<float> CLUEAlgo::getHitsPosX() {
-  if(points_.x.empty()) {
-    std::cout << "ERROR: CLUEAlgo::getHitsPosX()" << std::endl;
-    throw std::bad_function_call();
-  }
-  return points_.x;
-}
-
-std::vector<float> CLUEAlgo::getHitsPosY() {
-  if(points_.y.empty()) {
-    std::cout << "ERROR: CLUEAlgo::getHitsPosY()" << std::endl;
-    throw std::bad_function_call();
-  }
-  return points_.y;
-}
-
-std::vector<float> CLUEAlgo::getHitsWeight() {
-  if(points_.weight.empty()) {
-    std::cout << "ERROR: CLUEAlgo::getHitsWeight()" << std::endl;
-    throw std::bad_function_call();
-  }
-  return points_.weight;
-}
-
-std::vector<int> CLUEAlgo::getHitsClusterId() {
-  if(points_.clusterIndex.empty()) {
-    std::cout << "ERROR: CLUEAlgo::getHitsClusterId()" << std::endl;
-    throw std::bad_function_call();
-  }
-  return points_.clusterIndex;
-}
-
-std::vector<int> CLUEAlgo::getHitsLayerId() {
-  if(points_.layer.empty()) {
-    std::cout << "ERROR: CLUEAlgo::getHitsLayerId()" << std::endl;
-    throw std::bad_function_call();
-  }
-  std::vector<int> layer_output(points_.layer.size());
-  for(unsigned int i=0; i<points_.layer.size(); ++i)
-    layer_output[i] = points_.layer[i] + 1;
-  return layer_output;
-}
-
-std::vector<float> CLUEAlgo::getHitsRho() {
-  if(points_.rho.empty()) {
-    std::cout << "ERROR: CLUEAlgo::getHitsRho()" << std::endl;
-    throw std::bad_function_call();
-  }
-  return points_.rho;
-}
-
-std::vector<float> CLUEAlgo::getHitsDistanceToHighest() {
-  if(points_.delta.empty()) {
-    std::cout << "ERROR: CLUEAlgo::getDistanceToHighest()" << std::endl;
-    throw std::bad_function_call();
-  }
-  return points_.delta;
-}
-
-std::vector<bool> CLUEAlgo::getHitsSeeds() {
-  if(points_.isSeed.empty()) {
-    std::cout << "ERROR: CLUEAlgo::getHitsSeeds(): empty" << std::endl;
-    throw std::bad_function_call();
-  }
-  if( std::all_of(points_.isSeed.begin(), points_.isSeed.end(), [](int i) { return i==0; }) ) {
-    //this can only happen if all the hits were outliers
-    if( ! std::all_of(points_.clusterIndex.begin(), points_.clusterIndex.end(), [](int i) { return i==-1; }) ) 
-      {
-	std::cout << "ERROR: CLUEAlgo::getHitsSeeds(): all the elements are zero" << std::endl;
-	throw std::bad_function_call();
-      }
-  }
-  return points_.isSeed;
-}
-
-std::vector<unsigned int> CLUEAlgo::getNHitsInCluster() {
-  if(points_.nHitsCluster.empty()) {
-    std::cout << "ERROR: CLUEAlgo::getHitsSeeds(): empty" << std::endl;
-    throw std::bad_function_call();
-  }
-  if( std::all_of(points_.nHitsCluster.begin(), points_.nHitsCluster.end(), [](int i) { return i==0; }) ) {
-    //this can only happen if all the hits were outliers (see infoHits())
-    if( ! std::all_of(points_.clusterIndex.begin(), points_.clusterIndex.end(), [](int i) { return i==-1; }) )
-      {
-	std::cout << "ERROR: CLUEAlgo::getHitsSeeds(): all the elements are zero. Do not forget to call CLUEAlgo::infoHits()" << std::endl;
-	throw std::bad_function_call();
-      }
-  }
-  return points_.nHitsCluster;
 }
 
 inline float CLUEAlgo::distance(int i, int j) const {
