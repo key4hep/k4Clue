@@ -31,10 +31,11 @@ make
 ```
 
 ### 2. Run CLUE
-CLUE needs two parameters: `dc` and `rhoc` (in the past four parameters were needed: `dc`, `deltao`, `deltac` and `rhoc`; the two extra parameters can now be inferred from `dc` and `rhoc`)
+CLUE needs three parameters: `dc`, `rhoc` and `outlierDeltaFactor` (in the past four parameters were needed: `dc`, `deltao`, `deltac` and `rhoc`)
 
 _dc_ is the critical distance used to compute the local density.
 _rhoc_ is the minimum local density for a point to be promoted as a Seed.
+_outlierDeltaFactor_ is  a multiplicative constant to be applied to `dc`.
 
 ( _deltao_ is the maximum distance for a point to be linked to a nearest higher
 point.
@@ -43,8 +44,8 @@ as a Seed. )
 
 If the projects compiles without errors, you can go run the CLUE algorithm by
 ```bash
-# ./main [fileName] [dc] [rhoc] [useGPU] [totalNumberOfEvent] [verbose]
-./main aniso_1000 20 50 0 10 1
+# ./main [fileName] [dc] [rhoc] [outlierDeltaFactor] [useGPU] [totalNumberOfEvent] [verbose]
+./main aniso_1000 20 25 2 0 10 1
 ```
 
 The input files are `data/input/*.csv` with columns 

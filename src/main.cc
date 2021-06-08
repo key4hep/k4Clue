@@ -14,7 +14,7 @@
 
 
 void mainRun( std::string inputFileName, std::string outputFileName,
-              float dc, float rhoc,
+              float dc, float rhoc, float outlierDeltaFactor,
               bool useGPU, int repeats, bool verbose  ) {
 
   //////////////////////////////
@@ -48,21 +48,25 @@ void mainRun( std::string inputFileName, std::string outputFileName,
   std::cout << "Start to run CLUE algorithm" << std::endl;
   if (useGPU) {
 #ifndef USE_CUPLA
-    CLUEAlgoGPU clueAlgo(dc, rhoc, verbose);
-    for (int r = 0; r<repeats; r++){
+    CLUEAlgoGPU clueAlgo(dc, rhoc, outlierDeltaFactor,
+			 verbose);
+    for (unsigned r = 0; r<repeats; r++){
       clueAlgo.setPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0]);
       // measure excution time of makeClusters
       auto start = std::chrono::high_resolution_clock::now();
       clueAlgo.makeClusters();
       auto finish = std::chrono::high_resolution_clock::now();
       std::chrono::duration<double> elapsed = finish - start;
-      std::cout << "Elapsed time: " << elapsed.count() *1000 << " ms\n";
+      std::cout << "Iteration " << r;
+      std::cout << " | Elapsed time: " << elapsed.count()*1000 << " ms\n";
     }
-  // output result to outputFileName. -1 means all points.
-  clueAlgo.verboseResults(outputFileName, -1);
+
+    // output result to outputFileName. -1 means all points.
+    clueAlgo.verboseResults(outputFileName, -1);
 
 #else
-  CLUEAlgoCupla<cupla::Acc> clueAlgo(dc, rhoc, verbose);
+    CLUEAlgoCupla<cupla::Acc> clueAlgo(dc, rhoc, outlierDeltaFactor,
+				       verbose);
   for (int r = 0; r<repeats; r++){
     clueAlgo.setPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0]);
     // measure excution time of makeClusters
@@ -72,13 +76,15 @@ void mainRun( std::string inputFileName, std::string outputFileName,
     std::chrono::duration<double> elapsed = finish - start;
     std::cout << "Elapsed time: " << elapsed.count() *1000 << " ms\n";
   }
+
   // output result to outputFileName. -1 means all points.
-  clueAlgo.verboseResults(outputFileName, -1);
+  if(verbose)
+    clueAlgo.verboseResults(outputFileName, -1);
 #endif
 
 
   } else {
-    CLUEAlgo clueAlgo(dc, rhoc, verbose);
+    CLUEAlgo clueAlgo(dc, rhoc, outlierDeltaFactor, verbose);
     for (int r = 0; r<repeats; r++){
       clueAlgo.setPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0]);
       // measure excution time of makeClusters
@@ -88,13 +94,13 @@ void mainRun( std::string inputFileName, std::string outputFileName,
       std::chrono::duration<double> elapsed = finish - start;
       std::cout << "Elapsed time: " << elapsed.count() *1000 << " ms\n";
     }
+
     // output result to outputFileName. -1 means all points.
-    clueAlgo.verboseResults(outputFileName, -1);
+    if(verbose)
+      clueAlgo.verboseResults(outputFileName, -1);
   }
 
-
   std::cout << "Finished running CLUE algorithm" << std::endl;
-  std::cout << std::endl;
 } // end of testRun()
 
 
@@ -104,27 +110,29 @@ int main(int argc, char *argv[]) {
   //////////////////////////////
   // MARK -- set algorithm parameters
   //////////////////////////////
-  float dc=20, rhoc=80;
+  float dc=20.f, rhoc=80.f, outlierDeltaFactor=2.f;
   bool useGPU=false;
   int totalNumberOfEvent = 10;
   bool verbose=false;
 
   int TBBNumberOfThread = 1;
 
-  if (argc == 7 || argc == 8) {
+  if (argc == 8 || argc == 9) {
     dc = std::stof(argv[2]);
     rhoc = std::stof(argv[3]);
-    useGPU = (std::stoi(argv[4])==1)? true:false;
-    totalNumberOfEvent = std::stoi(argv[5]);
-    verbose = (std::stoi(argv[6])==1)? true:false;
-    if (argc == 8) {
-      TBBNumberOfThread = std::stoi(argv[7]);
+    outlierDeltaFactor = std::stof(argv[4]);
+    useGPU = (std::stoi(argv[5])==1)? true:false;
+    totalNumberOfEvent = std::stoi(argv[6]);
+    verbose = (std::stoi(argv[7])==1)? true:false;
+    if (argc == 9) {
+      TBBNumberOfThread = std::stoi(argv[8]);
       if (verbose) {
-        std::cout << "Using " << TBBNumberOfThread << " TBB Threads" << std::endl;
+        std::cout << "Using " << TBBNumberOfThread;
+	std::cout << " TBB Threads" << std::endl;
       }
     }
   } else {
-    std::cout << "bin/main [fileName] [dc] [rhoc] [useGPU] [totalNumberOfEvent] [verbose] [NumTBBThreads]" << std::endl;
+    std::cout << "bin/main [fileName] [dc] [rhoc] [outlierDeltaFactor] [useGPU] [totalNumberOfEvent] [verbose] [NumTBBThreads]" << std::endl;
     return 1;
   }
 
@@ -143,7 +151,7 @@ int main(int argc, char *argv[]) {
   std::string inputFileName = "data/input/";
   inputFileName.append(argv[1]);
   inputFileName.append(suffix);
-  std::cout << "input file " << inputFileName << std::endl;
+  std::cout << "Input file: " << inputFileName << std::endl;
 
 
   std::string outputFileName = "data/output/";
@@ -152,16 +160,18 @@ int main(int argc, char *argv[]) {
   outputFileName.append(std::to_string(int(dc)));
   outputFileName.append(underscore);
   outputFileName.append(std::to_string(int(rhoc)));
+  outputFileName.append(underscore);
+  outputFileName.append(std::to_string(int(outlierDeltaFactor)));
   outputFileName.append(suffix);
-  std::cout << "output file " << outputFileName << std::endl;
+  std::cout << "Output file: " << outputFileName << std::endl;
 
 
   //////////////////////////////
   // MARK -- test run
   //////////////////////////////
   mainRun(inputFileName, outputFileName,
-          dc, rhoc,
-          useGPU, totalNumberOfEvent,verbose);
+          dc, rhoc, outlierDeltaFactor, 
+          useGPU, totalNumberOfEvent, verbose);
 
   return 0;
 }

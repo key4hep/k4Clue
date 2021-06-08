@@ -48,8 +48,8 @@ template<typename Acc>
 class CLUEAlgoCupla : public CLUEAlgo {
 
   public:
-    CLUEAlgoCupla(float dc, float rhoc, bool verbose)
-      : CLUEAlgo(dc, rhoc, verbose)
+    CLUEAlgoCupla(float dc, float rhoc, float outlierDeltaFactor, bool verbose)
+      : CLUEAlgo(dc, rhoc, outlierDeltaFactor, verbose)
       {
       init_device();
     }

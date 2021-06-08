@@ -26,7 +26,7 @@ class CLUEAlgoGPU : public CLUEAlgo {
 
   public:
     // constructor
-  CLUEAlgoGPU(float dc, float kappa, bool verbose) : CLUEAlgo(dc, kappa, verbose) {
+  CLUEAlgoGPU(float dc, float rhoc, float outlierDeltaFactor, bool verbose) : CLUEAlgo(dc, rhoc, outlierDeltaFactor, verbose) {
       init_device();
     }
     // destructor

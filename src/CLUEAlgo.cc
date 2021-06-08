@@ -22,7 +22,7 @@ void CLUEAlgo::makeClusters(){
   elapsed = finish - start;
   std::cout << "--- calculateDistanceToHigher: " << elapsed.count() *1000 << " ms\n";
 
-  findAndAssignClusters();
+  findAndAssignClusters();  
 }
 
 
@@ -37,7 +37,7 @@ void CLUEAlgo::prepareDataStructures( std::array<LayerTiles, NLAYERS> & allLayer
 void CLUEAlgo::calculateLocalDensity( std::array<LayerTiles, NLAYERS> & allLayerTiles ){
 
   // loop over all points
-  for(int i = 0; i < points_.n; i++) {
+  for(unsigned i = 0; i < points_.n; i++) {
     LayerTiles& lt = allLayerTiles[points_.layer[i]];
 
     // get search box
@@ -72,7 +72,7 @@ void CLUEAlgo::calculateLocalDensity( std::array<LayerTiles, NLAYERS> & allLayer
 void CLUEAlgo::calculateDistanceToHigher( std::array<LayerTiles, NLAYERS> & allLayerTiles ){
   // loop over all points
   float dm = outlierDeltaFactor_ * dc_;
-  for(int i = 0; i < points_.n; i++) {
+  for(unsigned i = 0; i < points_.n; i++) {
     // default values of delta and nearest higher for i
     float delta_i = std::numeric_limits<float>::max();
     int nearestHigher_i = -1;
@@ -126,7 +126,7 @@ void CLUEAlgo::findAndAssignClusters(){
   // find cluster seeds and outlier
   std::vector<int> localStack;
   // loop over all points
-  for(int i = 0; i < points_.n; i++) {
+  for(unsigned i = 0; i < points_.n; i++) {
     // initialize clusterIndex
     points_.clusterIndex[i] = -1;
 
@@ -166,7 +166,7 @@ void CLUEAlgo::findAndAssignClusters(){
     localStack.pop_back();
 
     // loop over followers
-    for( int j : followers){
+    for(int j : followers){
       // pass id from i to a i's follower
       points_.clusterIndex[j] = points_.clusterIndex[i];
       // push this follower to localStack
