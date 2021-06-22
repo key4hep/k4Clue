@@ -10,9 +10,8 @@ Z.Chen[1], A. Di Pilato[2,3], F. Pantaleo[4], M. Rovere[4], C. Seez[5]
 
 The pre-requisite dependencies are `>=gcc7`, `<=gcc8.3`, `>=cuda10`, `Boost`, `TBB`. Fork this repo if developers.
 
-* **On a CERN machine with GPUs:** Source the LCG View containing the correct version of GCC and Boost:
+* **On a CERN machine:** Source the LCG View containing the correct version of GCC and Boost:
 ```bash
-source /cvmfs/sw.hsf.org/key4hep/setup.sh
 source /cvmfs/sft.cern.ch/lcg/views/LCG_96/x86_64-centos7-gcc8-opt/setup.sh
 source /cvmfs/sft.cern.ch/lcg/contrib/gcc/8.3.0/x86_64-centos7/setup.sh
 
@@ -26,6 +25,8 @@ cmake --build build
 mkdir install
 cd build/ ; cmake .. -DCMAKE_INSTALL_PREFIX=../install; make install
 ```
+If GPU/nvcc are available in the machine, the GPU version of CLUE will also be installed.
+The path to the nvcc compiler can be changed in `CmakeLists.txt` if needed.
 
 * **On an Ubuntu machine with GPUs:** Install Boost and TBB first.
 ```bash
@@ -35,7 +36,13 @@ sudo apt-get install libboost-all-dev
 # then setup this project
 git clone --recurse-submodules https://gitlab.cern.ch/kalos/clue.git
 cd clue
-make
+cmake -S . -B build
+cmake --build build
+
+# if installation is needed
+mkdir install
+cd build/ ; cmake .. -DCMAKE_INSTALL_PREFIX=../install; make install
+```
 ```
 
 ### 2. Run CLUE
@@ -50,6 +57,7 @@ _rhoc_ is the minimum local density for a point to be promoted as a Seed.
 
 If the projects compiles without errors, you can go run the CLUE algorithm by
 ```bash
+cd build/src/
 # ./main [fileName] [dc] [deltao] [deltac] [rhoc] [useGPU] [totalNumberOfEvent] [verbose]
 ./main aniso_1000 20 20 50 50 0 10 1
 ```
