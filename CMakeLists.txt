@@ -18,7 +18,6 @@ if(CUDA_FOUND)
   message(STATUS "Set up CUDA")
 
   # Location of the CUDA Toolkit
-  set(CMAKE_CUDA_COMPILER "/usr/local/cuda-10.2/bin/nvcc")
   set(CMAKE_CUDA_HOST_COMPILER "g++")
   set(CMAKE_CUDA_ARCHITECTURES "60;70;75")
 
