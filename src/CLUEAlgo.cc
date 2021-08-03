@@ -59,7 +59,8 @@ void CLUEAlgo::calculateLocalDensity( std::array<LayerTiles, NLAYERS> & allLayer
           float dist_ij = distance(i, j);
           if(dist_ij <= dc_) {
             // sum weights within N_{dc_}(i)
-            points_.rho[i] += points_.weight[j];
+            points_.rho[i] += (i == j ? 1.f : 0.5f) * points_.weight[j];
+          } else {
           }
         } // end of interate inside this bin
 

@@ -12,8 +12,7 @@ The pre-requisite dependencies are `>=gcc7`, `<=gcc8.3`, `>=cuda10`, `Boost`, `T
 
 * **On a CERN machine:** Source the LCG View containing the correct version of GCC and Boost:
 ```bash
-source /cvmfs/sft.cern.ch/lcg/views/LCG_96/x86_64-centos7-gcc8-opt/setup.sh
-source /cvmfs/sft.cern.ch/lcg/contrib/gcc/8.3.0/x86_64-centos7/setup.sh
+source /cvmfs/sw.hsf.org/key4hep/setup.sh
 
 # then setup this project
 git clone --recurse-submodules https://gitlab.cern.ch/kalos/clue.git
@@ -57,9 +56,9 @@ _rhoc_ is the minimum local density for a point to be promoted as a Seed.
 
 If the projects compiles without errors, you can go run the CLUE algorithm by
 ```bash
-cd build/src/
-# ./main [fileName] [dc] [deltao] [deltac] [rhoc] [useGPU] [totalNumberOfEvent] [verbose]
-./main aniso_1000 20 20 50 50 0 10 1
+cd build/src
+# ./main [fileName] [dc] [deltao] [deltac] [rhoc] [useParallel] [doBarrel] [verbose]
+./main ../../data/input/aniso_1000 20 20 50 50 0 1 1
 ```
 
 The input files are `data/input/*.csv` with columns 

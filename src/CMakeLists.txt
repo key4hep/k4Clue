@@ -21,7 +21,7 @@ endif(CUDA_FOUND)
 
 ################################################################################
 
-# Make an automatic library - will be static or dynamic based on user setting
+## Make an automatic library - will be static or dynamic based on user setting
 add_library(CLUEAlgo_lib CLUEAlgo.cc ${HEADER_LIST})
 
 # We need this directory, and users of our library will need it too
@@ -64,20 +64,21 @@ if(CUDA_FOUND)
   set_source_files_properties(main.cu PROPERTIES LANGUAGE CUDA)
   add_executable(main main.cu)
   
-  target_link_libraries(main PRIVATE CLUEAlgo_lib CLUEAlgoGPU_lib)
+  target_compile_options(main PRIVATE -DUSE_EDM4HEP)
+  target_link_libraries(main PRIVATE CLUEAlgo_lib CLUEAlgoGPU_lib edm4hep podio::podioRootIO DD4hep::DDCore)
 endif(CUDA_FOUND)
 
 # mainCuplaCPUTBB: this will build the native C++ implementation of CLUE and
 #       its corresponding TBB one built using CUPLA. Which one to use must be
 #       selected at runtime via a flag (misleadingly enough called useGPU in
 #       the help text).
-set(tbb_lib -L${TBB_BASE}/lib -ltbb)
+set(tbb_lib -ltbb)
 
 set_source_files_properties(main.cc PROPERTIES LANGUAGE CXX)
 add_executable(mainCuplaCPUTBB main.cc)
 
-target_compile_options(mainCuplaCPUTBB PRIVATE -DUSE_CUPLA -DFOR_TBB ${tbb_lib})
-target_link_libraries(mainCuplaCPUTBB PRIVATE CLUEAlgo_lib tbb)
+target_compile_options(mainCuplaCPUTBB PRIVATE -DUSE_CUPLA -DFOR_TBB ${tbb_lib} -DUSE_EDM4HEP)
+target_link_libraries(mainCuplaCPUTBB PRIVATE CLUEAlgo_lib TBB::tbb EDM4HEP::edm4hep podio::podioRootIO DD4hep::DDCore)
 
 target_include_directories(mainCuplaCPUTBB PUBLIC
   $<BUILD_INTERFACE:${cupla_DIR}/include>
@@ -96,8 +97,9 @@ if(CUDA_FOUND)
   add_executable(mainCuplaCUDA main.cu)
   target_compile_options(mainCuplaCUDA PRIVATE -DUSE_CUPLA -DFOR_CUDA -DALPAKA_ACC_GPU_CUDA_ENABLED=1)
   
-  target_link_libraries(mainCuplaCUDA PRIVATE CLUEAlgo_lib)
-  
+  target_compile_options(mainCuplaCUDA PRIVATE -DUSE_EDM4HEP)
+  target_link_libraries(mainCuplaCUDA PRIVATE CLUEAlgo_lib edm4hep podio::podioRootIO DD4hep::DDCore)
+
   target_include_directories(mainCuplaCUDA PUBLIC
     $<BUILD_INTERFACE:${cupla_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
@@ -105,4 +107,3 @@ if(CUDA_FOUND)
     $<BUILD_INTERFACE:${cupla_DIR}/alpaka/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 endif(CUDA_FOUND)
-  
