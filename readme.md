@@ -42,7 +42,6 @@ cmake --build build
 mkdir install
 cd build/ ; cmake .. -DCMAKE_INSTALL_PREFIX=../install; make install
 ```
-```
 
 ### 2. Run CLUE
 CLUE needs four parameters `dc, deltao, deltac, rhoc`
