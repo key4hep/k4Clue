@@ -60,7 +60,7 @@ __global__ void kernel_compute_density( LayerTilesGPU *d_hist,
           float dist_ij = std::sqrt((xi-xj)*(xi-xj) + (yi-yj)*(yi-yj));
           if(dist_ij <= dc) { 
             // sum weights within N_{dc_}(i)
-            rhoi += d_points.weight[j];
+            rhoi += (i == j ? 1.f : 0.5f) * d_points.weight[j];
           }
         } // end of interate inside this bin
       }
