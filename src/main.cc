@@ -145,11 +145,9 @@ int main(int argc, char *argv[]) {
   suffix.append(underscore);
   suffix.append(std::to_string(int(dc)));
   suffix.append(underscore);
-  suffix.append(std::to_string(int(deltao)));
-  suffix.append(underscore);
-  suffix.append(std::to_string(int(deltac)));
-  suffix.append(underscore);
   suffix.append(std::to_string(int(rhoc)));
+  suffix.append(underscore);
+  suffix.append(std::to_string(int(outlierDeltaFactor)));
   if(doBarrel)
     suffix.append("_Barrel");
   else
