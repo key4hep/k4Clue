@@ -20,7 +20,7 @@
 
 void mainRun( std::vector<float>& x, std::vector<float>& y, std::vector<int>& layer, std::vector<float>& weight,
               std::string outputFileName,
-              float dc, float deltao, float deltac, float rhoc,
+              float dc, float rhoc, float outlierDeltaFactor,
               bool useParallel, bool verbose  ) {
 
   //////////////////////////////
@@ -29,34 +29,23 @@ void mainRun( std::vector<float>& x, std::vector<float>& y, std::vector<int>& la
   std::cout << "Start to run CLUE algorithm" << std::endl;
   if (useParallel) {
 #ifndef USE_CUPLA
-  std::cout << "Using CLUEAlgoGPU ... " << std::endl;
-    CLUEAlgoGPU clueAlgo(dc, deltao, deltac, rhoc, verbose);
+    std::cout << "Using CLUEAlgoGPU ... " << std::endl;
+    CLUEAlgoGPU clueAlgo(dc, rhoc, outlierDeltaFactor,
+			 verbose);
     clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]);
     // measure excution time of makeClusters
     auto start = std::chrono::high_resolution_clock::now();
     clueAlgo.makeClusters();
     auto finish = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = finish - start;
-    std::cout << "Elapsed time: " << elapsed.count() *1000 << " ms\n";
-  // output result to outputFileName. -1 means all points.
-  clueAlgo.verboseResults(outputFileName, -1);
+    std::cout << " | Elapsed time: " << elapsed.count()*1000 << " ms\n";
+    // output result to outputFileName. -1 means all points.
+    if(verbose)
+      clueAlgo.verboseResults(outputFileName, -1);
 #else
-  std::cout << "Using CLUEAlgoCupla ... " << std::endl;
-  CLUEAlgoCupla<cupla::Acc> clueAlgo(dc, deltao, deltac, rhoc, verbose);
-  clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]);
-  // measure excution time of makeClusters
-  auto start = std::chrono::high_resolution_clock::now();
-  clueAlgo.makeClusters();
-  auto finish = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> elapsed = finish - start;
-  std::cout << "Elapsed time: " << elapsed.count() *1000 << " ms\n";
-  // output result to outputFileName. -1 means all points.
-  clueAlgo.verboseResults(outputFileName, -1);
-#endif
-
-  } else {
-  std::cout << "Using CLUEAlgo ... " << std::endl;
-    CLUEAlgo clueAlgo(dc, deltao, deltac, rhoc, verbose);
+    std::cout << "Using CLUEAlgoCupla ... " << std::endl;
+    CLUEAlgoCupla<cupla::Acc> clueAlgo(dc, rhoc, outlierDeltaFactor,
+				       verbose);
     clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]);
     // measure excution time of makeClusters
     auto start = std::chrono::high_resolution_clock::now();
@@ -65,11 +54,25 @@ void mainRun( std::vector<float>& x, std::vector<float>& y, std::vector<int>& la
     std::chrono::duration<double> elapsed = finish - start;
     std::cout << "Elapsed time: " << elapsed.count() *1000 << " ms\n";
     // output result to outputFileName. -1 means all points.
-    clueAlgo.verboseResults(outputFileName, -1);
+    if(verbose)
+      clueAlgo.verboseResults(outputFileName, -1);
+#endif
+  } else {
+    std::cout << "Using CLUEAlgo ... " << std::endl;
+    CLUEAlgo clueAlgo(dc, rhoc, outlierDeltaFactor, verbose);
+    clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]);
+    // measure excution time of makeClusters
+    auto start = std::chrono::high_resolution_clock::now();
+    clueAlgo.makeClusters();
+    auto finish = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = finish - start;
+    std::cout << "Elapsed time: " << elapsed.count() *1000 << " ms\n";
+    // output result to outputFileName. -1 means all points.
+    if(verbose)
+      clueAlgo.verboseResults(outputFileName, -1);
   }
 
   std::cout << "Finished running CLUE algorithm" << std::endl;
-  std::cout << std::endl;
 } // end of testRun()
 
 
@@ -79,29 +82,29 @@ int main(int argc, char *argv[]) {
   //////////////////////////////
   // MARK -- set algorithm parameters
   //////////////////////////////
-  float dc=20, deltao=20, deltac=20, rhoc=80;
+  float dc=20.f, rhoc=80.f, outlierDeltaFactor=2.f;
   bool useParallel=false;
   bool doBarrel = false;
   bool verbose = false;
 
   int TBBNumberOfThread = 1;
 
-  if (argc == 9 || argc == 10) {
+  if (argc == 8 || argc == 9) {
     dc = std::stof(argv[2]);
-    deltao = std::stof(argv[3]);
-    deltac = std::stof(argv[4]);
-    rhoc = std::stof(argv[5]);
-    useParallel = (std::stoi(argv[6])==1)? true:false;
-    doBarrel = (std::stoi(argv[7])==1)? true:false;
-    verbose = (std::stoi(argv[8])==1)? true:false;
-    if (argc == 10) {
-      TBBNumberOfThread = std::stoi(argv[9]);
+    rhoc = std::stof(argv[3]);
+    outlierDeltaFactor = std::stof(argv[4]);
+    useParallel = (std::stoi(argv[5])==1)? true:false;
+    doBarrel = (std::stoi(argv[6])==1)? true:false;
+    verbose = (std::stoi(argv[7])==1)? true:false;
+    if (argc == 9) {
+      TBBNumberOfThread = std::stoi(argv[8]);
       if (verbose) {
-        std::cout << "Using " << TBBNumberOfThread << " TBB Threads" << std::endl;
+        std::cout << "Using " << TBBNumberOfThread;
+	std::cout << " TBB Threads" << std::endl;
       }
     }
   } else {
-    std::cout << "bin/main [fileName] [dc] [deltao] [deltac] [rhoc] [useParallel] [doBarrel] [verbose] [NumTBBThreads]" << std::endl;
+    std::cout << "bin/main [fileName] [dc] [rhoc] [outlierDeltaFactor] [useParallel] [doBarrel] [verbose] [NumTBBThreads]" << std::endl;
     return 1;
   }
 
@@ -168,7 +171,7 @@ int main(int argc, char *argv[]) {
   //////////////////////////////
   mainRun(x, y, layer, weight,
           outputFileName,
-          dc, deltao, deltac, rhoc,
+          dc, rhoc, outlierDeltaFactor,
           useParallel, verbose);
 
   return 0;

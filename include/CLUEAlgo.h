@@ -7,109 +7,110 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
-
+#include <sstream>
+#include <functional>
 #include <chrono>
 
 #include "LayerTiles.h"
 #include "Points.h"
 
-
 class CLUEAlgo{
 
-  public:
-    // constructor
-    CLUEAlgo(float dc, float deltao, float deltac, float rhoc, bool verbose=false ){
-      dc_ = dc;
-      deltao_ = deltao;
-      deltac_ = deltac;
-      rhoc_ = rhoc;
-      dm_ = std::max(deltao_, deltac_);
-      verbose_ = verbose;
+public:
+  CLUEAlgo(float dc, float rhoc, float outlierDeltaFactor, bool verbose) {
+    dc_ = dc; 
+    rhoc_ = rhoc;
+    outlierDeltaFactor_ = outlierDeltaFactor;
+    verbose_ = verbose;
+  }
+  ~CLUEAlgo(){} 
+    
+  // public variables
+  float dc_, rhoc_, outlierDeltaFactor_;
+  bool verbose_;
+    
+  Points points_;
+  
+  bool setPoints(int n, float* x, float* y, int* layer, float* weight) {
+    points_.clear();
+    // input variables
+    for(int i=0; i<n; ++i)
+      {
+	points_.x.push_back(x[i]);
+	points_.y.push_back(y[i]);
+	points_.layer.push_back(layer[i]);
+	points_.weight.push_back(weight[i]);
+      }
 
-    }
-    // distrcutor
-    ~CLUEAlgo(){}
+    points_.n = points_.x.size();
+    if(points_.n == 0)
+      return 1;
 
-    // public variables
-    float dc_, dm_, deltao_, deltac_, rhoc_;
-    bool verbose_;
-    Points points_;
+    // result variables
+    points_.rho.resize(points_.n,0);
+    points_.delta.resize(points_.n,std::numeric_limits<float>::max());
+    points_.nearestHigher.resize(points_.n,-1);
+    points_.followers.resize(points_.n);
+    points_.clusterIndex.resize(points_.n,-1);
+    points_.isSeed.resize(points_.n,0);
+    return 0;
+  }
 
+  void clearPoints(){ points_.clear(); }
 
-    // public methods
-    void setPoints(int n, float* x, float* y, int* layer, float* weight) {
-      points_.clear();
-      points_.n = n;
-      // input variables
-      points_.x.assign(x, x + n);
-      points_.y.assign(y, y + n);
-      points_.layer.assign(layer, layer + n);
-      points_.weight.assign(weight, weight + n);
-      // result variables
-      points_.rho.resize(n,0);
-      points_.delta.resize(n,std::numeric_limits<float>::max());
-      points_.nearestHigher.resize(n,-1);
-      points_.isSeed.resize(n,0);
-      points_.followers.resize(n);
-      points_.clusterIndex.resize(n,-1);
-    }
+  void makeClusters();
 
-    void clearPoints(){ points_.clear(); }
+  void infoSeeds();
+  void infoHits();
 
-    void makeClusters();
+  std::string getVerboseString_(unsigned it,
+				float x, float y, int layer, float weight,
+				float rho, float delta,
+				int nh, int isseed, float clusterid,
+				unsigned nVerbose) const {
+    std::stringstream s;
+    std::string sep = ",";
+    s << it << sep << x << sep << y << sep;
+    s << layer << sep << weight << sep << rho;
+    if (delta <= 999)
+      s << sep << delta;
+    else
+      s << ",999"; //convert +inf to 999 in verbose
+    s << sep << nh << sep << isseed << sep << clusterid << std::endl;
+    return s.str();
+  }
+  
+  void verboseResults(std::string outputFileName="cout", unsigned nVerbose=-1) const {
+    if(verbose_)
+      {
+	if (nVerbose==-1) nVerbose=points_.n;
+    
+	std::string s;
+	s = "index,x,y,layer,weight,rho,delta,nh,isSeed,clusterId\n";
+	for(unsigned i=0; i<nVerbose; i++) {
+	  s += getVerboseString_(i, points_.x[i], points_.y[i], points_.layer[i],
+				 points_.weight[i], points_.rho[i], points_.delta[i],
+				 points_.nearestHigher[i], points_.isSeed[i],
+				 points_.clusterIndex[i], nVerbose);
+	}
 
-    void verboseResults( std::string outputFileName = "cout", int nVerbose = -1){
-
-      if (verbose_) {
-
-        if (nVerbose ==-1) nVerbose=points_.n;
-
-        // verbose to screen
-        if (outputFileName.compare("cout") == 0 )  {
-          std::cout << "index,x,y,layer,weight,rho,delta,nh,isSeed,clusterId"<< std::endl;
-          for(int i = 0; i < nVerbose; i++) {
-            std::cout << i << ","<<points_.x[i]<< ","<<points_.y[i]<< ","<<points_.layer[i] << ","<<points_.weight[i];
-            std::cout << "," << points_.rho[i];
-            if (points_.delta[i] <= 999)
-              std::cout << ","<<points_.delta[i];
-            else
-              std::cout << ",999"; // convert +inf to 999 in verbose
-            std::cout << ","<<points_.nearestHigher[i];
-            std::cout << "," << points_.isSeed[i];
-            std::cout << ","<<points_.clusterIndex[i];
-            std::cout << std::endl;
-          }
-        }
-
-        // verbose to file
-        else{
-          std::ofstream oFile(outputFileName);
-          oFile << "index,x,y,layer,weight,rho,delta,nh,isSeed,clusterId\n";
-          for(int i = 0; i < nVerbose; i++) {
-            oFile << i << ","<<points_.x[i]<< ","<<points_.y[i]<< ","<<points_.layer[i] << ","<<points_.weight[i];
-            oFile << "," << points_.rho[i];
-            if (points_.delta[i] <= 999)
-              oFile << ","<<points_.delta[i];
-            else
-              oFile << ",999"; // convert +inf to 999 in verbose
-            oFile << ","<<points_.nearestHigher[i];
-            oFile << "," << points_.isSeed[i];
-            oFile << ","<<points_.clusterIndex[i];
-            oFile << "\n";
-          }
-          oFile.close();
-        }
-      }// end of if verbose_
-    }
-
-  private:
-
-    // private member methods
-    void prepareDataStructures(std::array<LayerTiles, NLAYERS> & );
-    void calculateLocalDensity(std::array<LayerTiles, NLAYERS> & );
-    void calculateDistanceToHigher(std::array<LayerTiles, NLAYERS> & );
-    void findAndAssignClusters();
-    inline float distance(int , int) const ;
+	if(outputFileName.compare("cout")==0) //verbose to screen
+	  std::cout << s << std::endl;
+	else { //verbose to file
+	  std::ofstream oFile(outputFileName);
+	  oFile << s;
+	  oFile.close();
+	}
+      }
+  }
+        
+private:
+  // private member methods
+  void prepareDataStructures(std::array<LayerTiles, NLAYERS> & );
+  void calculateLocalDensity(std::array<LayerTiles, NLAYERS> & );
+  void calculateDistanceToHigher(std::array<LayerTiles, NLAYERS> & );
+  void findAndAssignClusters();
+  inline float distance(int , int) const ;
 };
 
 #endif

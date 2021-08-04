@@ -44,20 +44,22 @@ cd build/ ; cmake .. -DCMAKE_INSTALL_PREFIX=../install; make install
 ```
 
 ### 2. Run CLUE
-CLUE needs four parameters `dc, deltao, deltac, rhoc`
+CLUE needs three parameters: `dc`, `rhoc` and `outlierDeltaFactor` (in the past four parameters were needed: `dc`, `deltao`, `deltac` and `rhoc`)
 
 _dc_ is the critical distance used to compute the local density.
-_deltao_ is the maximum distance for a point to be linked to a nearest higher
-point.
-_deltac_ is the minimum distance for a local high density point to be promoted
-as a Seed.
 _rhoc_ is the minimum local density for a point to be promoted as a Seed.
+_outlierDeltaFactor_ is  a multiplicative constant to be applied to `dc`.
+
+( _deltao_ is the maximum distance for a point to be linked to a nearest higher
+point.
+ _deltac_ is the minimum distance for a local high density point to be promoted
+as a Seed. )
 
 If the projects compiles without errors, you can go run the CLUE algorithm by
 ```bash
 cd build/src
-# ./main [fileName] [dc] [deltao] [deltac] [rhoc] [useParallel] [doBarrel] [verbose]
-./main ../../data/input/aniso_1000 20 20 50 50 0 1 1
+# ./main [fileName] [dc] [rhoc] [outlierDeltaFactor] [useParallel] [doBarrel] [verbose]
+./main ../../data/input/aniso_1000 20 25 2 0 1 1
 ```
 
 The input files are `data/input/*.csv` with columns 
@@ -77,4 +79,3 @@ The clustering result of a few synthetic dataset is shown below
 We generate toy events on toy detector consist of 100 layers.
 The average execution time of toy events on CPU and GPU are shown below
 ![Execution Time](Figure5_1.png)
-
