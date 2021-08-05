@@ -16,8 +16,9 @@
 
 #include "read_events.h"
 
-#include "edm4hep/MCParticle.h"
+//EDM4HEP libraries
 #include "podio/ROOTReader.h"
+#include "podio/EventStore.h"
 
 template <typename T>
 std::string to_string_with_precision(const T a_value, const int n = 6)
@@ -26,6 +27,48 @@ std::string to_string_with_precision(const T a_value, const int n = 6)
     out.precision(n);
     out << std::fixed << a_value;
     return out.str();
+}
+
+std::string create_outputfileName(std::string inputFileName, float dc,
+                                 float rhoc, float outlierDeltaFactor,
+                                 bool useParallel, bool doBarrel,
+                                 std::string eventNumber){
+  std::string underscore = "_", suffix = "";
+  suffix.append(underscore);
+  suffix.append(to_string_with_precision(dc,2));
+  suffix.append(underscore);
+  suffix.append(to_string_with_precision(rhoc,2));
+  suffix.append(underscore);
+  suffix.append(to_string_with_precision(outlierDeltaFactor,2));
+  if(doBarrel)
+    suffix.append("_Barrel");
+  else
+    suffix.append("_Endcap");
+  suffix.append(underscore);
+  suffix.append(eventNumber+"event");
+  suffix.append(".csv");
+  size_t pos; std::string toReplace;
+  if(inputFileName.find(".root")!=std::string::npos){
+    toReplace = ".root";
+    pos = inputFileName.find(toReplace);
+  } else if (inputFileName.find(".csv")!=std::string::npos){
+    toReplace = ".csv";
+    pos = inputFileName.find(toReplace);
+  } 
+  std::string replacement = inputFileName;
+  std::string outputFileName = replacement.replace(pos, toReplace.length(), suffix);
+  return outputFileName;
+}
+
+bool emptyEvent(std::vector<float>& x, std::vector<float>& y, std::vector<int>& layer, std::vector<float>& weight){
+
+  if(x.empty() || y.empty() || layer.empty() || weight.empty()){
+    std::cerr << "Data is empty. Break." << std::endl;
+    return true;
+  }
+
+  return false;
+
 }
 
 void mainRun( std::vector<float>& x, std::vector<float>& y, std::vector<int>& layer, std::vector<float>& weight,
@@ -99,6 +142,7 @@ int main(int argc, char *argv[]) {
 
   int TBBNumberOfThread = 1;
 
+  std::string inputFileName = argv[1];
   if (argc == 8 || argc == 9) {
     dc = std::stof(argv[2]);
     rhoc = std::stof(argv[3]);
@@ -126,61 +170,73 @@ int main(int argc, char *argv[]) {
 #endif
 
   //////////////////////////////
-  // read data 
+  // Read data and run algo
   //////////////////////////////
-  std::string inputFileName = argv[1];
-
   std::vector<float> x;
   std::vector<float> y;
   std::vector<int> layer;
   std::vector<float> weight;
 
+  // Read EDM4HEP data
   if(inputFileName.find(".root")!=std::string::npos){
-    //TO BE FIXED: read only one event
-    read_events<podio::ROOTReader>(inputFileName, x, y, layer, weight, 1, doBarrel);
-    //read all events in the file
-    //read_events<podio::ROOTReader>(inputFileName);
+
+    std::cout<<"input edm4hep file: "<<inputFileName<<std::endl;
+    podio::ROOTReader reader;
+    reader.openFile(inputFileName);
+
+    podio::EventStore store;
+    store.setReader(&reader);
+    unsigned nEvents = reader.getEntries();
+    int padding = std::to_string(nEvents).size();
+
+    for(unsigned i=0; i<nEvents; ++i) {
+      if(verbose)  std::cout<<"reading event "<<i<<std::endl;
+      read_EDM4HEP_event(store, x, y, layer, weight, doBarrel); 
+
+      std::string eventString = std::to_string(i);
+      eventString.insert(eventString.begin(), padding - eventString.size(), '0');
+
+      std::string outputFileName = create_outputfileName(inputFileName, dc, rhoc, outlierDeltaFactor, useParallel, doBarrel, eventString);
+      if( !emptyEvent(x, y, layer, weight)){
+        mainRun(x, y, layer, weight,
+                outputFileName,
+                dc, rhoc, outlierDeltaFactor,
+                useParallel, verbose);
+      }
+      if(verbose){
+        std::cout << "Output file: " << outputFileName << std::endl;
+        std::cout << std::endl;
+      }
+
+      // Cleaning
+      x.clear();
+      y.clear();
+      layer.clear();
+      weight.clear();
+      store.clear();
+      reader.endOfEvent();
+    }
+
+    reader.closeFile();
+
+  // Read data in csv file
   } else if (inputFileName.find(".csv")!=std::string::npos){
-    read_events_from_csv(inputFileName, x, y, layer, weight);
+    read_from_csv(inputFileName, x, y, layer, weight);
+    if( !emptyEvent(x, y, layer, weight)){
+      std::string outputFileName = create_outputfileName(inputFileName, dc, rhoc, outlierDeltaFactor, useParallel, doBarrel, "0");
+      mainRun(x, y, layer, weight,
+              outputFileName,
+              dc, rhoc, outlierDeltaFactor,
+              useParallel, verbose);
+      if(verbose)
+        std::cout << "Output file: " << outputFileName << std::endl;
+    } else {
+      std::cerr << "Something wrong with the input file" << std::endl;
+    }
   } else {
     std::cerr << "Not sure how to read this input file." << std::endl;
   }
 
-  if(x.empty() || y.empty() || layer.empty() || weight.empty()){
-    std::cerr << "Data is empty. Break." << std::endl;
-    return 0;
-  }
-
-  std::string underscore = "_", suffix = "";
-  suffix.append(underscore);
-  suffix.append(to_string_with_precision(dc,2));
-  suffix.append(underscore);
-  suffix.append(to_string_with_precision(rhoc,2));
-  suffix.append(underscore);
-  suffix.append(to_string_with_precision(outlierDeltaFactor,2));
-  if(doBarrel)
-    suffix.append("_Barrel");
-  else
-    suffix.append("_Endcap");
-  suffix.append(".csv");
-  size_t pos; std::string toReplace;
-  if(inputFileName.find(".root")!=std::string::npos){
-    toReplace = ".root";
-    pos = inputFileName.find(toReplace);
-  } else if (inputFileName.find(".csv")!=std::string::npos){
-    toReplace = ".csv";
-    pos = inputFileName.find(toReplace);
-  } 
-  std::string outputFileName = inputFileName.replace(pos, toReplace.length(), suffix);
-  std::cout << "Output file: " << outputFileName << std::endl;
-
-  //////////////////////////////
-  // MARK -- test run
-  //////////////////////////////
-  mainRun(x, y, layer, weight,
-          outputFileName,
-          dc, rhoc, outlierDeltaFactor,
-          useParallel, verbose);
-
   return 0;
+
 }
