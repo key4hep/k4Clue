@@ -1,4 +1,5 @@
 #include "CLUEAlgo.h"
+#include <map>
 
 void CLUEAlgo::makeClusters(){
   std::array<LayerTiles, NLAYERS> allLayerTiles;
@@ -121,7 +122,7 @@ void CLUEAlgo::calculateDistanceToHigher( std::array<LayerTiles, NLAYERS> & allL
 void CLUEAlgo::findAndAssignClusters(){
   auto start = std::chrono::high_resolution_clock::now();
 
-  int nClusters = 0;
+  std::map<int,int> nClustersPerLayer;
 
   // find cluster seeds and outlier
   std::vector<int> localStack;
@@ -141,9 +142,9 @@ void CLUEAlgo::findAndAssignClusters(){
 	// set isSeed as 1
 	points_.isSeed[i] = 1;
 	// set cluster id
-	points_.clusterIndex[i] = nClusters;
+	points_.clusterIndex[i] = nClustersPerLayer[points_.layer[i]];
 	// increment number of clusters
-	nClusters++;
+        nClustersPerLayer[points_.layer[i]]++;
 	// add seed into local stack
 	localStack.push_back(i);
       }
