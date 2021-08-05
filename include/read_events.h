@@ -22,66 +22,49 @@
 using namespace dd4hep ;
 using namespace DDSegmentation ;
 
-template<typename ReaderT>
-void read_events(const std::string& inputFileName, 
-                 std::vector<float>& x, std::vector<float>& y, std::vector<int>& layer, std::vector<float>& weight,
-                 unsigned int nEvents, bool isBarrel = false) {
-  std::cout<<"input edm4hep file: "<<inputFileName<<std::endl;
-  ReaderT reader;
-  reader.openFile(inputFileName);
-
-  podio::EventStore store;
-  store.setReader(&reader);
+void read_EDM4HEP_event(podio::EventStore& store,
+                    std::vector<float>& x, std::vector<float>& y, std::vector<int>& layer, std::vector<float>& weight,
+                    bool isBarrel = false){
 
   float x_tmp;
   float y_tmp;
 
-  for(unsigned i=0; i<nEvents; ++i) {
-    std::cout<<"reading event "<<i<<std::endl;
-    std::string collectionLabel = "EE_CaloHits_EDM4hep";
-    if(isBarrel)
-      collectionLabel = "EB_CaloHits_EDM4hep";
-    auto& chs = store.get<edm4hep::CalorimeterHitCollection>(collectionLabel);
+  std::string collectionLabel = "EE_CaloHits_EDM4hep";
+  if(isBarrel)
+    collectionLabel = "EB_CaloHits_EDM4hep";
+  auto& chs = store.get<edm4hep::CalorimeterHitCollection>(collectionLabel);
 
-    if( chs.isValid() ){
+  if( chs.isValid() ){
 
-      for (auto ch : chs){
+    for (auto ch : chs){
 
-        const BitFieldCoder bf("system:0:5,side:5:-2,module:7:8,stave:15:4,layer:19:9,submodule:28:4,x:32:-16,y:48:-16" ) ;
-        auto ch_layer = bf.get( ch.getCellID(), "layer");
-        auto ch_energy = ch.getEnergy();
+      const BitFieldCoder bf("system:0:5,side:5:-2,module:7:8,stave:15:4,layer:19:9,submodule:28:4,x:32:-16,y:48:-16" ) ;
+      auto ch_layer = bf.get( ch.getCellID(), "layer");
+      auto ch_energy = ch.getEnergy();
 
-	if(isBarrel){
-	  //Barrel
-	  x_tmp = ch.getPosition().z;
-	  y_tmp = atan2(ch.getPosition().y, ch.getPosition().x);
-	} else {
-	  //Endcap
-	  x_tmp = ch.getPosition().x;
-	  y_tmp = ch.getPosition().y;
-	}
-
-        if(i==(nEvents-1)){
-          x.push_back(x_tmp); 
-          y.push_back(y_tmp); 
-          layer.push_back(ch_layer); 
-          weight.push_back(ch_energy); 
-          std::cout << x_tmp << "," << y_tmp << "," << ch_layer << "," << ch_energy << std::endl;
-        } else {
-          std::cout<<"skip saving of event "<<i<<std::endl;
-        }
+      if(isBarrel){
+        //Barrel
+        x_tmp = ch.getPosition().z;
+        y_tmp = atan2(ch.getPosition().y, ch.getPosition().x);
+      } else {
+        //Endcap
+        x_tmp = ch.getPosition().x;
+        y_tmp = ch.getPosition().y;
       }
-    } else {
-      throw std::runtime_error("Collection 'EB_CaloHits_EDM4hep' should be present");
-    }
 
-    store.clear();
-    reader.endOfEvent();
+      x.push_back(x_tmp); 
+      y.push_back(y_tmp); 
+      layer.push_back(ch_layer); 
+      weight.push_back(ch_energy); 
+      //std::cout << x_tmp << "," << y_tmp << "," << ch_layer << "," << ch_energy << std::endl;
+    }
+  } else {
+    throw std::runtime_error("Collection 'EB_CaloHits_EDM4hep' should be present");
   }
-  reader.closeFile();
+
 }
 
-void read_events_from_csv(const std::string& inputFileName,
+void read_from_csv(const std::string& inputFileName,
                           std::vector<float>& x, std::vector<float>& y, std::vector<int>& layer, std::vector<float>& weight) {
 
   std::cout<<"input csv file: "<<inputFileName<<std::endl;
