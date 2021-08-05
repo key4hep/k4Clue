@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <string>
 #include <chrono>
@@ -17,6 +18,15 @@
 
 #include "edm4hep/MCParticle.h"
 #include "podio/ROOTReader.h"
+
+template <typename T>
+std::string to_string_with_precision(const T a_value, const int n = 6)
+{
+    std::ostringstream out;
+    out.precision(n);
+    out << std::fixed << a_value;
+    return out.str();
+}
 
 void mainRun( std::vector<float>& x, std::vector<float>& y, std::vector<int>& layer, std::vector<float>& weight,
               std::string outputFileName,
@@ -143,11 +153,11 @@ int main(int argc, char *argv[]) {
 
   std::string underscore = "_", suffix = "";
   suffix.append(underscore);
-  suffix.append(std::to_string(int(dc)));
+  suffix.append(to_string_with_precision(dc,2));
   suffix.append(underscore);
-  suffix.append(std::to_string(int(rhoc)));
+  suffix.append(to_string_with_precision(rhoc,2));
   suffix.append(underscore);
-  suffix.append(std::to_string(int(outlierDeltaFactor)));
+  suffix.append(to_string_with_precision(outlierDeltaFactor,2));
   if(doBarrel)
     suffix.append("_Barrel");
   else

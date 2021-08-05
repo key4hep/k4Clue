@@ -50,12 +50,6 @@ void read_events(const std::string& inputFileName,
         const BitFieldCoder bf("system:0:5,side:5:-2,module:7:8,stave:15:4,layer:19:9,submodule:28:4,x:32:-16,y:48:-16" ) ;
         auto ch_layer = bf.get( ch.getCellID(), "layer");
         auto ch_energy = ch.getEnergy();
-        //std::cout << "\n ch: "
-        //<< " cellId = " << ch.getCellID()
-        //<< " layer  = " << ch_layer
-        //<< " energy = " << ch.getEnergy()
-        //<< " position = " << ch.getPosition().x << ',' << ch.getPosition().y << ',' << ch.getPosition().z
-        //<< std::endl;
 
 	if(isBarrel){
 	  //Barrel
@@ -67,10 +61,15 @@ void read_events(const std::string& inputFileName,
 	  y_tmp = ch.getPosition().y;
 	}
 
-        x.push_back(x_tmp); 
-        y.push_back(y_tmp); 
-        layer.push_back(ch_layer); 
-        weight.push_back(ch_energy); 
+        if(i==(nEvents-1)){
+          x.push_back(x_tmp); 
+          y.push_back(y_tmp); 
+          layer.push_back(ch_layer); 
+          weight.push_back(ch_energy); 
+          std::cout << x_tmp << "," << y_tmp << "," << ch_layer << "," << ch_energy << std::endl;
+        } else {
+          std::cout<<"skip saving of event "<<i<<std::endl;
+        }
       }
     } else {
       throw std::runtime_error("Collection 'EB_CaloHits_EDM4hep' should be present");
