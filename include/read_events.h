@@ -28,6 +28,7 @@ void read_EDM4HEP_event(podio::EventStore& store,
 
   float x_tmp;
   float y_tmp;
+  float r_tmp;
 
   std::string collectionLabel = "EE_CaloHits_EDM4hep";
   if(isBarrel)
@@ -42,15 +43,10 @@ void read_EDM4HEP_event(podio::EventStore& store,
       auto ch_layer = bf.get( ch.getCellID(), "layer");
       auto ch_energy = ch.getEnergy();
 
-      if(isBarrel){
-        //Barrel
-        x_tmp = ch.getPosition().z;
-        y_tmp = atan2(ch.getPosition().y, ch.getPosition().x);
-      } else {
-        //Endcap
-        x_tmp = ch.getPosition().x;
-        y_tmp = ch.getPosition().y;
-      }
+      //eta,phi
+      r_tmp = sqrt(ch.getPosition().x*ch.getPosition().x + ch.getPosition().y*ch.getPosition().y);
+      x_tmp = - 1. * log(tan(atan2(r_tmp, ch.getPosition().z)/2.));
+      y_tmp = atan2(ch.getPosition().y, ch.getPosition().x);
 
       x.push_back(x_tmp); 
       y.push_back(y_tmp); 
@@ -59,7 +55,7 @@ void read_EDM4HEP_event(podio::EventStore& store,
       //std::cout << x_tmp << "," << y_tmp << "," << ch_layer << "," << ch_energy << std::endl;
     }
   } else {
-    throw std::runtime_error("Collection 'EB_CaloHits_EDM4hep' should be present");
+    throw std::runtime_error("Collection not found.");
   }
 
 }
