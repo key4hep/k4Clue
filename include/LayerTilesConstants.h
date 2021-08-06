@@ -5,7 +5,7 @@
 #include <array>
 
 
-#define NLAYERS 100
+#define NLAYERS 1000
 
 namespace LayerTilesConstants {
 

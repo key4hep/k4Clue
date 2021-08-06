@@ -31,7 +31,7 @@ std::string to_string_with_precision(const T a_value, const int n = 6)
 
 std::string create_outputfileName(std::string inputFileName, float dc,
                                  float rhoc, float outlierDeltaFactor,
-                                 bool useParallel, bool doBarrel,
+                                 bool useParallel,
                                  std::string eventNumber){
   std::string underscore = "_", suffix = "";
   suffix.append(underscore);
@@ -40,10 +40,6 @@ std::string create_outputfileName(std::string inputFileName, float dc,
   suffix.append(to_string_with_precision(rhoc,2));
   suffix.append(underscore);
   suffix.append(to_string_with_precision(outlierDeltaFactor,2));
-  if(doBarrel)
-    suffix.append("_Barrel");
-  else
-    suffix.append("_Endcap");
   suffix.append(underscore);
   suffix.append(eventNumber+"event");
   suffix.append(".csv");
@@ -137,28 +133,26 @@ int main(int argc, char *argv[]) {
   //////////////////////////////
   float dc=20.f, rhoc=80.f, outlierDeltaFactor=2.f;
   bool useParallel=false;
-  bool doBarrel = false;
   bool verbose = false;
 
   int TBBNumberOfThread = 1;
 
   std::string inputFileName = argv[1];
-  if (argc == 8 || argc == 9) {
+  if (argc == 7 || argc == 8) {
     dc = std::stof(argv[2]);
     rhoc = std::stof(argv[3]);
     outlierDeltaFactor = std::stof(argv[4]);
     useParallel = (std::stoi(argv[5])==1)? true:false;
-    doBarrel = (std::stoi(argv[6])==1)? true:false;
-    verbose = (std::stoi(argv[7])==1)? true:false;
-    if (argc == 9) {
-      TBBNumberOfThread = std::stoi(argv[8]);
+    verbose = (std::stoi(argv[6])==1)? true:false;
+    if (argc == 8) {
+      TBBNumberOfThread = std::stoi(argv[7]);
       if (verbose) {
         std::cout << "Using " << TBBNumberOfThread;
 	std::cout << " TBB Threads" << std::endl;
       }
     }
   } else {
-    std::cout << "bin/main [fileName] [dc] [rhoc] [outlierDeltaFactor] [useParallel] [doBarrel] [verbose] [NumTBBThreads]" << std::endl;
+    std::cout << "bin/main [fileName] [dc] [rhoc] [outlierDeltaFactor] [useParallel] [verbose] [NumTBBThreads]" << std::endl;
     return 1;
   }
 
@@ -191,12 +185,16 @@ int main(int argc, char *argv[]) {
 
     for(unsigned i=0; i<nEvents; ++i) {
       if(verbose)  std::cout<<"reading event "<<i<<std::endl;
-      read_EDM4HEP_event(store, x, y, layer, weight, doBarrel); 
+      //Read Barrel collection and shift in layer number
+      read_EDM4HEP_event(store, x, y, layer, weight, "EE_CaloHits_EDM4hep"); 
+      //std::transform(std::begin(layer),std::end(layer),std::begin(layer),[](int x){return x+100;});
+
+      read_EDM4HEP_event(store, x, y, layer, weight, "EB_CaloHits_EDM4hep"); 
 
       std::string eventString = std::to_string(i);
       eventString.insert(eventString.begin(), padding - eventString.size(), '0');
 
-      std::string outputFileName = create_outputfileName(inputFileName, dc, rhoc, outlierDeltaFactor, useParallel, doBarrel, eventString);
+      std::string outputFileName = create_outputfileName(inputFileName, dc, rhoc, outlierDeltaFactor, useParallel, eventString);
       if( !emptyEvent(x, y, layer, weight)){
         mainRun(x, y, layer, weight,
                 outputFileName,
@@ -223,7 +221,7 @@ int main(int argc, char *argv[]) {
   } else if (inputFileName.find(".csv")!=std::string::npos){
     read_from_csv(inputFileName, x, y, layer, weight);
     if( !emptyEvent(x, y, layer, weight)){
-      std::string outputFileName = create_outputfileName(inputFileName, dc, rhoc, outlierDeltaFactor, useParallel, doBarrel, "0");
+      std::string outputFileName = create_outputfileName(inputFileName, dc, rhoc, outlierDeltaFactor, useParallel, "0");
       mainRun(x, y, layer, weight,
               outputFileName,
               dc, rhoc, outlierDeltaFactor,

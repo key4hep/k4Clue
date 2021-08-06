@@ -5,8 +5,6 @@
 #include <exception>
 #include <cassert>
 
-#define NLAYERS 100
-
 // test data model
 #include "edm4hep/MCParticleCollection.h"
 #include "edm4hep/SimTrackerHitCollection.h"
@@ -24,15 +22,12 @@ using namespace DDSegmentation ;
 
 void read_EDM4HEP_event(podio::EventStore& store,
                     std::vector<float>& x, std::vector<float>& y, std::vector<int>& layer, std::vector<float>& weight,
-                    bool isBarrel = false){
+                    std::string collectionLabel = "EE_CaloHits_EDM4hep"){
 
   float x_tmp;
   float y_tmp;
   float r_tmp;
 
-  std::string collectionLabel = "EE_CaloHits_EDM4hep";
-  if(isBarrel)
-    collectionLabel = "EB_CaloHits_EDM4hep";
   auto& chs = store.get<edm4hep::CalorimeterHitCollection>(collectionLabel);
 
   if( chs.isValid() ){
@@ -72,7 +67,7 @@ void read_from_csv(const std::string& inputFileName,
   }
 
   // make dummy layers
-  for (int l=0; l<NLAYERS; l++){
+  for (int l=0; l<10; l++){
     std::string value = "";
     // Iterate through each line and split the content using delimeter
     while (getline(iFile, value, ',')) {

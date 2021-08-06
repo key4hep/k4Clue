@@ -58,7 +58,7 @@ as a Seed. )
 If the projects compiles without errors, you can go run the CLUE algorithm by
 ```bash
 cd build/src
-# ./main [fileName] [dc] [rhoc] [outlierDeltaFactor] [useParallel] [doBarrel] [verbose]
+# ./main [fileName] [dc] [rhoc] [outlierDeltaFactor] [useParallel] [verbose]
 ./main ../../data/input/aniso_1000.csv 20 25 2 0 1 1
 ```
 
