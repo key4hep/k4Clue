@@ -107,3 +107,25 @@ if(CUDA_FOUND)
     $<BUILD_INTERFACE:${cupla_DIR}/alpaka/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 endif(CUDA_FOUND)
+################################################################################
+
+# Test dummy Gaudi algorithm
+
+find_package(k4FWCore)
+find_package(EDM4HEP)
+
+gaudi_add_module(DummyAlgorithm
+  SOURCES
+    DummyAlgorithm.cpp
+  LINK
+    Gaudi::GaudiAlgLib
+    Gaudi::GaudiKernel
+    k4FWCore::k4FWCore
+    EDM4HEP::edm4hep
+)
+
+target_include_directories(DummyAlgorithm PUBLIC
+  k4FWCore::k4FWCore
+  EDM4HEP::edm4hep
+)
+

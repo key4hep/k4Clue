@@ -50,6 +50,10 @@ find_package(DD4hep)
 if(DD4HEP_FOUND)
   message(STATUS "DD4HEP package found!")
 endif()
+find_package(k4FWCore REQUIRED)
+find_package(Gaudi REQUIRED)
+gaudi_install(PYTHON)
+gaudi_install(SCRIPTS)
 
 add_subdirectory(src)
 
