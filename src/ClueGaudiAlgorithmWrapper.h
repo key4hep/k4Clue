@@ -17,6 +17,16 @@ public:
   virtual StatusCode finalize() override final;
   virtual StatusCode initialize() override final;
 
+  void runAlgo(std::vector<float>& x, std::vector<float>& y, std::vector<int>& layer, std::vector<float>& weight,
+               std::string outputFileName,
+               float dc, float rhoc, float outlierDeltaFactor,
+               bool verbose  );
+
+  private:
+  std::vector<float> x;
+  std::vector<float> y;
+  std::vector<int> layer;
+  std::vector<float> weight;
 };
 
 #endif

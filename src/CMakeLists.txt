@@ -3,6 +3,7 @@
 set(GLOB HEADER_LIST CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/include/*.h")
 
 ################################################################################
+set(CMAKE_CXX_FLAGS "-fPIC")
 
 if(CUDA_FOUND)
   ## internal flags for CUDA
@@ -122,6 +123,7 @@ gaudi_add_module(ClueGaudiAlgorithmWrapper
     Gaudi::GaudiKernel
     k4FWCore::k4FWCore
     EDM4HEP::edm4hep
+    CLUEAlgo_lib
 )
 
 target_include_directories(ClueGaudiAlgorithmWrapper PUBLIC
