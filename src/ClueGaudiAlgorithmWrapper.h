@@ -1,5 +1,5 @@
-#ifndef DUMMY_ALGORITHM_H
-#define DUMMY_ALGORITHM_H
+#ifndef CLUE_GAUDI_ALGORITHM_WRAPPER_H
+#define CLUE_GAUDI_ALGORITHM_WRAPPER_H
 
 #include <GaudiAlg/GaudiAlgorithm.h>
 
@@ -9,10 +9,10 @@
 #include <edm4hep/SimCalorimeterHit.h>
 #include <edm4hep/SimCalorimeterHitCollection.h>
 
-class DummyAlgorithm : public GaudiAlgorithm {
+class ClueGaudiAlgorithmWrapper : public GaudiAlgorithm {
 public:
-  explicit DummyAlgorithm(const std::string& name, ISvcLocator* svcLoc);
-  virtual ~DummyAlgorithm() = default;
+  explicit ClueGaudiAlgorithmWrapper(const std::string& name, ISvcLocator* svcLoc);
+  virtual ~ClueGaudiAlgorithmWrapper() = default;
   virtual StatusCode execute() override final;
   virtual StatusCode finalize() override final;
   virtual StatusCode initialize() override final;

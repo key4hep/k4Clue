@@ -114,9 +114,9 @@ endif(CUDA_FOUND)
 find_package(k4FWCore)
 find_package(EDM4HEP)
 
-gaudi_add_module(DummyAlgorithm
+gaudi_add_module(ClueGaudiAlgorithmWrapper
   SOURCES
-    DummyAlgorithm.cpp
+    ClueGaudiAlgorithmWrapper.cpp
   LINK
     Gaudi::GaudiAlgLib
     Gaudi::GaudiKernel
@@ -124,8 +124,9 @@ gaudi_add_module(DummyAlgorithm
     EDM4HEP::edm4hep
 )
 
-target_include_directories(DummyAlgorithm PUBLIC
+target_include_directories(ClueGaudiAlgorithmWrapper PUBLIC
   k4FWCore::k4FWCore
   EDM4HEP::edm4hep
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
 )
 

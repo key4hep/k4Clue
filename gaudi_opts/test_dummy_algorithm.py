@@ -6,33 +6,13 @@ algList = []
 
 from Configurables import PodioInput
 evtsvc = k4DataSvc('EventDataSvc')
-evtsvc.input = '../ttbar3_edm4hep.root'
+evtsvc.input = '../data/input/clic/gamma_energy_10GeV_theta_10deg_30deg.root'
 
 
 inp = PodioInput('InputReader')
 inp.collections = [
-  # 'HcalBarrelHits',
-  'EventHeader',
-  'VertexBarrelCollection',
-  'VertexEndcapCollection',
-  'InnerTrackerBarrelCollection',
-  'OuterTrackerBarrelCollection',
-  'ECalEndcapCollection',
-  'ECalEndcapCollectionContributions',
-  'ECalBarrelCollection',
-  'ECalPlugCollection',
-  'HCalBarrelCollection',
-  'HCalBarrelCollectionContributions',
-  'InnerTrackerEndcapCollection',
-  'OuterTrackerEndcapCollection',
-  'HCalEndcapCollection',
-  'HCalEndcapCollectionContributions',
-  'HCalRingCollection',
-  'HCalRingCollectionContributions',
-  'YokeEndcapCollection',
-  'YokeEndcapCollectionContributions',
-  'LumiCalCollection',
-  'LumiCalCollectionContributions'
+  'EB_CaloHits_EDM4hep',
+  'EE_CaloHits_EDM4hep',
 ]
 inp.OutputLevel = DEBUG
 
@@ -49,13 +29,13 @@ MyAIDAProcessor.Parameters = ["FileName", "histograms", END_TAG,
                     ]
 
 
-from Configurables import DummyAlgorithm
+from Configurables import ClueGaudiAlgorithmWrapper
 
-MyDummyAlgorithm = DummyAlgorithm("DummyAlgorithmName")
+MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper("ClueGaudiAlgorithmWrapperName")
 
 algList.append(inp)
 algList.append(MyAIDAProcessor)
-algList.append(MyDummyAlgorithm)
+algList.append(MyClueGaudiAlgorithmWrapper)
 
 
 from Configurables import ApplicationMgr

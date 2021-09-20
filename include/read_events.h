@@ -55,6 +55,35 @@ void read_EDM4HEP_event(podio::EventStore& store,
 
 }
 
+void read_EDM4HEP_event(const edm4hep::CalorimeterHitCollection* const& calo_coll,
+                        std::vector<float>& x, std::vector<float>& y, std::vector<int>& layer, std::vector<float>& weight) {
+
+  float x_tmp;
+  float y_tmp;
+  float r_tmp;
+
+  if( !calo_coll->isValid() )
+    return;
+
+  for (const auto& ch : (*calo_coll)) {
+    const BitFieldCoder bf("system:0:5,side:5:-2,module:7:8,stave:15:4,layer:19:9,submodule:28:4,x:32:-16,y:48:-16" ) ;
+    auto ch_layer = bf.get( ch.getCellID(), "layer");
+    auto ch_energy = ch.getEnergy();
+
+    //eta,phi
+    r_tmp = sqrt(ch.getPosition().x*ch.getPosition().x + ch.getPosition().y*ch.getPosition().y);
+    x_tmp = - 1. * log(tan(atan2(r_tmp, ch.getPosition().z)/2.));
+    y_tmp = atan2(ch.getPosition().y, ch.getPosition().x);
+
+    x.push_back(x_tmp); 
+    y.push_back(y_tmp); 
+    layer.push_back(ch_layer); 
+    weight.push_back(ch_energy); 
+    //std::cout << x_tmp << "," << y_tmp << "," << ch_layer << "," << ch_energy << std::endl;
+  }
+
+}
+
 void read_from_csv(const std::string& inputFileName,
                           std::vector<float>& x, std::vector<float>& y, std::vector<int>& layer, std::vector<float>& weight) {
 
