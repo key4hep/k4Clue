@@ -6,7 +6,11 @@
 DECLARE_COMPONENT(ClueGaudiAlgorithmWrapper)
 
 ClueGaudiAlgorithmWrapper::ClueGaudiAlgorithmWrapper(const std::string& name, ISvcLocator* pSL) :
-  GaudiAlgorithm(name, pSL) {}
+  GaudiAlgorithm(name, pSL) {
+  declareProperty("CriticalDistance", dc, "Used to compute the local density");
+  declareProperty("MinLocalDensity", rhoc, "Minimum local density for a point to be promoted as a Seed");
+  declareProperty("OutlierDeltaFactor", outlierDeltaFactor, "Multiplicative constant to be applied to CriticalDistance");
+}
 
 StatusCode ClueGaudiAlgorithmWrapper::initialize() {
   std::cout << "ClueGaudiAlgorithmWrapper::initialize()\n";
@@ -15,7 +19,6 @@ StatusCode ClueGaudiAlgorithmWrapper::initialize() {
 
 void ClueGaudiAlgorithmWrapper::runAlgo( std::vector<float>& x, std::vector<float>& y, std::vector<int>& layer, std::vector<float>& weight,
               std::string outputFileName,
-              float dc, float rhoc, float outlierDeltaFactor,
               bool verbose  ) {
 
   //////////////////////////////
@@ -43,13 +46,19 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   //////////////////////////////
   // Read data and run algo
   //////////////////////////////
-  DataHandle<edm4hep::CalorimeterHitCollection> calo_handle {  
+  DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {  
+    "EB_CaloHits_EDM4hep", Gaudi::DataHandle::Reader, this};
+
+  const auto EB_calo_coll = EB_calo_handle.get();
+  read_EDM4HEP_event(EB_calo_coll, x, y, layer, weight);
+
+  DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {  
     "EE_CaloHits_EDM4hep", Gaudi::DataHandle::Reader, this};
 
-  const auto calo_coll = calo_handle.get();
-  read_EDM4HEP_event(calo_coll, x, y, layer, weight);
+  const auto EE_calo_coll = EE_calo_handle.get();
+  read_EDM4HEP_event(EE_calo_coll, x, y, layer, weight);
 
-  runAlgo(x, y, layer, weight, "ciao.csv", 10, 10, 2, true);
+  runAlgo(x, y, layer, weight, "ciao.csv", true);
 
   //Cleaning
   x.clear();
