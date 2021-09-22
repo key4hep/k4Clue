@@ -37,10 +37,15 @@ MyClueGaudiAlgorithmWrapper.CriticalDistance = 10.00
 MyClueGaudiAlgorithmWrapper.MinLocalDensity = 0.02
 MyClueGaudiAlgorithmWrapper.OutlierDeltaFactor = 1.00
 
+from Configurables import PodioOutput
+out = PodioOutput("out")
+out.filename = "output.root"
+out.outputCommands = ["keep *"]
+
 algList.append(inp)
 algList.append(MyAIDAProcessor)
 algList.append(MyClueGaudiAlgorithmWrapper)
-
+algList.append(out)
 
 from Configurables import ApplicationMgr
 ApplicationMgr( TopAlg = algList,

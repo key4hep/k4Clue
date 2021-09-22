@@ -6,8 +6,7 @@
 // FWCore
 #include <k4FWCore/DataHandle.h>
 
-#include <edm4hep/SimCalorimeterHit.h>
-#include <edm4hep/SimCalorimeterHitCollection.h>
+#include <edm4hep/CalorimeterHitCollection.h>
 
 class ClueGaudiAlgorithmWrapper : public GaudiAlgorithm {
 public:
@@ -22,6 +21,7 @@ public:
                bool verbose  );
 
   private:
+  // Parameters in input
   float dc;
   float rhoc;
   float outlierDeltaFactor;
@@ -30,6 +30,10 @@ public:
   std::vector<float> y;
   std::vector<int> layer;
   std::vector<float> weight;
+
+  // Collections in output
+  DataHandle<edm4hep::CalorimeterHitCollection> clustersHandle{"Output_hits", Gaudi::DataHandle::Writer, this};
+
 };
 
 #endif

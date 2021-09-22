@@ -10,6 +10,7 @@ ClueGaudiAlgorithmWrapper::ClueGaudiAlgorithmWrapper(const std::string& name, IS
   declareProperty("CriticalDistance", dc, "Used to compute the local density");
   declareProperty("MinLocalDensity", rhoc, "Minimum local density for a point to be promoted as a Seed");
   declareProperty("OutlierDeltaFactor", outlierDeltaFactor, "Multiplicative constant to be applied to CriticalDistance");
+  declareProperty("OutClusters", clustersHandle, "Clusters collection (output)");
 }
 
 StatusCode ClueGaudiAlgorithmWrapper::initialize() {
@@ -21,9 +22,7 @@ void ClueGaudiAlgorithmWrapper::runAlgo( std::vector<float>& x, std::vector<floa
               std::string outputFileName,
               bool verbose  ) {
 
-  //////////////////////////////
-  // run CLUE algorithm
-  //////////////////////////////
+  // Run CLUE
   std::cout << "Using CLUEAlgo ... " << std::endl;
   CLUEAlgo clueAlgo(dc, rhoc, outlierDeltaFactor, verbose);
   clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]);
@@ -38,14 +37,19 @@ void ClueGaudiAlgorithmWrapper::runAlgo( std::vector<float>& x, std::vector<floa
     clueAlgo.verboseResults(outputFileName, -1);
 
   std::cout << "Finished running CLUE algorithm" << std::endl;
+
+  // Save clusters
+  edm4hep::CalorimeterHitCollection* clusters = clustersHandle.createAndPut();
+  auto cluster = clusters->create();
+  cluster.setPosition({3, 4, 5}); 
+
+  std::cout << "Saved clusters" << std::endl;
 }
 
 StatusCode ClueGaudiAlgorithmWrapper::execute() {
   std::cout << "ClueGaudiAlgorithmWrapper::execute()\n";
 
-  //////////////////////////////
   // Read data and run algo
-  //////////////////////////////
   DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {  
     "EB_CaloHits_EDM4hep", Gaudi::DataHandle::Reader, this};
 
@@ -65,7 +69,7 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   y.clear();
   layer.clear();
   weight.clear();
-  
+ 
   return StatusCode::SUCCESS;
 }
 
