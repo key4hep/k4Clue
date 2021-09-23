@@ -1,5 +1,4 @@
 #include "CLUEAlgo.h"
-#include <map>
 
 void CLUEAlgo::makeClusters(){
   std::array<LayerTiles, NLAYERS> allLayerTiles;
@@ -26,6 +25,14 @@ void CLUEAlgo::makeClusters(){
   findAndAssignClusters();  
 }
 
+std::map<int, std::vector<int> > CLUEAlgo::getClusters(){
+  // cluster all points with same clusterId
+  std::map<int, std::vector<int> > clusters; 
+  for(unsigned i = 0; i < points_.n; i++) {
+    clusters[points_.clusterIndex[i]].push_back(i);
+  }
+  return clusters;
+}
 
 void CLUEAlgo::prepareDataStructures( std::array<LayerTiles, NLAYERS> & allLayerTiles ){
   for (int i=0; i<points_.n; i++){

@@ -5,6 +5,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <map>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -59,6 +60,7 @@ public:
   void clearPoints(){ points_.clear(); }
 
   void makeClusters();
+  std::map<int, std::vector<int> > getClusters();
 
   void infoSeeds();
   void infoHits();
