@@ -18,7 +18,7 @@ StatusCode ClueGaudiAlgorithmWrapper::initialize() {
   return Algorithm::initialize();
 }
 
-void ClueGaudiAlgorithmWrapper::runAlgo( std::vector<float>& x, std::vector<float>& y, std::vector<int>& layer, std::vector<float>& weight,
+std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo( std::vector<float>& x, std::vector<float>& y, std::vector<int>& layer, std::vector<float>& weight,
               std::string outputFileName,
               bool verbose  ) {
 
@@ -38,12 +38,8 @@ void ClueGaudiAlgorithmWrapper::runAlgo( std::vector<float>& x, std::vector<floa
 
   std::cout << "Finished running CLUE algorithm" << std::endl;
 
-  // Save clusters
-  edm4hep::CalorimeterHitCollection* clusters = clustersHandle.createAndPut();
-  auto cluster = clusters->create();
-  cluster.setPosition({3, 4, 5}); 
-
-  std::cout << "Saved clusters" << std::endl;
+  std::map<int, std::vector<int> > clueClusters = clueAlgo.getClusters();
+  return clueClusters;
 }
 
 StatusCode ClueGaudiAlgorithmWrapper::execute() {
@@ -61,8 +57,20 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
 
   const auto EE_calo_coll = EE_calo_handle.get();
   read_EDM4HEP_event(EE_calo_coll, x, y, layer, weight);
+  std::cout << EB_calo_coll->size() << " caloHits in Barrel." << std::endl;
+  std::cout << EE_calo_coll->size() << " caloHits in Endcap." << std::endl;
 
-  runAlgo(x, y, layer, weight, "ciao.csv", true);
+  // Put the CaloHits together
+  //const auto calo_coll = EB_calo_handle.get();
+  //std::copy(calo_coll->begin(), calo_coll->end(), std::back_inserter(EE_calo_coll) );
+  //std::cout << calo_coll->size() << std::endl;
+
+  std::map<int, std::vector<int> > clueClusters = runAlgo(x, y, layer, weight, "ciao.csv", true);
+
+  // Save clusters
+  edm4hep::CalorimeterHitCollection* finalClusters = clustersHandle.createAndPut();
+  computeClusters(EE_calo_coll, clueClusters, finalClusters);
+  std::cout << "Saved " << finalClusters->size() << " clusters" << std::endl;
 
   //Cleaning
   x.clear();
