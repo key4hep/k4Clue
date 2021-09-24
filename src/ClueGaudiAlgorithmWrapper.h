@@ -26,6 +26,7 @@ public:
   float rhoc;
   float outlierDeltaFactor;
 
+  edm4hep::CalorimeterHitCollection calo_coll;
   std::vector<float> x;
   std::vector<float> y;
   std::vector<int> layer;

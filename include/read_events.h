@@ -10,58 +10,22 @@
 //#include "edm4hep/ClusterCollection.h"
 
 // podio specific includes
-#include "podio/EventStore.h"
 #include "DDSegmentation/BitFieldCoder.h"
 
 using namespace dd4hep ;
 using namespace DDSegmentation ;
 
-void read_EDM4HEP_event(podio::EventStore& store,
-                    std::vector<float>& x, std::vector<float>& y, std::vector<int>& layer, std::vector<float>& weight,
-                    std::string collectionLabel = "EE_CaloHits_EDM4hep"){
+std::string bitFieldCoder = "system:0:5,side:5:-2,module:7:8,stave:15:4,layer:19:9,submodule:28:4,x:32:-16,y:48:-16" ;
 
-  float x_tmp;
-  float y_tmp;
-  float r_tmp;
-
-  auto& chs = store.get<edm4hep::CalorimeterHitCollection>(collectionLabel);
-
-  if( chs.isValid() ){
-
-    for (auto ch : chs){
-
-      const BitFieldCoder bf("system:0:5,side:5:-2,module:7:8,stave:15:4,layer:19:9,submodule:28:4,x:32:-16,y:48:-16" ) ;
-      auto ch_layer = bf.get( ch.getCellID(), "layer");
-      auto ch_energy = ch.getEnergy();
-
-      //eta,phi
-      r_tmp = sqrt(ch.getPosition().x*ch.getPosition().x + ch.getPosition().y*ch.getPosition().y);
-      x_tmp = - 1. * log(tan(atan2(r_tmp, ch.getPosition().z)/2.));
-      y_tmp = atan2(ch.getPosition().y, ch.getPosition().x);
-
-      x.push_back(x_tmp); 
-      y.push_back(y_tmp); 
-      layer.push_back(ch_layer); 
-      weight.push_back(ch_energy); 
-      //std::cout << x_tmp << "," << y_tmp << "," << ch_layer << "," << ch_energy << std::endl;
-    }
-  } else {
-    throw std::runtime_error("Collection not found.");
-  }
-
-}
-
-void read_EDM4HEP_event(const edm4hep::CalorimeterHitCollection* const& calo_coll,
+void read_EDM4HEP_event(const edm4hep::CalorimeterHitCollection& calo_coll,
                         std::vector<float>& x, std::vector<float>& y, std::vector<int>& layer, std::vector<float>& weight) {
 
   float x_tmp;
   float y_tmp;
   float r_tmp;
 
-  if( calo_coll->isValid() ) {
-
-    for (const auto& ch : (*calo_coll)) {
-      const BitFieldCoder bf("system:0:5,side:5:-2,module:7:8,stave:15:4,layer:19:9,submodule:28:4,x:32:-16,y:48:-16" ) ;
+    for (const auto& ch : calo_coll) {
+      const BitFieldCoder bf(bitFieldCoder) ;
       auto ch_layer = bf.get( ch.getCellID(), "layer");
       auto ch_energy = ch.getEnergy();
   
@@ -74,12 +38,10 @@ void read_EDM4HEP_event(const edm4hep::CalorimeterHitCollection* const& calo_col
       y.push_back(y_tmp); 
       layer.push_back(ch_layer); 
       weight.push_back(ch_energy); 
-      //std::cout << x_tmp << "," << y_tmp << "," << ch_layer << "," << ch_energy << std::endl;
+//      std::cout << x_tmp << "," << y_tmp << "," << ch_layer << "," << ch_energy << std::endl;
     }
-  } else {
-    throw std::runtime_error("Collection not found.");
-  }
 
+  return;
 }
 
 void read_from_csv(const std::string& inputFileName,
@@ -110,17 +72,17 @@ void read_from_csv(const std::string& inputFileName,
   return;
 }
 
-void computeClusters(const edm4hep::CalorimeterHitCollection* const& calo_coll,
+void computeClusters(const edm4hep::CalorimeterHitCollection& calo_coll,
                      const std::map<int, std::vector<int> > clusterMap, 
                      edm4hep::CalorimeterHitCollection* clusters){
 
-  const BitFieldCoder bf("system:0:5,side:5:-2,module:7:8,stave:15:4,layer:19:9,submodule:28:4,x:32:-16,y:48:-16" ) ;
+  const BitFieldCoder bf(bitFieldCoder) ;
 
   for(auto cl : clusterMap){
     //std::cout << cl.first << std::endl;
     std::map<int, std::vector<int> > clustersLayer;
     for(auto index : cl.second){
-      auto ch_layer = bf.get( calo_coll->at(index).getCellID(), "layer");
+      auto ch_layer = bf.get( calo_coll.at(index).getCellID(), "layer");
       clustersLayer[ch_layer].push_back(index);
     }
 
@@ -135,15 +97,15 @@ void computeClusters(const edm4hep::CalorimeterHitCollection* const& calo_coll,
       //std::cout << "  layer = " << clLay.first << std::endl;
       for(auto index : clLay.second){
         //std::cout << "    " << index << std::endl;
-        energy += calo_coll->at(index).getEnergy();
-        energyErr += sqrt(calo_coll->at(index).getEnergyError()*calo_coll->at(index).getEnergyError());
-        position.x += calo_coll->at(index).getPosition().x;
-        position.y += calo_coll->at(index).getPosition().y;
-        position.z += calo_coll->at(index).getPosition().z;
-        time += calo_coll->at(index).getTime();
+        energy += calo_coll.at(index).getEnergy();
+        energyErr += sqrt(calo_coll.at(index).getEnergyError()*calo_coll.at(index).getEnergyError());
+        position.x += calo_coll.at(index).getPosition().x;
+        position.y += calo_coll.at(index).getPosition().y;
+        position.z += calo_coll.at(index).getPosition().z;
+        time += calo_coll.at(index).getTime();
 
-        if (calo_coll->at(index).getEnergy() > maxEnergyValue) {
-          maxEnergyValue = calo_coll->at(index).getEnergy();
+        if (calo_coll.at(index).getEnergy() > maxEnergyValue) {
+          maxEnergyValue = calo_coll.at(index).getEnergy();
           maxEnergyIndex = index;
         }
       }
@@ -152,8 +114,8 @@ void computeClusters(const edm4hep::CalorimeterHitCollection* const& calo_coll,
       cluster.setEnergy(energy);
       // one could (should?) re-weight the barycentre with energy
       cluster.setPosition({position.x/clLay.second.size(), position.y/clLay.second.size(), position.z/clLay.second.size()});
-      cluster.setCellID(calo_coll->at(maxEnergyIndex).getCellID());
-      cluster.setType(calo_coll->at(maxEnergyIndex).getType());
+      cluster.setCellID(calo_coll.at(maxEnergyIndex).getCellID());
+      cluster.setType(calo_coll.at(maxEnergyIndex).getType());
       cluster.setTime(time/clLay.second.size());
     }
     clustersLayer.clear();

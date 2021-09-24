@@ -50,29 +50,41 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
     "EB_CaloHits_EDM4hep", Gaudi::DataHandle::Reader, this};
 
   const auto EB_calo_coll = EB_calo_handle.get();
-  read_EDM4HEP_event(EB_calo_coll, x, y, layer, weight);
+  if( EB_calo_coll->isValid() ) {
+    for(const auto& calo_hit_EB : (*EB_calo_coll) ){
+      calo_coll->push_back(calo_hit_EB.clone());
+    }
+  } else {
+    throw std::runtime_error("Collection not found.");
+  }
+  std::cout << EB_calo_coll->size() << " caloHits in Barrel." << std::endl;
 
   DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {  
     "EE_CaloHits_EDM4hep", Gaudi::DataHandle::Reader, this};
 
   const auto EE_calo_coll = EE_calo_handle.get();
-  read_EDM4HEP_event(EE_calo_coll, x, y, layer, weight);
-  std::cout << EB_calo_coll->size() << " caloHits in Barrel." << std::endl;
+  if( EE_calo_coll->isValid() ) {
+    for(const auto& calo_hit_EE : (*EE_calo_coll) ){
+      calo_coll->push_back(calo_hit_EE.clone());
+    }
+  } else {
+    throw std::runtime_error("Collection not found.");
+  }
   std::cout << EE_calo_coll->size() << " caloHits in Endcap." << std::endl;
 
-  // Put the CaloHits together
-  //const auto calo_coll = EB_calo_handle.get();
-  //std::copy(calo_coll->begin(), calo_coll->end(), std::back_inserter(EE_calo_coll) );
-  //std::cout << calo_coll->size() << std::endl;
+  std::cout << calo_coll->size() << " caloHits in total. " << std::endl;
+  read_EDM4HEP_event(calo_coll, x, y, layer, weight);
 
   std::map<int, std::vector<int> > clueClusters = runAlgo(x, y, layer, weight, "ciao.csv", true);
+  //std::cout << "Produced " << clueClusters.size() << " clusters" << std::endl;
 
   // Save clusters
   edm4hep::CalorimeterHitCollection* finalClusters = clustersHandle.createAndPut();
-  computeClusters(EE_calo_coll, clueClusters, finalClusters);
+  computeClusters(calo_coll, clueClusters, finalClusters);
   std::cout << "Saved " << finalClusters->size() << " clusters" << std::endl;
 
   //Cleaning
+  calo_coll.clear();
   x.clear();
   y.clear();
   layer.clear();
