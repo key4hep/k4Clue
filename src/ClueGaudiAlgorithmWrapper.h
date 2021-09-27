@@ -7,6 +7,7 @@
 #include <k4FWCore/DataHandle.h>
 
 #include <edm4hep/CalorimeterHitCollection.h>
+#include <edm4hep/ClusterCollection.h>
 
 class ClueGaudiAlgorithmWrapper : public GaudiAlgorithm {
 public:
@@ -33,7 +34,8 @@ public:
   std::vector<float> weight;
 
   // Collections in output
-  DataHandle<edm4hep::CalorimeterHitCollection> clustersHandle{"Output_hits", Gaudi::DataHandle::Writer, this};
+  DataHandle<edm4hep::CalorimeterHitCollection> fakeClustersHandle{"Output_hits", Gaudi::DataHandle::Writer, this};
+  DataHandle<edm4hep::ClusterCollection> clustersHandle{"CLUEClusters", Gaudi::DataHandle::Writer, this};
 
 };
 

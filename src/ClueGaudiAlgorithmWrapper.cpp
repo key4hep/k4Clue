@@ -11,6 +11,7 @@ ClueGaudiAlgorithmWrapper::ClueGaudiAlgorithmWrapper(const std::string& name, IS
   declareProperty("MinLocalDensity", rhoc, "Minimum local density for a point to be promoted as a Seed");
   declareProperty("OutlierDeltaFactor", outlierDeltaFactor, "Multiplicative constant to be applied to CriticalDistance");
   declareProperty("OutClusters", clustersHandle, "Clusters collection (output)");
+  declareProperty("OutClustersFake", fakeClustersHandle, "Fake clusters collection (output)");
 }
 
 StatusCode ClueGaudiAlgorithmWrapper::initialize() {
@@ -76,12 +77,16 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   read_EDM4HEP_event(calo_coll, x, y, layer, weight);
 
   std::map<int, std::vector<int> > clueClusters = runAlgo(x, y, layer, weight, "ciao.csv", true);
-  //std::cout << "Produced " << clueClusters.size() << " clusters" << std::endl;
+  std::cout << "Produced " << clueClusters.size() << " clusters" << std::endl;
 
   // Save clusters
-  edm4hep::CalorimeterHitCollection* finalClusters = clustersHandle.createAndPut();
+  edm4hep::ClusterCollection* finalClusters = clustersHandle.createAndPut();
   computeClusters(calo_coll, clueClusters, finalClusters);
   std::cout << "Saved " << finalClusters->size() << " clusters" << std::endl;
+
+  edm4hep::CalorimeterHitCollection* finalCaloHits = fakeClustersHandle.createAndPut();
+  computeCaloHits(calo_coll, clueClusters, finalCaloHits);
+  std::cout << "Saved " << finalCaloHits->size() << " clusters as calo hits" << std::endl;
 
   //Cleaning
   calo_coll.clear();
