@@ -166,6 +166,7 @@ int main(int argc, char *argv[]) {
   //////////////////////////////
   // Read data and run algo
   //////////////////////////////
+  edm4hep::CalorimeterHitCollection calo_coll;
   std::vector<float> x;
   std::vector<float> y;
   std::vector<int> layer;
@@ -185,11 +186,29 @@ int main(int argc, char *argv[]) {
 
     for(unsigned i=0; i<nEvents; ++i) {
       if(verbose)  std::cout<<"reading event "<<i<<std::endl;
-      //Read Barrel collection and shift in layer number
-      read_EDM4HEP_event(store, x, y, layer, weight, "EE_CaloHits_EDM4hep"); 
-      //std::transform(std::begin(layer),std::end(layer),std::begin(layer),[](int x){return x+100;});
 
-      read_EDM4HEP_event(store, x, y, layer, weight, "EB_CaloHits_EDM4hep"); 
+      const auto& EB_calo_coll = store.get<edm4hep::CalorimeterHitCollection>("EB_CaloHits_EDM4hep");
+      if( EB_calo_coll.isValid() ) {
+        for(const auto& calo_hit_EB : EB_calo_coll){
+          calo_coll->push_back(calo_hit_EB.clone());
+        }
+      } else {
+        throw std::runtime_error("Collection not found.");
+      }
+      std::cout << EB_calo_coll.size() << " caloHits in Barrel." << std::endl;
+
+      const auto& EE_calo_coll = store.get<edm4hep::CalorimeterHitCollection>("EE_CaloHits_EDM4hep");
+      if( EE_calo_coll.isValid() ) {
+        for(const auto& calo_hit_EE : EE_calo_coll ){
+          calo_coll->push_back(calo_hit_EE.clone());
+        }
+      } else {
+        throw std::runtime_error("Collection not found.");
+      }
+      std::cout << EE_calo_coll.size() << " caloHits in Endcap." << std::endl;
+    
+      std::cout << calo_coll->size() << " caloHits in total. " << std::endl;
+      read_EDM4HEP_event(calo_coll, x, y, layer, weight);
 
       std::string eventString = std::to_string(i);
       eventString.insert(eventString.begin(), padding - eventString.size(), '0');
@@ -207,6 +226,7 @@ int main(int argc, char *argv[]) {
       }
 
       // Cleaning
+      calo_coll.clear();
       x.clear();
       y.clear();
       layer.clear();

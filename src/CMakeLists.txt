@@ -3,6 +3,7 @@
 set(GLOB HEADER_LIST CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/include/*.h")
 
 ################################################################################
+set(CMAKE_CXX_FLAGS "-fPIC")
 
 if(CUDA_FOUND)
   ## internal flags for CUDA
@@ -107,3 +108,26 @@ if(CUDA_FOUND)
     $<BUILD_INTERFACE:${cupla_DIR}/alpaka/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 endif(CUDA_FOUND)
+################################################################################
+
+# CLUE as Gaudi algorithm
+
+find_package(k4FWCore)
+find_package(EDM4HEP)
+
+gaudi_add_module(ClueGaudiAlgorithmWrapper
+  SOURCES
+    ClueGaudiAlgorithmWrapper.cpp
+  LINK
+    Gaudi::GaudiAlgLib
+    Gaudi::GaudiKernel
+    k4FWCore::k4FWCore
+    EDM4HEP::edm4hep
+    CLUEAlgo_lib
+)
+
+target_include_directories(ClueGaudiAlgorithmWrapper PUBLIC
+  k4FWCore::k4FWCore
+  EDM4HEP::edm4hep
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+)
