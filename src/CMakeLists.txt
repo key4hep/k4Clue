@@ -110,7 +110,7 @@ if(CUDA_FOUND)
 endif(CUDA_FOUND)
 ################################################################################
 
-# Test dummy Gaudi algorithm
+# CLUE as Gaudi algorithm
 
 find_package(k4FWCore)
 find_package(EDM4HEP)
@@ -131,4 +131,3 @@ target_include_directories(ClueGaudiAlgorithmWrapper PUBLIC
   EDM4HEP::edm4hep
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
 )
-
