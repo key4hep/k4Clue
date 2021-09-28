@@ -1,6 +1,6 @@
 #include "ClueGaudiAlgorithmWrapper.h"
 
-#include "read_events.h"
+#include "IO_helper.h"
 #include "CLUEAlgo.h"
 
 DECLARE_COMPONENT(ClueGaudiAlgorithmWrapper)

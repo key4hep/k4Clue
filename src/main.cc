@@ -14,7 +14,7 @@
 #endif
 #endif
 
-#include "read_events.h"
+#include "IO_helper.h"
 
 //EDM4HEP libraries
 #include "podio/ROOTReader.h"
