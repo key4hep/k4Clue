@@ -24,22 +24,22 @@ void read_EDM4HEP_event(const edm4hep::CalorimeterHitCollection& calo_coll,
   float y_tmp;
   float r_tmp;
 
-    for (const auto& ch : calo_coll) {
-      const BitFieldCoder bf(bitFieldCoder) ;
-      auto ch_layer = bf.get( ch.getCellID(), "layer");
-      auto ch_energy = ch.getEnergy();
-  
-      //eta,phi
-      r_tmp = sqrt(ch.getPosition().x*ch.getPosition().x + ch.getPosition().y*ch.getPosition().y);
-      x_tmp = - 1. * log(tan(atan2(r_tmp, ch.getPosition().z)/2.));
-      y_tmp = atan2(ch.getPosition().y, ch.getPosition().x);
-  
-      x.push_back(x_tmp); 
-      y.push_back(y_tmp); 
-      layer.push_back(ch_layer); 
-      weight.push_back(ch_energy); 
+  for (const auto& ch : calo_coll) {
+    const BitFieldCoder bf(bitFieldCoder) ;
+    auto ch_layer = bf.get( ch.getCellID(), "layer");
+    auto ch_energy = ch.getEnergy();
+
+    //eta,phi
+    r_tmp = sqrt(ch.getPosition().x*ch.getPosition().x + ch.getPosition().y*ch.getPosition().y);
+    x_tmp = - 1. * log(tan(atan2(r_tmp, ch.getPosition().z)/2.));
+    y_tmp = atan2(ch.getPosition().y, ch.getPosition().x);
+
+    x.push_back(x_tmp); 
+    y.push_back(y_tmp); 
+    layer.push_back(ch_layer); 
+    weight.push_back(ch_energy); 
 //      std::cout << x_tmp << "," << y_tmp << "," << ch_layer << "," << ch_energy << std::endl;
-    }
+  }
 
   return;
 }

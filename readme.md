@@ -55,6 +55,7 @@ point.
  _deltac_ is the minimum distance for a local high density point to be promoted
 as a Seed. )
 
+* **Standalone CLUE**
 If the projects compiles without errors, you can go run the CLUE algorithm by
 ```bash
 cd build/src
@@ -64,9 +65,23 @@ cd build/src
 
 The input files are `data/input/*.csv` with columns 
 * x, y, layer, weight
+or are in `data/input/clic/*.root` with  
+* data in EDM4HEP format with `EB_CaloHits_EDM4hep` and `EE_CaloHits_EDM4hep` CalorimeterHit collections
 
 The output files are `data/output/*.csv` with columns
 * x, y, layer, weight, rho, delta, nh, isSeed, clusterId
+
+* **CLUE as Gaudi algorithm**
+If the projects compiles without errors, you can go run the CLUE algorithm by
+```bash
+cd build/
+./run gaudirun.py ../gaudi_opts/clue_gaudi_wrapper.py
+```
+
+The input file contains the CLUE parameters and input/output file name.
+Important:
+* EDM4HEP input must contain `EB_CaloHits_EDM4hep` and `EE_CaloHits_EDM4hep` CalorimeterHit collections
+The output file contains ClueClusters (currently also transformed as CaloHits).
 
 If you encounter any error when compiling or running this project, please
 contact us.

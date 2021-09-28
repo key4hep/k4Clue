@@ -6,9 +6,7 @@ algList = []
 
 from Configurables import PodioInput
 evtsvc = k4DataSvc('EventDataSvc')
-evtsvc.input = '../data/input/clic/gamma_energy_10GeV_theta_10deg_30deg.root'
-#evtsvc.input = '../data/input/clic/ttbar_3ev.root'
-
+evtsvc.input = '../data/input/clic/gamma_energy_10GeV_theta_70deg_90deg.root'
 
 inp = PodioInput('InputReader')
 inp.collections = [
@@ -50,7 +48,7 @@ algList.append(out)
 from Configurables import ApplicationMgr
 ApplicationMgr( TopAlg = algList,
                 EvtSel = 'NONE',
-                EvtMax   = 3,
+                EvtMax   = 2,
                 ExtSvc = [evtsvc],
                 OutputLevel=WARNING
               )
