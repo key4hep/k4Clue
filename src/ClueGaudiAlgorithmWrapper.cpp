@@ -80,7 +80,7 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
 
   // Save clusters
   edm4hep::ClusterCollection* finalClusters = clustersHandle.createAndPut();
-  computeClusters(calo_coll, clueClusters, finalClusters);
+  computeClusters(calo_coll, EB_calo_coll, EE_calo_coll, clueClusters, finalClusters);
   std::cout << "Saved " << finalClusters->size() << " clusters" << std::endl;
 
   edm4hep::CalorimeterHitCollection* finalCaloHits = fakeClustersHandle.createAndPut();
