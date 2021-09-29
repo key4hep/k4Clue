@@ -131,3 +131,10 @@ target_include_directories(ClueGaudiAlgorithmWrapper PUBLIC
   EDM4HEP::edm4hep
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
 )
+
+################################################################################
+set_source_files_properties(Validation.cc PROPERTIES LANGUAGE CXX)
+add_executable(validation Validation.cc)
+
+#target_compile_options(mainCuplaCPUTBB PRIVATE -DUSE_CUPLA -DFOR_TBB ${tbb_lib} -DUSE_EDM4HEP)
+target_link_libraries(validation PRIVATE EDM4HEP::edm4hep podio::podioRootIO DD4hep::DDCore)

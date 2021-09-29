@@ -6,12 +6,14 @@ algList = []
 
 from Configurables import PodioInput
 evtsvc = k4DataSvc('EventDataSvc')
-evtsvc.input = '../data/input/clic_gamma_10GeV.root'
+evtsvc.input = '../data/input/clic/gamma_energy_10GeV_theta_70deg_90deg.root'
+#evtsvc.input = '../data/input/clic/ttbar_3ev.root'
 
 inp = PodioInput('InputReader')
 inp.collections = [
   'EB_CaloHits_EDM4hep',
   'EE_CaloHits_EDM4hep',
+  'PandoraClusters_EDM4hep',
 ]
 inp.OutputLevel = DEBUG
 
