@@ -76,11 +76,26 @@ void computeClusters(const edm4hep::CalorimeterHitCollection& calo_coll,
                      const edm4hep::CalorimeterHitCollection* const EB_calo_coll,
                      const edm4hep::CalorimeterHitCollection* const EE_calo_coll,
                      const std::map<int, std::vector<int> > clusterMap, 
-                     edm4hep::ClusterCollection* clusters){
+                     edm4hep::ClusterCollection* clusters,
+                     edm4hep::CalorimeterHitCollection* finalOuliers){
   const BitFieldCoder bf(bitFieldCoder) ;
 
   for(auto cl : clusterMap){
     //std::cout << cl.first << std::endl;
+
+    // outliers are saved in a different collection
+    if(cl.first == -1){
+      for(auto index : cl.second){
+        auto ch_layer = bf.get( calo_coll.at(index).getCellID(), "layer");
+        auto outlier = finalOuliers->create();
+        if( index < EB_calo_coll->size() )
+          outlier = EB_calo_coll->at(index).clone();
+        else
+          outlier = EB_calo_coll->at(index - EB_calo_coll->size()).clone();
+      }
+      continue;
+    }
+
     std::map<int, std::vector<int> > clustersLayer;
     for(auto index : cl.second){
       auto ch_layer = bf.get( calo_coll.at(index).getCellID(), "layer");
@@ -135,6 +150,11 @@ void computeCaloHits(const edm4hep::CalorimeterHitCollection& calo_coll,
 
   for(auto cl : clusterMap){
     //std::cout << cl.first << std::endl;
+
+    // outliers are saved in a different collection
+    if(cl.first == -1)
+      continue;
+
     std::map<int, std::vector<int> > clustersLayer;
     for(auto index : cl.second){
       auto ch_layer = bf.get( calo_coll.at(index).getCellID(), "layer");
