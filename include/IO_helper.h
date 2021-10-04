@@ -88,10 +88,14 @@ void computeClusters(const edm4hep::CalorimeterHitCollection& calo_coll,
       for(auto index : cl.second){
         auto ch_layer = bf.get( calo_coll.at(index).getCellID(), "layer");
         auto outlier = finalOuliers->create();
-        if( index < EB_calo_coll->size() )
-          outlier = EB_calo_coll->at(index).clone();
-        else
-          outlier = EB_calo_coll->at(index - EB_calo_coll->size()).clone();
+        if( EB_calo_coll->size() != 0){
+          if( index < EB_calo_coll->size() )
+            outlier = EB_calo_coll->at(index).clone();
+          else
+            outlier = EE_calo_coll->at(index - EB_calo_coll->size()).clone();
+        } else {
+          outlier = EE_calo_coll->at(index).clone();
+        }
       }
       continue;
     }
@@ -119,10 +123,14 @@ void computeClusters(const edm4hep::CalorimeterHitCollection& calo_coll,
         position.x += calo_coll.at(index).getPosition().x;
         position.y += calo_coll.at(index).getPosition().y;
         position.z += calo_coll.at(index).getPosition().z;
-        if( index < EB_calo_coll->size() )
-          cluster.addToHits(EB_calo_coll->at(index));
-        else
-          cluster.addToHits(EE_calo_coll->at(index - EB_calo_coll->size()));
+        if( EB_calo_coll->size() != 0){
+          if( index < EB_calo_coll->size() )
+            cluster.addToHits(EB_calo_coll->at(index));
+          else
+            cluster.addToHits(EE_calo_coll->at(index - EB_calo_coll->size()));
+        } else {
+          cluster.addToHits(EE_calo_coll->at(index));
+        }
 
         if (calo_coll.at(index).getEnergy() > maxEnergyValue) {
           maxEnergyValue = calo_coll.at(index).getEnergy();
@@ -135,6 +143,7 @@ void computeClusters(const edm4hep::CalorimeterHitCollection& calo_coll,
       // one could (should?) re-weight the barycentre with energy
       cluster.setPosition({position.x/clLay.second.size(), position.y/clLay.second.size(), position.z/clLay.second.size()});
       cluster.setType(calo_coll.at(maxEnergyIndex).getType());
+      //std::cout << cluster.getHits().size() << " caloHits in this cluster" << std::endl;
     }
     clustersLayer.clear();
 
