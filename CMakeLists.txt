@@ -9,6 +9,10 @@ project(
   DESCRIPTION "The CLUstering by Energy algorithm"
   LANGUAGES CXX)
 
+if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+      set (CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/install" CACHE PATH "default install path" FORCE )
+      endif()
+
 # Location of the CUDA Toolkit
 set(CMAKE_CUDA_COMPILER "/usr/local/cuda-10.2/bin/nvcc")
 find_package(CUDA)
@@ -60,8 +64,8 @@ if(Gaudi_FOUND)
   message(STATUS "Gaudi package found!")
 endif()
 
-gaudi_install(PYTHON)
-gaudi_install(SCRIPTS)
+#gaudi_install(PYTHON)
+#gaudi_install(SCRIPTS)
 
 add_subdirectory(src)
 
