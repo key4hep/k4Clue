@@ -2,7 +2,9 @@
 
 #include <TString.h>
 #include <TH1F.h>
+#include <TH2F.h>
 #include <TGraph.h>
+#include <TGraph2D.h>
 #include <TFile.h>
 #include <TDirectory.h>
 
@@ -16,6 +18,7 @@ using namespace dd4hep ;
 using namespace DDSegmentation ;
 
 std::string bitFieldCoder = "system:0:5,side:5:-2,module:7:8,stave:15:4,layer:19:9,submodule:28:4,x:32:-16,y:48:-16" ;
+
 TH1F* h_clusters = new TH1F("Num_clusters","Num_clusters",100, 0, 100);
 TH1F* h_clSize   = new TH1F("Size","Size",100, 0, 100);
 TH1F* h_clEnergy = new TH1F("Energy","Energy",100, 0, 0.100);
@@ -29,9 +32,11 @@ TH1F* h_outliersLayer   = new TH1F("Num_outliers_layer","Num_outliers_layer",100
 TH1F* h_outliersEnergyLayer = new TH1F("Outliers_energy_layer","Outliers_energy_layer",100, 0, 100);
 
 std::map<int, std::vector<TGraph*>> gPos;
+std::map<int, std::vector<TGraph2D*>> gPos3D;
 std::vector<TString> gNames = {"Pos_clusters_XZ", "Pos_clusters_YZ",
                                "Pos_clHits_XZ", "Pos_clHits_YZ",
                                "Pos_outliers_XZ", "Pos_outliers_YZ"};
+std::vector<TString> gNames3D = {"Pos_clusters", "Pos_clHits", "Pos_outliers"};
 
 void saveClustersAndCaloHits(const int nEvent, const edm4hep::ClusterCollection& cls,
                              const edm4hep::CalorimeterHitCollection& allHits
@@ -53,11 +58,13 @@ void saveClustersAndCaloHits(const int nEvent, const edm4hep::ClusterCollection&
     h_clSize->Fill(cl.getHits().size());
     gPos[nEvent][0]->SetPoint(nClusters, cl.getPosition().z, cl.getPosition().x);
     gPos[nEvent][1]->SetPoint(nClusters, cl.getPosition().z, cl.getPosition().y);
+    gPos3D[nEvent][0]->SetPoint(nClusters, cl.getPosition().z, cl.getPosition().x, cl.getPosition().y);
 
-    std::cout << cl.getHits().size() << " caloHits in this cluster" << std::endl;
+    //std::cout << cl.getHits().size() << " caloHits in this cluster" << std::endl;
     for (const auto& hit : cl.getHits()) {
       gPos[nEvent][2]->SetPoint(nClusterHits, hit.getPosition().z, hit.getPosition().x);
       gPos[nEvent][3]->SetPoint(nClusterHits, hit.getPosition().z, hit.getPosition().y);
+      gPos3D[nEvent][1]->SetPoint(nClusterHits, hit.getPosition().z, hit.getPosition().x, hit.getPosition().y);
       const BitFieldCoder bf(bitFieldCoder) ;
       ch_layer = bf.get( hit.getCellID(), "layer");
       h_clHitsLayer->Fill(ch_layer);
@@ -78,6 +85,7 @@ void saveClustersAndCaloHits(const int nEvent, const edm4hep::ClusterCollection&
     if(isOutlier.at(iHit)==1){
       gPos[nEvent][4]->SetPoint(nOutliers, allHits.at(iHit).getPosition().z, allHits.at(iHit).getPosition().x);
       gPos[nEvent][5]->SetPoint(nOutliers, allHits.at(iHit).getPosition().z, allHits.at(iHit).getPosition().y);
+      gPos3D[nEvent][2]->SetPoint(nOutliers, allHits.at(iHit).getPosition().z, allHits.at(iHit).getPosition().x, allHits.at(iHit).getPosition().y);
       const BitFieldCoder bf(bitFieldCoder) ;
       ch_layer = bf.get( allHits.at(iHit).getCellID(), "layer");
       h_outliersLayer->Fill(ch_layer);
@@ -86,8 +94,53 @@ void saveClustersAndCaloHits(const int nEvent, const edm4hep::ClusterCollection&
     }
   }
   h_outliers->Fill(nOutliers);
-  std::cout << nClusterHits << " caloHits in the clusters" << std::endl;
-  std::cout << nOutliers << " outliers" << std::endl;
+  //std::cout << nClusterHits << " caloHits in the clusters" << std::endl;
+  //std::cout << nOutliers << " outliers" << std::endl;
+
+}
+
+std::map<std::string, std::array<float, 2> > searchMinMax(const edm4hep::CalorimeterHitCollection& allHits){
+  float minEnergyValue = 999999.f, min_x = 999999.f, min_y = 999999.f, min_z = 999999.f;
+  float maxEnergyValue = -999999.f, max_x = -999999.f, max_y = -999999.f, max_z = -999999.f;
+  for (auto iHit : allHits) {
+    if (iHit.getEnergy() > maxEnergyValue) {
+      maxEnergyValue = iHit.getEnergy();
+    }
+    if (iHit.getEnergy() < minEnergyValue) {
+      minEnergyValue = iHit.getEnergy();
+    }
+    if (iHit.getPosition().x > max_x) {
+      max_x = iHit.getPosition().x;
+    }
+    if (iHit.getPosition().x < min_x) {
+      min_x = iHit.getPosition().x;
+    }
+    if (iHit.getPosition().y > max_y) {
+      max_y = iHit.getPosition().y;
+    }
+    if (iHit.getPosition().y < min_y) {
+      min_y = iHit.getPosition().y;
+    }
+    if (iHit.getPosition().z > max_z) {
+      max_z = iHit.getPosition().z;
+    }
+    if (iHit.getPosition().z < min_z) {
+      min_z = iHit.getPosition().z;
+    }
+  }
+
+  std::map<std::string, std::array<float, 2> > ranges;
+  ranges.insert( std::pair<std::string, std::array<float, 2> >("energy", {minEnergyValue, maxEnergyValue}) );
+  ranges.insert( std::pair<std::string, std::array<float, 2> >("x", {min_x, max_x}) );
+  ranges.insert( std::pair<std::string, std::array<float, 2> >("y", {min_y, max_y}) );
+  ranges.insert( std::pair<std::string, std::array<float, 2> >("z", {min_z, max_z}) );
+
+  std::cout << "Ranges used to plot: " << std::endl;
+  for(auto range : ranges){
+    std::cout << "  " << range.first << " = [" << range.second[0] << ", " << range.second[1] << "]" << std::endl;
+  }
+
+  return ranges;
 
 }
 
@@ -108,7 +161,7 @@ int main(int argc, char *argv[]) {
   }
 
   if(saveEachEvent)
-    std::cout << "Careful! You will be saving more plots that you actually want!" << std::endl;
+    std::cout << "Careful! You will be saving more plots than you actually want!" << std::endl;
 
   // Read EDM4HEP data
   if(inputFileName.find(".root")!=std::string::npos){
@@ -150,6 +203,11 @@ int main(int argc, char *argv[]) {
          gPos[i].push_back(g);
          gPos[i][iName]->SetName(gNames[iName]);
        }
+       for (int iName=0;iName<gNames3D.size();iName++) {
+         TGraph2D* g = new TGraph2D();
+         gPos3D[i].push_back(g);
+         gPos3D[i][iName]->SetName(gNames3D[iName]);
+       }
       }
       const auto& EB_calo_coll = store.get<edm4hep::CalorimeterHitCollection>("EB_CaloHits_EDM4hep");
       if( EB_calo_coll.isValid() ) {
@@ -173,7 +231,9 @@ int main(int argc, char *argv[]) {
       std::cout << calo_coll->size() << " caloHits in total. " << std::endl;
 
       const auto& clusters = store.get<edm4hep::ClusterCollection>(clusterCollectionName);
+      std::map<std::string, std::array<float, 2> > minMaxParameters;
       if( clusters.isValid() ) {
+        minMaxParameters = searchMinMax(calo_coll);
         saveClustersAndCaloHits(i, clusters, calo_coll);
       } else {
         throw std::runtime_error("Collection not found.");
@@ -185,12 +245,33 @@ int main(int argc, char *argv[]) {
 
       if(saveEachEvent){
         for (int iName=0;iName<gNames.size();iName++) {
+          if(gNames[iName].Contains("XZ")){
+            gPos[i][iName]->GetXaxis()->SetLimits(minMaxParameters["z"][0], minMaxParameters["z"][1]);
+            gPos[i][iName]->GetYaxis()->SetRangeUser(minMaxParameters["x"][0], minMaxParameters["x"][1]);
+          }
+          if(gNames[iName].Contains("YZ")){
+            gPos[i][iName]->GetXaxis()->SetLimits(minMaxParameters["z"][0], minMaxParameters["z"][1]);
+            gPos[i][iName]->GetYaxis()->SetRangeUser(minMaxParameters["y"][0], minMaxParameters["y"][1]);
+          }
           gPos[i][iName]->Write();
+        }
+        for (int iName=0;iName<gNames3D.size();iName++) {
+          //gPos3D[i][iName]->GetXaxis()->SetRangeUser(minMaxParameters["x"][0], minMaxParameters["x"][1]);
+          //gPos3D[i][iName]->GetYaxis()->SetRangeUser(minMaxParameters["z"][0], minMaxParameters["z"][1]);
+          //gPos3D[i][iName]->GetZaxis()->SetRangeUser(minMaxParameters["y"][0], minMaxParameters["y"][1]);
+          //TH2F* h2 = new TH2F(gNames3D[iName], gNames3D[iName], 100, 100.0, 102.0, 100, 100.0, 102.0);
+          //gPos3D[i][iName]->SetHistogram(h2);
+          gPos3D[i][iName]->GetXaxis()->SetLimits(100.0, 102.0);
+          gPos3D[i][iName]->GetYaxis()->SetRange(100.0, 102.0);
+          gPos3D[i][iName]->GetZaxis()->SetRange(100.0, 102.0);
+          gPos3D[i][iName]->Write();
+          //h2->Write();
         }
 //        for (int l=0;l<maxLayer;l++) {
 //          hn[i][l]->Write();
 //        }
       }
+      std::cout<<std::endl;
 
     }
     reader.closeFile();
