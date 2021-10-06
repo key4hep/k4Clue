@@ -15,7 +15,7 @@ The pre-requisite dependencies are `>=gcc7`, `<=gcc8.3`, `>=cuda10`, `Boost`, `T
 source /cvmfs/sw.hsf.org/key4hep/setup.sh
 
 # then setup this project
-git clone --recurse-submodules https://gitlab.cern.ch/kalos/clue.git
+git clone --recurse-submodules https://gitlab.cern.ch/ebrondol/clue.git
 cd clue
 cmake -S . -B build
 cmake --build build
