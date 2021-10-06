@@ -6,7 +6,7 @@ algList = []
 
 from Configurables import PodioInput
 evtsvc = k4DataSvc('EventDataSvc')
-evtsvc.input = '../data/input/clic/gamma_energy_10GeV_theta_70deg_90deg.root'
+evtsvc.input = '../data/input/clic_gamma_barrel.root'
 
 inp = PodioInput('InputReader')
 inp.collections = [
