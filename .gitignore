@@ -4,9 +4,6 @@ spack*
 build*
 *.d
 install
-*.root
-*.png
-*.pdf
 *.log
 *.dat
 spack*

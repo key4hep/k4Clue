@@ -6,7 +6,7 @@ algList = []
 
 from Configurables import PodioInput
 evtsvc = k4DataSvc('EventDataSvc')
-evtsvc.input = '../data/input/clic_gamma_barrel.root'
+evtsvc.input = '../data/input/clic_gamma_10GeV.root'
 
 inp = PodioInput('InputReader')
 inp.collections = [
@@ -15,17 +15,15 @@ inp.collections = [
 ]
 inp.OutputLevel = DEBUG
 
-END_TAG = "END_TAG"
-
 from Configurables import MarlinProcessorWrapper
 
 MyAIDAProcessor = MarlinProcessorWrapper("MyAIDAProcessor")
 MyAIDAProcessor.OutputLevel = WARNING
 MyAIDAProcessor.ProcessorType = "AIDAProcessor"
-MyAIDAProcessor.Parameters = ["FileName", "histograms", END_TAG,
-                    "FileType", "root", END_TAG,
-                    "Compress", "1", END_TAG,
-                    ]
+MyAIDAProcessor.Parameters = {"FileName": ["histograms"],
+                    "FileType": ["root"],
+                    "Compress": ["1"],
+                    }
 
 
 from Configurables import ClueGaudiAlgorithmWrapper
@@ -48,7 +46,7 @@ algList.append(out)
 from Configurables import ApplicationMgr
 ApplicationMgr( TopAlg = algList,
                 EvtSel = 'NONE',
-                EvtMax   = 2,
+                EvtMax   = -1,
                 ExtSvc = [evtsvc],
                 OutputLevel=WARNING
               )
