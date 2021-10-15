@@ -17,12 +17,13 @@ public:
   virtual StatusCode finalize() override final;
   virtual StatusCode initialize() override final;
 
-  std::map<int, std::vector<int> > runAlgo(std::vector<float>& x, std::vector<float>& y, std::vector<int>& layer, std::vector<float>& weight,
-               std::string outputFileName,
-               bool verbose  );
+  std::map<int, std::vector<int> > runAlgo(std::vector<float>& x, std::vector<float>& y, 
+                                           std::vector<int>& layer, std::vector<float>& weight);
 
   private:
   // Parameters in input
+  std::string EBCaloCollectionName;
+  std::string EECaloCollectionName;
   float dc;
   float rhoc;
   float outlierDeltaFactor;

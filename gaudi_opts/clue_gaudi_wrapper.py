@@ -31,6 +31,8 @@ MyAIDAProcessor.Parameters = ["FileName", "histograms", END_TAG,
 from Configurables import ClueGaudiAlgorithmWrapper
 
 MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper("ClueGaudiAlgorithmWrapperName")
+MyClueGaudiAlgorithmWrapper.BarrelCaloHitsCollection = "EB_CaloHits_EDM4hep"
+MyClueGaudiAlgorithmWrapper.EndcapCaloHitsCollection = "EE_CaloHits_EDM4hep"
 MyClueGaudiAlgorithmWrapper.CriticalDistance = 10.00
 MyClueGaudiAlgorithmWrapper.MinLocalDensity = 0.02
 MyClueGaudiAlgorithmWrapper.OutlierDeltaFactor = 1.00
