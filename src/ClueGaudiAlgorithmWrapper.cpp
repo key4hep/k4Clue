@@ -6,7 +6,7 @@
 DECLARE_COMPONENT(ClueGaudiAlgorithmWrapper)
 
 ClueGaudiAlgorithmWrapper::ClueGaudiAlgorithmWrapper(const std::string& name, ISvcLocator* pSL) :
-  GaudiAlgorithm(name, pSL) {
+  GaudiAlgorithm(name, pSL), m_eventDataSvc("EventDataSvc", "ClueGaudiAlgorithmWrapper") {
   declareProperty("BarrelCaloHitsCollection", EBCaloCollectionName, "Collection for Barrel Calo Hits used in input");
   declareProperty("EndcapCaloHitsCollection", EECaloCollectionName, "Collection for Endcap Calo Hits used in input");
   declareProperty("CriticalDistance", dc, "Used to compute the local density");
@@ -14,10 +14,18 @@ ClueGaudiAlgorithmWrapper::ClueGaudiAlgorithmWrapper(const std::string& name, IS
   declareProperty("OutlierDeltaFactor", outlierDeltaFactor, "Multiplicative constant to be applied to CriticalDistance");
   declareProperty("OutClusters", clustersHandle, "Clusters collection (output)");
   declareProperty("OutClustersFake", fakeClustersHandle, "Fake clusters collection (output)");
+
+  StatusCode sc = m_eventDataSvc.retrieve();
 }
 
 StatusCode ClueGaudiAlgorithmWrapper::initialize() {
   std::cout << "ClueGaudiAlgorithmWrapper::initialize()\n";
+
+  m_podioDataSvc = dynamic_cast<PodioDataSvc*>(m_eventDataSvc.get());
+  if (m_podioDataSvc == nullptr) {
+    return StatusCode::FAILURE;
+  }
+
   return Algorithm::initialize();
 }
 
@@ -50,6 +58,7 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
     EBCaloCollectionName, Gaudi::DataHandle::Reader, this};
 
   const auto EB_calo_coll = EB_calo_handle.get();
+
   if( EB_calo_coll->isValid() ) {
     for(const auto& calo_hit_EB : (*EB_calo_coll) ){
       calo_coll->push_back(calo_hit_EB.clone());
@@ -59,10 +68,15 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   }
   std::cout << EB_calo_coll->size() << " caloHits in " << EBCaloCollectionName << "." << std::endl;
 
+  // Get collection metadata cellID
+  auto EB_collID = EB_calo_coll->getID();
+  const auto EB_cellIDstr = EB_calo_handle.getCollMetadataCellID(EB_collID);
+
   DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {  
     EECaloCollectionName, Gaudi::DataHandle::Reader, this};
 
   const auto EE_calo_coll = EE_calo_handle.get();
+
   if( EE_calo_coll->isValid() ) {
     for(const auto& calo_hit_EE : (*EE_calo_coll) ){
       calo_coll->push_back(calo_hit_EE.clone());
@@ -71,6 +85,10 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
     throw std::runtime_error("Collection not found.");
   }
   std::cout << EE_calo_coll->size() << " caloHits in " << EBCaloCollectionName << "." << std::endl;
+
+  // Get collection metadata cellID
+  auto EE_collID = EE_calo_coll->getID();
+  const auto EE_cellIDstr = EE_calo_handle.getCollMetadataCellID(EE_collID);
 
   std::cout << calo_coll->size() << " caloHits in total. " << std::endl;
   read_EDM4HEP_event(calo_coll, x, y, layer, weight);
@@ -85,6 +103,10 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
 
   edm4hep::CalorimeterHitCollection* finalCaloHits = fakeClustersHandle.createAndPut();
   computeCaloHits(calo_coll, clueClusters, finalCaloHits);
+  // Add cellID to calohits
+  auto& callohits_md = m_podioDataSvc->getProvider().getCollectionMetaData(finalCaloHits->getID());
+  callohits_md.setValue("CellIDEncodingString", EB_cellIDstr);
+
   std::cout << "Saved " << finalCaloHits->size() << " clusters as calo hits" << std::endl;
 
   //Cleaning
