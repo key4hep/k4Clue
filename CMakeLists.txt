@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.8)
 
 # Location of the cupla
-set(cupla_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cupla)
+set(cupla_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cupla CACHE PATH "Path to CUPLA (by default: submodule)")
 
 project(
   CLUE
