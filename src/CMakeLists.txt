@@ -13,7 +13,7 @@ if(CUDA_FOUND)
   string(APPEND CMAKE_CUDA_FLAGS " ${LDFLAGS}")
   
   # c++ flags
-  set(CCFLAGS "-std=c++14")
+  set(CCFLAGS "-std=c++17")
   string(APPEND CMAKE_CUDA_FLAGS " -Xcompiler ${CCFLAGS}")
   
   # other flags

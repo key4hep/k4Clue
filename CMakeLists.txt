@@ -14,7 +14,6 @@ if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
       endif()
 
 # Location of the CUDA Toolkit
-set(CMAKE_CUDA_COMPILER "/usr/local/cuda-10.2/bin/nvcc")
 find_package(CUDA)
 if(CUDA_FOUND)
   message(STATUS "Set up CUDA")
