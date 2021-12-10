@@ -27,7 +27,12 @@ mkdir install
 cd build/ ; cmake .. -DCMAKE_INSTALL_PREFIX=../install; make install
 ```
 If GPU/nvcc are available in the machine, the GPU version of CLUE will also be installed.
-The path to the nvcc compiler can be changed in `CmakeLists.txt` if needed.
+The path to the nvcc compiler will be automatically taken from the machine. nvcc <= 11.2 is needed. You can source it with:
+
+```sh
+# Get nvcc 11.2
+source /cvmfs/sft.cern.ch/lcg/releases/cuda/11.2-5cee1/x86_64-centos7-gcc8-opt/setup.sh
+```
 
 ### On an Ubuntu machine with GPUs: 
 
@@ -63,9 +68,9 @@ as a Seed. )
 
 If the projects compiles without errors, you can go run the CLUE algorithm by
 ```bash
-cd build/src
+cd build/src/clue
 # ./main [fileName] [dc] [rhoc] [outlierDeltaFactor] [useParallel] [verbose]
-./main ../../data/input/aniso_1000.csv 20 25 2 0 1 1
+./main ../../../data/input/aniso_1000.csv 20 25 2 0 1 1
 ```
 
 The input files are `data/input/*.csv` with columns 
