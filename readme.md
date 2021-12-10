@@ -29,6 +29,24 @@ cd build/ ; cmake .. -DCMAKE_INSTALL_PREFIX=../install; make install
 If GPU/nvcc are available in the machine, the GPU version of CLUE will also be installed.
 The path to the nvcc compiler can be changed in `CmakeLists.txt` if needed.
 
+### On a CentOS machine with CVMFS, and GPU
+
+```sh
+# Get Key4hep
+source /cvmfs/sw-nightlies.hsf.org/key4hep/setup.sh
+# Get nvcc 11.2
+source /cvmfs/sft.cern.ch/lcg/releases/cuda/11.2-5cee1/x86_64-centos7-gcc8-opt/setup.sh
+
+git clone --recurse-submodules https://gitlab.cern.ch/ebrondol/clue.git
+cd clue
+cmake -S . -B build
+cmake --build build
+
+# if installation is needed
+mkdir install
+cd build/ ; cmake .. -DCMAKE_INSTALL_PREFIX=../install; make install
+```
+
 ### On an Ubuntu machine with GPUs: 
 
 Install Boost and TBB first.
