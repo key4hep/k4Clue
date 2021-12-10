@@ -10,8 +10,8 @@ evtsvc.input = '../data/input/clic_gamma_10GeV.root'
 
 inp = PodioInput('InputReader')
 inp.collections = [
-  'EB_CaloHits_EDM4hep',
-  'EE_CaloHits_EDM4hep',
+  'ECALBarrel',
+  'ECALEndcap'
 ]
 inp.OutputLevel = DEBUG
 
@@ -29,8 +29,8 @@ MyAIDAProcessor.Parameters = {"FileName": ["histograms"],
 from Configurables import ClueGaudiAlgorithmWrapper
 
 MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper("ClueGaudiAlgorithmWrapperName")
-MyClueGaudiAlgorithmWrapper.BarrelCaloHitsCollection = "EB_CaloHits_EDM4hep"
-MyClueGaudiAlgorithmWrapper.EndcapCaloHitsCollection = "EE_CaloHits_EDM4hep"
+MyClueGaudiAlgorithmWrapper.BarrelCaloHitsCollection = "ECALBarrel"
+MyClueGaudiAlgorithmWrapper.EndcapCaloHitsCollection = "ECALEndcap"
 MyClueGaudiAlgorithmWrapper.CriticalDistance = 10.00
 MyClueGaudiAlgorithmWrapper.MinLocalDensity = 0.02
 MyClueGaudiAlgorithmWrapper.OutlierDeltaFactor = 1.00
