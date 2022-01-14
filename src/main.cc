@@ -181,13 +181,15 @@ int main(int argc, char *argv[]) {
 
     podio::EventStore store;
     store.setReader(&reader);
+    std::string bitFieldCoder = "system:0:5,side:5:-2,module:7:8,stave:15:4,layer:19:9,submodule:28:4,x:32:-16,y:48:-16" ;
+
     unsigned nEvents = reader.getEntries();
     int padding = std::to_string(nEvents).size();
 
     for(unsigned i=0; i<nEvents; ++i) {
       if(verbose)  std::cout<<"reading event "<<i<<std::endl;
 
-      const auto& EB_calo_coll = store.get<edm4hep::CalorimeterHitCollection>("EB_CaloHits_EDM4hep");
+      const auto& EB_calo_coll = store.get<edm4hep::CalorimeterHitCollection>("ECalBarrelCollection");
       if( EB_calo_coll.isValid() ) {
         for(const auto& calo_hit_EB : EB_calo_coll){
           calo_coll->push_back(calo_hit_EB.clone());
@@ -197,7 +199,7 @@ int main(int argc, char *argv[]) {
       }
       std::cout << EB_calo_coll.size() << " caloHits in Barrel." << std::endl;
 
-      const auto& EE_calo_coll = store.get<edm4hep::CalorimeterHitCollection>("EE_CaloHits_EDM4hep");
+      const auto& EE_calo_coll = store.get<edm4hep::CalorimeterHitCollection>("ECalEndcapCollection");
       if( EE_calo_coll.isValid() ) {
         for(const auto& calo_hit_EE : EE_calo_coll ){
           calo_coll->push_back(calo_hit_EE.clone());
@@ -208,7 +210,7 @@ int main(int argc, char *argv[]) {
       std::cout << EE_calo_coll.size() << " caloHits in Endcap." << std::endl;
     
       std::cout << calo_coll->size() << " caloHits in total. " << std::endl;
-      read_EDM4HEP_event(calo_coll, x, y, layer, weight);
+      read_EDM4HEP_event(calo_coll, bitFieldCoder, x, y, layer, weight);
 
       std::string eventString = std::to_string(i);
       eventString.insert(eventString.begin(), padding - eventString.size(), '0');

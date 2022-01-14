@@ -15,9 +15,7 @@
 using namespace dd4hep ;
 using namespace DDSegmentation ;
 
-std::string bitFieldCoder = "system:0:5,side:5:-2,module:7:8,stave:15:4,layer:19:9,submodule:28:4,x:32:-16,y:48:-16" ;
-
-void read_EDM4HEP_event(const edm4hep::CalorimeterHitCollection& calo_coll,
+void read_EDM4HEP_event(const edm4hep::CalorimeterHitCollection& calo_coll, std::string cellIDstr,
                         std::vector<float>& x, std::vector<float>& y, std::vector<int>& layer, std::vector<float>& weight) {
 
   float r_tmp;
@@ -25,7 +23,7 @@ void read_EDM4HEP_event(const edm4hep::CalorimeterHitCollection& calo_coll,
   float phi_tmp;
 
   for (const auto& ch : calo_coll) {
-    const BitFieldCoder bf(bitFieldCoder) ;
+    const BitFieldCoder bf(cellIDstr);
     auto ch_layer = bf.get( ch.getCellID(), "layer");
     auto ch_energy = ch.getEnergy();
 
@@ -73,9 +71,10 @@ void read_from_csv(const std::string& inputFileName,
 }
 
 void computeClusters(const edm4hep::CalorimeterHitCollection& calo_coll,
+                     std::string cellIDstr,
                      const std::map<int, std::vector<int> > clusterMap, 
                      edm4hep::ClusterCollection* clusters){
-  const BitFieldCoder bf(bitFieldCoder) ;
+  const BitFieldCoder bf(cellIDstr) ;
 
   for(auto cl : clusterMap){
     //std::cout << cl.first << std::endl;
@@ -121,10 +120,11 @@ void computeClusters(const edm4hep::CalorimeterHitCollection& calo_coll,
 }
 
 void computeCaloHits(const edm4hep::CalorimeterHitCollection& calo_coll,
+                     std::string cellIDstr,
                      const std::map<int, std::vector<int> > clusterMap, 
                      edm4hep::CalorimeterHitCollection* clusters){
 
-  const BitFieldCoder bf(bitFieldCoder) ;
+  const BitFieldCoder bf(cellIDstr) ;
 
   for(auto cl : clusterMap){
     //std::cout << cl.first << std::endl;
