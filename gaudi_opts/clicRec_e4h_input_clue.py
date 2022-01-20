@@ -554,7 +554,8 @@ MyDDMarlinPandora.Parameters = {
                                 "D0UnmatchedVertexTrackCut": ["5"],
                                 "DigitalMuonHits": ["0"],
                                 "ECalBarrelNormalVector": ["0", "0", "1"],
-                                "ECalCaloHitCollections": ["ECALBarrel", "ECALEndcap", "ECALOther"],
+                                #"ECalCaloHitCollections": ["ECALBarrel", "ECALEndcap", "ECALOther"],
+                                "ECalCaloHitCollections": ["CLUEHits"],
                                 "ECalMipThreshold": ["0.5"],
                                 "ECalScMipThreshold": ["0"],
                                 "ECalScToEMGeVCalibration": ["1"],
@@ -1770,7 +1771,16 @@ MyClueGaudiAlgorithmWrapper.CriticalDistance = 10.00
 MyClueGaudiAlgorithmWrapper.MinLocalDensity = 0.02
 MyClueGaudiAlgorithmWrapper.OutlierDeltaFactor = 1.00
 
+# EDM4hep to LCIO converter
+edm4hepConvTool = EDM4hep2LcioTool("MyDDMarlinPandoraEDM4hep2lcioConv")
+edm4hepConvTool.Parameters = [
+    "CLUEClusters", "CLUEClusters",
+    "CLUEHits", "CLUEHits",
+]
+edm4hepConvTool.OutputLevel = DEBUG
 
+# Add converter Tool to MyDDCaloDigi
+MyDDMarlinPandora.EDM4hep2LcioTool=edm4hepConvTool
 
 # Write output to EDM4hep
 from Configurables import PodioOutput
@@ -1806,6 +1816,7 @@ algList.append(ClonesAndSplitTracksFinder)  # Config.TrackingConformal
 algList.append(Refit)
 algList.append(MyDDCaloDigi)
 algList.append(MyDDSimpleMuonDigi)
+algList.append(MyClueGaudiAlgorithmWrapper)
 algList.append(MyDDMarlinPandora)
 algList.append(LumiCalReco)
 # # algList.append(BeamCalReco3TeV)  # Config.BeamCal3TeV
@@ -1828,13 +1839,12 @@ algList.append(JetClusteringAndRefiner)
 # # algList.append(VertexFinderUnconstrained)  # Config.VertexUnconstrainedON
 algList.append(Output_REC)
 algList.append(Output_DST)
-algList.append(MyClueGaudiAlgorithmWrapper)
 algList.append(out)
 
 from Configurables import ApplicationMgr
 ApplicationMgr( TopAlg = algList,
                 EvtSel = 'NONE',
-                EvtMax   = 10,
+                EvtMax   = 3,
                 ExtSvc = [evtsvc],
                 OutputLevel=WARNING
               )

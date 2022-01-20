@@ -13,7 +13,7 @@ ClueGaudiAlgorithmWrapper::ClueGaudiAlgorithmWrapper(const std::string& name, IS
   declareProperty("MinLocalDensity", rhoc, "Minimum local density for a point to be promoted as a Seed");
   declareProperty("OutlierDeltaFactor", outlierDeltaFactor, "Multiplicative constant to be applied to CriticalDistance");
   declareProperty("OutClusters", clustersHandle, "Clusters collection (output)");
-  declareProperty("OutClustersFake", fakeClustersHandle, "Fake clusters collection (output)");
+  declareProperty("OutCaloHits", caloHitsHandle, "Calo hits collection created from Clusters (output)");
 
   StatusCode sc = m_eventDataSvc.retrieve();
 }
@@ -68,9 +68,9 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   }
   std::cout << EB_calo_coll->size() << " caloHits in " << EBCaloCollectionName << "." << std::endl;
 
-  // Get collection metadata cellID
+  // Get collection metadata cellID which is valid for both EB and EE
   auto EB_collID = EB_calo_coll->getID();
-  const auto EB_cellIDstr = EB_calo_handle.getCollMetadataCellID(EB_collID);
+  const auto cellIDstr = EB_calo_handle.getCollMetadataCellID(EB_collID);
 
   DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {  
     EECaloCollectionName, Gaudi::DataHandle::Reader, this};
@@ -86,26 +86,23 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   }
   std::cout << EE_calo_coll->size() << " caloHits in " << EBCaloCollectionName << "." << std::endl;
 
-  // Get collection metadata cellID
-  auto EE_collID = EE_calo_coll->getID();
-  const auto EE_cellIDstr = EE_calo_handle.getCollMetadataCellID(EE_collID);
-
   std::cout << calo_coll->size() << " caloHits in total. " << std::endl;
-  read_EDM4HEP_event(calo_coll, x, y, layer, weight);
+  read_EDM4HEP_event(calo_coll, cellIDstr, x, y, layer, weight);
 
   std::map<int, std::vector<int> > clueClusters = runAlgo(x, y, layer, weight);
   std::cout << "Produced " << clueClusters.size() << " clusters" << std::endl;
 
   // Save clusters
   edm4hep::ClusterCollection* finalClusters = clustersHandle.createAndPut();
-  computeClusters(calo_coll, clueClusters, finalClusters);
+  computeClusters(calo_coll, cellIDstr, clueClusters, finalClusters);
   std::cout << "Saved " << finalClusters->size() << " clusters" << std::endl;
 
-  edm4hep::CalorimeterHitCollection* finalCaloHits = fakeClustersHandle.createAndPut();
-  computeCaloHits(calo_coll, clueClusters, finalCaloHits);
+  // Save clusters as calo hits
+  edm4hep::CalorimeterHitCollection* finalCaloHits = caloHitsHandle.createAndPut();
+  computeCaloHits(calo_coll, cellIDstr, clueClusters, finalCaloHits);
   // Add cellID to calohits
-  auto& callohits_md = m_podioDataSvc->getProvider().getCollectionMetaData(finalCaloHits->getID());
-  callohits_md.setValue("CellIDEncodingString", EB_cellIDstr);
+  auto& calohits_md = m_podioDataSvc->getProvider().getCollectionMetaData(finalCaloHits->getID());
+  calohits_md.setValue("CellIDEncodingString", cellIDstr);
 
   std::cout << "Saved " << finalCaloHits->size() << " clusters as calo hits" << std::endl;
 
