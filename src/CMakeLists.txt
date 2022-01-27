@@ -22,56 +22,6 @@ endif(CMAKE_CUDA_COMPILER)
 
 ################################################################################
 
-## Make an automatic library - will be static or dynamic based on user setting
-add_library(CLUE CLUEAlgo.cc ${HEADER_LIST})
-
-# We need this directory, and users of our library will need it too
-target_include_directories(CLUE PUBLIC
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
-
-set_target_properties(CLUE PROPERTIES
-    VERSION ${PROJECT_VERSION}
-    SOVERSION 1)
-
-if(CMAKE_CUDA_COMPILER)
-  add_library(CLUEGPU CLUEAlgoGPU.cu ${HEADER_LIST})
-
-  target_include_directories(CLUEGPU PUBLIC
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
-
-  set_target_properties(CLUEGPU PROPERTIES
-    VERSION ${PROJECT_VERSION}
-    SOVERSION 1)
-
-endif(CMAKE_CUDA_COMPILER)
-
-#install either only CLUE or CLUEGPU
-#depending on if CUDA compiler was found
-if(CMAKE_CUDA_COMPILER)
-  install(TARGETS CLUE CLUEGPU EXPORT MyClueLibConfig
-      ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-      LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-      RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR})
-  install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/CLUE)
-  
-  install(EXPORT MyClueLibConfig DESTINATION share/MyClueLib/cmake)
-  
-  export(TARGETS CLUE CLUEGPU FILE MyClueLibConfig.cmake)
-else()
-  install(TARGETS CLUE EXPORT MyClueLibConfig
-      ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-      LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-      RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR})
-  install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/CLUE)
-  
-  install(EXPORT MyClueLibConfig DESTINATION share/MyClueLib/cmake)
-  
-  export(TARGETS CLUE FILE MyClueLibConfig.cmake)
-endif()
-
-# IDEs should put the headers in a nice place
 source_group(
   TREE "${PROJECT_SOURCE_DIR}/include"
   PREFIX "Header Files"
