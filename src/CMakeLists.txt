@@ -22,29 +22,39 @@ endif(CMAKE_CUDA_COMPILER)
 
 ################################################################################
 
-## Make an automatic library - will be static or dynamic based on user setting
-add_library(CLUEAlgo_lib CLUEAlgo.cc ${HEADER_LIST})
-
-# We need this directory, and users of our library will need it too
-target_include_directories(CLUEAlgo_lib PUBLIC
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
-
-install(TARGETS CLUEAlgo_lib ${INSTALL_LIBRARIES}
-  EXPORT CLUEAlgoTarget
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}")
-
-if(CMAKE_CUDA_COMPILER)
-  add_library(CLUEAlgoGPU_lib CLUEAlgoGPU.cu ${HEADER_LIST})
-
-  target_include_directories(CLUEAlgoGPU_lib PUBLIC
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
-
-  install(TARGETS CLUEAlgoGPU_lib ${INSTALL_LIBRARIES}
-    EXPORT CLUEAlgoTarget
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}")
-endif(CMAKE_CUDA_COMPILER)
+### Make an automatic library - will be static or dynamic based on user setting
+#add_library(CLUE CLUEAlgo.cc ${HEADER_LIST})
+#
+## We need this directory, and users of our library will need it too
+#target_include_directories(CLUE PUBLIC
+#  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+#  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+#
+#set_target_properties(CLUE PROPERTIES
+#    VERSION ${PROJECT_VERSION}
+#    SOVERSION 1)
+#
+#install(TARGETS CLUE EXPORT MyClueLibConfig
+#    ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#    LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR})
+#install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/CLUE)
+#
+#install(EXPORT MyClueLibConfig DESTINATION share/MyClueLib/cmake)
+#
+#export(TARGETS CLUE FILE MyClueLibConfig.cmake)
+#
+#if(CMAKE_CUDA_COMPILER)
+#  add_library(CLUEAlgoGPU_lib CLUEAlgoGPU.cu ${HEADER_LIST})
+#
+#  target_include_directories(CLUEAlgoGPU_lib PUBLIC
+#    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+#    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+#
+#  install(TARGETS CLUEAlgoGPU_lib ${INSTALL_LIBRARIES}
+#    EXPORT CLUEAlgoTarget
+#    DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+#endif(CMAKE_CUDA_COMPILER)
 
 # IDEs should put the headers in a nice place
 source_group(
