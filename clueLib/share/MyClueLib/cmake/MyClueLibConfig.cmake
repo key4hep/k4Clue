@@ -16,7 +16,7 @@ set(CMAKE_IMPORT_FILE_VERSION 1)
 set(_targetsDefined)
 set(_targetsNotDefined)
 set(_expectedTargets)
-foreach(_expectedTarget CLUE)
+foreach(_expectedTarget CLUE CLUEGPU)
   list(APPEND _expectedTargets ${_expectedTarget})
   if(NOT TARGET ${_expectedTarget})
     list(APPEND _targetsNotDefined ${_expectedTarget})
@@ -54,6 +54,13 @@ endif()
 add_library(CLUE STATIC IMPORTED)
 
 set_target_properties(CLUE PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
+)
+
+# Create imported target CLUEGPU
+add_library(CLUEGPU STATIC IMPORTED)
+
+set_target_properties(CLUEGPU PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
 )
 

@@ -1,4 +1,4 @@
-#Thu Jan 27 16:57:03 2022"""Automatically generated. DO NOT EDIT please"""
+#Thu Jan 27 18:03:39 2022"""Automatically generated. DO NOT EDIT please"""
 import sys
 if sys.version_info >= (3,):
     # Python 2 compatibility
@@ -38,9 +38,9 @@ class ClueGaudiAlgorithmWrapper( ConfigurableAlgorithm ) :
     'RequireObjects' : [  ], # list
     'BarrelCaloHitsCollection' : '', # str
     'EndcapCaloHitsCollection' : '', # str
-    'CriticalDistance' : 7.57955e-17, # float
-    'MinLocalDensity' : 4.57482e-41, # float
-    'OutlierDeltaFactor' : 7.57954e-17, # float
+    'CriticalDistance' : 8.49293e+36, # float
+    'MinLocalDensity' : 4.56711e-41, # float
+    'OutlierDeltaFactor' : 8.49292e+36, # float
     'OutClusters' : DataHandle('CLUEClusters', 'W', 'DataWrapper<edm4hep::ClusterCollection>'), # DataHandle
     'OutCaloHits' : DataHandle('CLUEHits', 'W', 'DataWrapper<edm4hep::CalorimeterHitCollection>'), # DataHandle
   }
