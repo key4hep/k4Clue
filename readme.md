@@ -1,14 +1,20 @@
 ![Logo](plots/k4Clue_logo.png)
 
-# Standalone CLUE Algorithm on GPU and CPU
+# k4Clue: The CLUE Algorithm in key4hep
 
-Z.Chen[1], A. Di Pilato[2,3], F. Pantaleo[4], M. Rovere[4], C. Seez[5]
+## Standalone CLUE Algorithm on GPU and CPU
 
-*[1] Northwestern University, [2]University of Bari, [3]INFN, [4] CERN, [5]Imperial College London*
+Algorithm gitlab repository [here](https://gitlab.cern.ch/kalos/clue).
 
-Gitlab repository [here](https://gitlab.cern.ch/kalos/clue)
+Original authors:
+Z.Chen, A. Di Pilato, F. Pantaleo, M. Rovere, C. Seez
 
-## 1. Setup
+If you encounter any error when compiling or running the k4Clue project, please contact:
+* E. Brondolin, erica.brondolin@cern.ch
+* M. Rovere, marco.rovere@cern.ch
+* F. Pantaleo, felice.pantaleo@cern.ch
+
+## Setup
 
 ### On a lxplus machine:
 
@@ -23,8 +29,7 @@ cmake -S . -B build
 cmake --build build
 
 # if installation is needed
-mkdir install
-cd build/ ; cmake .. -DCMAKE_INSTALL_PREFIX=../install; make install
+cmake --install build/
 ```
 If GPU/nvcc are available in the machine, the GPU version of CLUE will also be installed.
 The path to the nvcc compiler will be automatically taken from the machine. nvcc <= 11.2 is needed. You can source it with:
@@ -34,25 +39,7 @@ The path to the nvcc compiler will be automatically taken from the machine. nvcc
 source /cvmfs/sft.cern.ch/lcg/releases/cuda/11.2-5cee1/x86_64-centos7-gcc8-opt/setup.sh
 ```
 
-### On an Ubuntu machine with GPUs: 
-
-Install Boost and TBB first.
-```bash
-sudo apt-get install libtbb-dev
-sudo apt-get install libboost-all-dev
-
-# then setup this project
-git clone --recurse-submodules https://gitlab.cern.ch/kalos/clue.git
-cd clue
-cmake -S . -B build
-cmake --build build
-
-# if installation is needed
-mkdir install
-cd build/ ; cmake .. -DCMAKE_INSTALL_PREFIX=../install; make install
-```
-
-## 2. Run CLUE standalone
+## Run CLUE standalone
 CLUE needs three parameters: `dc`, `rhoc` and `outlierDeltaFactor` (in the past four parameters were needed: `dc`, `deltao`, `deltac` and `rhoc`)
 
 _dc_ is the critical distance used to compute the local density.
@@ -87,16 +74,13 @@ cd build/
 ./run gaudirun.py ../gaudi_opts/clue_gaudi_wrapper.py
 ```
 
-The input files are `data/input/*.root` with data in the EDM4HEP format 
-* `ECALBarrel` and `ECALEndcap` CalorimeterHit collections are required
 CLUE parameters and input/output file name are contained in `clue_gaudi_wrapper.py`.
+The input files must contain data in the EDM4HEP format 
+* `ECALBarrel` and `ECALEndcap` CalorimeterHit collections are required
 
-The output file contains ClueClusters (currently also transformed as CaloHits).
+The output file contains `ClueClusters` (currently also transformed as CaloHits).
 
-If you encounter any error when compiling or running this project, please
-contact us.
-
-## 3. Run CLUE during the CLIC reconstruction
+## Run CLUE during the CLIC reconstruction
 
 Here a simple recipe (from beginning to end):
 ```
