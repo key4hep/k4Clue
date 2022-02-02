@@ -10,7 +10,7 @@ gaudi_add_module(ClueGaudiAlgorithmWrapper
     Gaudi::GaudiKernel
     k4FWCore::k4FWCore
     EDM4HEP::edm4hep
-    CLUEAlgo_lib
+    CLUELib
 )
 
 target_include_directories(ClueGaudiAlgorithmWrapper PUBLIC

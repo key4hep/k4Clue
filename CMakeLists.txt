@@ -4,9 +4,9 @@ cmake_minimum_required(VERSION 3.8)
 set(cupla_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cupla CACHE PATH "Path to CUPLA (by default: submodule)")
 
 project(
-  CLUE
+  k4CLUE
   VERSION 1.0
-  DESCRIPTION "The CLUstering by Energy algorithm"
+  DESCRIPTION "The CLUstering by Energy algorithm in key4hep"
   LANGUAGES CXX)
 
 # Check for CUDA
@@ -23,8 +23,8 @@ else()
 endif()
 
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-      set (CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/install" CACHE PATH "default install path" FORCE )
-      endif()
+  set (CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/install" CACHE PATH "default install path" FORCE )
+endif()
 
 if(CMAKE_CUDA_COMPILER)
   message(STATUS "Set up CUDA")
@@ -72,6 +72,7 @@ endif()
 #gaudi_install(PYTHON)
 #gaudi_install(SCRIPTS)
 
+add_subdirectory(clueLib)
 add_subdirectory(src)
 
 #Disable tests when ready

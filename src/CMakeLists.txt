@@ -22,46 +22,46 @@ endif(CMAKE_CUDA_COMPILER)
 
 ################################################################################
 
-## Make an automatic library - will be static or dynamic based on user setting
-add_library(CLUEAlgo_lib CLUEAlgo.cc ${HEADER_LIST})
+### Make an automatic library - will be static or dynamic based on user setting
+#add_library(CLUEAlgo_lib CLUEAlgo.cc ${HEADER_LIST})
+#
+## We need this directory, and users of our library will need it too
+#target_include_directories(CLUEAlgo_lib PUBLIC
+#  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+#  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+#
+#install(TARGETS CLUEAlgo_lib ${INSTALL_LIBRARIES}
+#  EXPORT CLUEAlgoTarget
+#  DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+#
+#if(CMAKE_CUDA_COMPILER)
+#  add_library(CLUEAlgoGPU_lib CLUEAlgoGPU.cu ${HEADER_LIST})
+#
+#  target_include_directories(CLUEAlgoGPU_lib PUBLIC
+#    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+#    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+#
+#  install(TARGETS CLUEAlgoGPU_lib ${INSTALL_LIBRARIES}
+#    EXPORT CLUEAlgoTarget
+#    DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+#endif(CMAKE_CUDA_COMPILER)
 
-# We need this directory, and users of our library will need it too
-target_include_directories(CLUEAlgo_lib PUBLIC
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
-
-install(TARGETS CLUEAlgo_lib ${INSTALL_LIBRARIES}
-  EXPORT CLUEAlgoTarget
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}")
-
-if(CMAKE_CUDA_COMPILER)
-  add_library(CLUEAlgoGPU_lib CLUEAlgoGPU.cu ${HEADER_LIST})
-
-  target_include_directories(CLUEAlgoGPU_lib PUBLIC
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
-
-  install(TARGETS CLUEAlgoGPU_lib ${INSTALL_LIBRARIES}
-    EXPORT CLUEAlgoTarget
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}")
-endif(CMAKE_CUDA_COMPILER)
-
-# IDEs should put the headers in a nice place
-source_group(
-  TREE "${PROJECT_SOURCE_DIR}/include"
-  PREFIX "Header Files"
-  FILES ${HEADER_LIST})
+## IDEs should put the headers in a nice place
+#source_group(
+#  TREE "${PROJECT_SOURCE_DIR}/include"
+#  PREFIX "Header Files"
+#  FILES ${HEADER_LIST})
 ################################################################################
 
 
 # Native C++ CLUE and native CUDA CLUE
-add_subdirectory(clue)
+#add_subdirectory(clue)
 
 # Native C++ CLUE and TBB CLUE using CUPLA
 add_subdirectory(clue_tbb_cupla)
 
 # Native C++ CLUE and CUDA CLUE using CUPLA
-add_subdirectory(clue_cuda_cupla)
+#add_subdirectory(clue_cuda_cupla)
 
 # CLUE as Gaudi algorithm
-add_subdirectory(k4clue)
+#add_subdirectory(k4clue)

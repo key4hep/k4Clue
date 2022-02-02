@@ -8,7 +8,7 @@ set_source_files_properties(${PROJECT_SOURCE_DIR}/src/main.cc PROPERTIES LANGUAG
 add_executable(mainCuplaCPUTBB ${PROJECT_SOURCE_DIR}/src/main.cc)
 
 target_compile_options(mainCuplaCPUTBB PRIVATE -DUSE_CUPLA -DFOR_TBB ${tbb_lib} -DUSE_EDM4HEP)
-target_link_libraries(mainCuplaCPUTBB PRIVATE CLUEAlgo_lib TBB::tbb EDM4HEP::edm4hep podio::podioRootIO DD4hep::DDCore)
+target_link_libraries(mainCuplaCPUTBB PRIVATE CLUELib TBB::tbb EDM4HEP::edm4hep podio::podioRootIO DD4hep::DDCore)
 
 target_include_directories(mainCuplaCPUTBB PUBLIC
   $<BUILD_INTERFACE:${cupla_DIR}/include>
@@ -18,4 +18,7 @@ target_include_directories(mainCuplaCPUTBB PUBLIC
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   PUBLIC
   $<BUILD_INTERFACE:${TBB_BASE}/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
