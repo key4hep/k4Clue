@@ -6,7 +6,8 @@ if(CMAKE_CUDA_COMPILER)
   set_source_files_properties(${PROJECT_SOURCE_DIR}/src/main.cc PROPERTIES LANGUAGE CUDA)
   add_executable(main ${PROJECT_SOURCE_DIR}/src/main.cc)
   
-  target_compile_options(main PRIVATE -DUSE_EDM4HEP  
+  target_compile_definitions(main PRIVATE USE_EDM4HEP)
+  target_compile_options(main PRIVATE
   $<$<COMPILE_LANGUAGE:CUDA>:
                         -Xcompiler;
                         -m64;

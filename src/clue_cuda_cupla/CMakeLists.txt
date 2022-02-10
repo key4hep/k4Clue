@@ -4,7 +4,8 @@
 if(CMAKE_CUDA_COMPILER)
   set_source_files_properties(${PROJECT_SOURCE_DIR}/src/main.cc PROPERTIES LANGUAGE CUDA)
   add_executable(mainCuplaCUDA ${PROJECT_SOURCE_DIR}/src/main.cc)
-  target_compile_options(mainCuplaCUDA PRIVATE -DUSE_CUPLA -DFOR_CUDA -DALPAKA_ACC_GPU_CUDA_ENABLED=1 -DUSE_EDM4HEP
+  target_compile_definitions(mainCuplaCUDA PRIVATE USE_CUPLA FOR_CUDA ALPAKA_ACC_GPU_CUDA_ENABLED=1 USE_EDM4HEP)
+  target_compile_options(mainCuplaCUDA PRIVATE
     $<$<COMPILE_LANGUAGE:CUDA>:
                         -Xcompiler;
                         -m64;
