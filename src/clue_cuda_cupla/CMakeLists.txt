@@ -13,7 +13,7 @@ if(CMAKE_CUDA_COMPILER)
                         -w;
   >
   )
-  target_link_libraries(mainCuplaCUDA PRIVATE CLUEAlgo_lib edm4hep podio::podioRootIO DD4hep::DDCore)
+  target_link_libraries(mainCuplaCUDA PRIVATE CLUEAlgo_lib EDM4HEP::edm4hep podio::podioRootIO DD4hep::DDCore)
 
   target_include_directories(mainCuplaCUDA PUBLIC
     $<BUILD_INTERFACE:${cupla_DIR}/include>

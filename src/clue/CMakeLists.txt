@@ -16,7 +16,7 @@ if(CMAKE_CUDA_COMPILER)
   >
   )
 
-  target_link_libraries(main PRIVATE CLUE CLUEGPU edm4hep podio::podioRootIO DD4hep::DDCore)
+  target_link_libraries(main PRIVATE CLUE CLUEGPU EDM4HEP::edm4hep podio::podioRootIO DD4hep::DDCore)
 
   target_include_directories(main PUBLIC
   #$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/clueLib/include>
