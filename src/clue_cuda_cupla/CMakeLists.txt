@@ -13,21 +13,14 @@ if(CMAKE_CUDA_COMPILER)
                         -w;
   >
   )
-  target_link_libraries(mainCuplaCUDA PRIVATE CLUEAlgo_lib EDM4HEP::edm4hep podio::podioRootIO DD4hep::DDCore)
+  target_link_libraries(mainCuplaCUDA PRIVATE CLUE EDM4HEP::edm4hep podio::podioRootIO DD4hep::DDCore)
 
   target_include_directories(mainCuplaCUDA PUBLIC
     $<BUILD_INTERFACE:${cupla_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     PUBLIC
     $<BUILD_INTERFACE:${cupla_DIR}/alpaka/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-    PUBLIC
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/clueLib/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   )
-
 endif(CMAKE_CUDA_COMPILER)
 ################################################################################
