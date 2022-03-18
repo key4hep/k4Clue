@@ -1,6 +1,7 @@
 # mainCuplaCUDA: this will build the native C++ implementation of CLUE and its
 #       corresponding CUDA one built using CUPLA. Which one to use must be
 #       selected at runtime via a flag.
+
 if(CMAKE_CUDA_COMPILER)
   set_source_files_properties(${PROJECT_SOURCE_DIR}/src/main.cc PROPERTIES LANGUAGE CUDA)
   add_executable(mainCuplaCUDA ${PROJECT_SOURCE_DIR}/src/main.cc)
@@ -15,5 +16,11 @@ if(CMAKE_CUDA_COMPILER)
     PUBLIC
     $<BUILD_INTERFACE:${cupla_DIR}/alpaka/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+
+  add_test(NAME mainCuplaCUDA_CPU 
+           COMMAND mainCuplaCUDA ../../../data/input/aniso_1000.csv 20 25 2 0 1 1)
+  add_test(NAME mainCuplaCUDA_GPU 
+           COMMAND mainCuplaCUDA ../../../data/input/aniso_1000.csv 20 25 2 1 1 1)
+
 endif(CMAKE_CUDA_COMPILER)
 ################################################################################
