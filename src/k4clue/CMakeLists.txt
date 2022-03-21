@@ -18,3 +18,8 @@ target_include_directories(ClueGaudiAlgorithmWrapper PUBLIC
   EDM4HEP::edm4hep
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
 )
+
+add_test(NAME gaudiWrapper 
+         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/build/
+         COMMAND ./run gaudirun.py ../gaudi_opts/clue_gaudi_wrapper.py)
+
