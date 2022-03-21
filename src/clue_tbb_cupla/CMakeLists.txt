@@ -19,3 +19,8 @@ target_include_directories(mainCuplaCPUTBB PUBLIC
   PUBLIC
   $<BUILD_INTERFACE:${TBB_BASE}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+
+add_test(NAME mainCuplaCPUTBB_CPU 
+         COMMAND mainCuplaCPUTBB ../../../data/input/aniso_1000.csv 20 25 2 0 1 1)
+add_test(NAME mainCuplaCPUTBB_TBB 
+         COMMAND mainCuplaCPUTBB ../../../data/input/aniso_1000.csv 20 25 2 1 1 1)

@@ -19,7 +19,7 @@ ClueGaudiAlgorithmWrapper::ClueGaudiAlgorithmWrapper(const std::string& name, IS
 }
 
 StatusCode ClueGaudiAlgorithmWrapper::initialize() {
-  std::cout << "ClueGaudiAlgorithmWrapper::initialize()\n";
+  debug() << "ClueGaudiAlgorithmWrapper::initialize()" << endmsg ;
 
   m_podioDataSvc = dynamic_cast<PodioDataSvc*>(m_eventDataSvc.get());
   if (m_podioDataSvc == nullptr) {
@@ -33,7 +33,7 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo( std::vector
                                                                      std::vector<int>& layer, std::vector<float>& weight ){
 
   // Run CLUE
-  std::cout << "Using CLUEAlgo ... " << std::endl;
+  debug() << "Using CLUEAlgo ... " << endmsg;
   CLUEAlgo clueAlgo(dc, rhoc, outlierDeltaFactor, false);
   clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]);
   // measure excution time of makeClusters
@@ -41,17 +41,17 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo( std::vector
   clueAlgo.makeClusters();
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
-  std::cout << "Elapsed time: " << elapsed.count() *1000 << " ms\n";
+  debug() << "Elapsed time: " << elapsed.count() *1000 << " ms" << endmsg ;
   // output result to outputFileName. -1 means all points.
 
-  std::cout << "Finished running CLUE algorithm" << std::endl;
+  debug() << "Finished running CLUE algorithm" << endmsg;
 
   std::map<int, std::vector<int> > clueClusters = clueAlgo.getClusters();
   return clueClusters;
 }
 
 StatusCode ClueGaudiAlgorithmWrapper::execute() {
-  std::cout << "ClueGaudiAlgorithmWrapper::execute()\n";
+  debug() << "ClueGaudiAlgorithmWrapper::execute()" << endmsg ;
 
   // Read data and run algo
   DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {  
@@ -66,7 +66,7 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   } else {
     throw std::runtime_error("Collection not found.");
   }
-  std::cout << EB_calo_coll->size() << " caloHits in " << EBCaloCollectionName << "." << std::endl;
+  info() << EB_calo_coll->size() << " caloHits in " << EBCaloCollectionName << "." << endmsg;
 
   // Get collection metadata cellID which is valid for both EB and EE
   auto EB_collID = EB_calo_coll->getID();
@@ -84,18 +84,18 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   } else {
     throw std::runtime_error("Collection not found.");
   }
-  std::cout << EE_calo_coll->size() << " caloHits in " << EBCaloCollectionName << "." << std::endl;
+  info() << EE_calo_coll->size() << " caloHits in " << EBCaloCollectionName << "." << endmsg;
 
-  std::cout << calo_coll->size() << " caloHits in total. " << std::endl;
+  debug() << calo_coll->size() << " caloHits in total. " << endmsg;
   read_EDM4HEP_event(calo_coll, cellIDstr, x, y, layer, weight);
 
   std::map<int, std::vector<int> > clueClusters = runAlgo(x, y, layer, weight);
-  std::cout << "Produced " << clueClusters.size() << " clusters" << std::endl;
+  debug() << "Produced " << clueClusters.size() << " clusters" << endmsg;
 
   // Save clusters
   edm4hep::ClusterCollection* finalClusters = clustersHandle.createAndPut();
   computeClusters(calo_coll, cellIDstr, clueClusters, finalClusters);
-  std::cout << "Saved " << finalClusters->size() << " clusters" << std::endl;
+  info() << "Saved " << finalClusters->size() << " clusters" << endmsg;
 
   // Save clusters as calo hits
   edm4hep::CalorimeterHitCollection* finalCaloHits = caloHitsHandle.createAndPut();
@@ -104,7 +104,7 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   auto& calohits_md = m_podioDataSvc->getProvider().getCollectionMetaData(finalCaloHits->getID());
   calohits_md.setValue("CellIDEncodingString", cellIDstr);
 
-  std::cout << "Saved " << finalCaloHits->size() << " clusters as calo hits" << std::endl;
+  debug() << "Saved " << finalCaloHits->size() << " clusters as calo hits" << endmsg;
 
   //Cleaning
   calo_coll.clear();
@@ -117,6 +117,6 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
 }
 
 StatusCode ClueGaudiAlgorithmWrapper::finalize() {
-  std::cout << "ClueGaudiAlgorithmWrapper::finalize()\n";
+  debug() << "ClueGaudiAlgorithmWrapper::finalize()" << endmsg ;
   return Algorithm::finalize();
 }

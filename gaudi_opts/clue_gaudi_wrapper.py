@@ -29,6 +29,7 @@ MyAIDAProcessor.Parameters = {"FileName": ["histograms"],
 from Configurables import ClueGaudiAlgorithmWrapper
 
 MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper("ClueGaudiAlgorithmWrapperName")
+MyClueGaudiAlgorithmWrapper.OutputLevel = WARNING
 MyClueGaudiAlgorithmWrapper.BarrelCaloHitsCollection = "ECALBarrel"
 MyClueGaudiAlgorithmWrapper.EndcapCaloHitsCollection = "ECALEndcap"
 MyClueGaudiAlgorithmWrapper.CriticalDistance = 10.00
@@ -48,7 +49,7 @@ algList.append(out)
 from Configurables import ApplicationMgr
 ApplicationMgr( TopAlg = algList,
                 EvtSel = 'NONE',
-                EvtMax   = -1,
+                EvtMax   = 3,
                 ExtSvc = [evtsvc],
                 OutputLevel=WARNING
               )

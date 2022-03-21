@@ -72,10 +72,9 @@ endif()
 #gaudi_install(PYTHON)
 #gaudi_install(SCRIPTS)
 
-add_subdirectory(src)
+include(CTest)
 
-#Disable tests when ready
-#include(CTest)
+add_subdirectory(src)
 
 message(STATUS "Finished!")
 
