@@ -48,7 +48,7 @@ algList.append(out)
 from Configurables import ApplicationMgr
 ApplicationMgr( TopAlg = algList,
                 EvtSel = 'NONE',
-                EvtMax   = -1,
+                EvtMax   = 3,
                 ExtSvc = [evtsvc],
                 OutputLevel=WARNING
               )
