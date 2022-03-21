@@ -19,8 +19,6 @@ ClueGaudiAlgorithmWrapper::ClueGaudiAlgorithmWrapper(const std::string& name, IS
 }
 
 StatusCode ClueGaudiAlgorithmWrapper::initialize() {
-  warning() << "It is WARNING printout" << endmsg ;
-  
   debug() << "ClueGaudiAlgorithmWrapper::initialize()" << endmsg ;
 
   m_podioDataSvc = dynamic_cast<PodioDataSvc*>(m_eventDataSvc.get());
