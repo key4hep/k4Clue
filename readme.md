@@ -1,4 +1,4 @@
-[![linux](https://github.com/ebrondol/k4Clue/actions/workflows/test.yml/badge.svg)](https://github.com/ebrondol/k4Clue/actions/workflows/test.yml)
+[![linux](https://github.com/key4hep/k4Clue/actions/workflows/test.yml/badge.svg)](https://github.com/key4hep/k4Clue/actions/workflows/test.yml)
 
 ![Logo](plots/k4Clue_logo.png)
 
