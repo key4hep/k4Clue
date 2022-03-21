@@ -21,5 +21,10 @@ target_include_directories(ClueGaudiAlgorithmWrapper PUBLIC
 
 add_test(NAME gaudiWrapper 
          WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/build/
-         COMMAND ./run gaudirun.py ../gaudi_opts/clue_gaudi_wrapper.py)
+         COMMAND k4run ../gaudi_opts/clue_gaudi_wrapper.py --ClueGaudiAlgorithmWrapperName.OutputLevel 2)
+
+#This test must know how many clusters are built from CLUE in the last event
+set(eventClustersExpr "Saved 32 clusters")
+set_property(TEST gaudiWrapper 
+             PROPERTY PASS_REGULAR_EXPRESSION "${eventClustersExpr}")
 
