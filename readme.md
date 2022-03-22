@@ -14,37 +14,18 @@ Gitlab repository [here](https://gitlab.cern.ch/kalos/clue)
 
 ### On a lxplus machine:
 
-Source the key4hep environment:
+If CUDA/nvcc are found on the machine, the compilation is performed automatically also for the GPU case.
+The path to the nvcc compiler will be automatically taken from the machine. In this case, `>=cuda10` and `<=nvcc11.2` are also required.
+
 ```bash
+# source key4hep environment
 source /cvmfs/sw.hsf.org/key4hep/setup.sh
 
-# then setup this project
-git clone --recurse-submodules https://gitlab.cern.ch/ebrondol/clue.git
-cd clue
-cmake -S . -B build
-cmake --build build
-
-# if installation is needed
-mkdir install
-cd build/ ; cmake .. -DCMAKE_INSTALL_PREFIX=../install; make install
-```
-If GPU/nvcc are available in the machine, the GPU version of CLUE will also be installed.
-The path to the nvcc compiler will be automatically taken from the machine. nvcc <= 11.2 is needed. You can source it with:
-
-```sh
-# Get nvcc 11.2
+# get nvcc 11.2, if needed
 source /cvmfs/sft.cern.ch/lcg/releases/cuda/11.2-5cee1/x86_64-centos7-gcc8-opt/setup.sh
-```
-
-### On an Ubuntu machine with GPUs: 
-
-Install Boost and TBB first.
-```bash
-sudo apt-get install libtbb-dev
-sudo apt-get install libboost-all-dev
 
 # then setup this project
-git clone --recurse-submodules https://gitlab.cern.ch/kalos/clue.git
+git clone --recurse-submodules https://github.com/key4hep/k4Clue.git
 cd clue
 cmake -S . -B build
 cmake --build build
@@ -52,6 +33,7 @@ cmake --build build
 # if installation is needed
 mkdir install
 cd build/ ; cmake .. -DCMAKE_INSTALL_PREFIX=../install; make install
+```
 ```
 
 ## 2. Run CLUE standalone
@@ -70,9 +52,11 @@ as a Seed. )
 
 If the projects compiles without errors, you can go run the CLUE algorithm by
 ```bash
-cd build/src/clue
-# ./main [fileName] [dc] [rhoc] [outlierDeltaFactor] [useParallel] [verbose]
-./main ../../../data/input/aniso_1000.csv 20 25 2 0 1 1
+# ./build/src/clue/main [fileName] [dc] [rhoc] [outlierDeltaFactor] [useParallel] [verbose] [NumTBBThreads]
+./build/src/clue/main data/input/aniso_1000.csv 20 25 2 0 1 1
+
+#in case of only CPU
+#./build/src/clue_tbb_cupla/mainCuplaCPUTBB data/input/aniso_1000.csv 20 25 2 0 1 1
 ```
 
 The input files are `data/input/*.csv` with columns 
