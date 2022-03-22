@@ -29,6 +29,14 @@ std::string to_string_with_precision(const T a_value, const int n = 6)
     return out.str();
 }
 
+bool replace(std::string& str, const std::string& from, const std::string& to) {
+    size_t start_pos = str.find(from);
+    if(start_pos == std::string::npos)
+        return false;
+    str.replace(start_pos, from.length(), to);
+    return true;
+}
+
 std::string create_outputfileName(std::string inputFileName, float dc,
                                  float rhoc, float outlierDeltaFactor,
                                  bool useParallel,
@@ -43,16 +51,14 @@ std::string create_outputfileName(std::string inputFileName, float dc,
   suffix.append(underscore);
   suffix.append(eventNumber+"event");
   suffix.append(".csv");
-  size_t pos; std::string toReplace;
+
+  std::string outputFileName = inputFileName;
+  replace(outputFileName, "input", "output");
   if(inputFileName.find(".root")!=std::string::npos){
-    toReplace = ".root";
-    pos = inputFileName.find(toReplace);
-  } else if (inputFileName.find(".csv")!=std::string::npos){
-    toReplace = ".csv";
-    pos = inputFileName.find(toReplace);
-  } 
-  std::string replacement = inputFileName;
-  std::string outputFileName = replacement.replace(pos, toReplace.length(), suffix);
+    replace(outputFileName, ".root", ".csv");
+  }
+  replace(outputFileName, ".csv", suffix);
+
   return outputFileName;
 }
 
@@ -189,7 +195,7 @@ int main(int argc, char *argv[]) {
     for(unsigned i=0; i<nEvents; ++i) {
       if(verbose)  std::cout<<"reading event "<<i<<std::endl;
 
-      const auto& EB_calo_coll = store.get<edm4hep::CalorimeterHitCollection>("ECalBarrelCollection");
+      const auto& EB_calo_coll = store.get<edm4hep::CalorimeterHitCollection>("ECALBarrel");
       if( EB_calo_coll.isValid() ) {
         for(const auto& calo_hit_EB : EB_calo_coll){
           calo_coll->push_back(calo_hit_EB.clone());
@@ -199,7 +205,7 @@ int main(int argc, char *argv[]) {
       }
       std::cout << EB_calo_coll.size() << " caloHits in Barrel." << std::endl;
 
-      const auto& EE_calo_coll = store.get<edm4hep::CalorimeterHitCollection>("ECalEndcapCollection");
+      const auto& EE_calo_coll = store.get<edm4hep::CalorimeterHitCollection>("ECALEndcap");
       if( EE_calo_coll.isValid() ) {
         for(const auto& calo_hit_EE : EE_calo_coll ){
           calo_coll->push_back(calo_hit_EE.clone());
