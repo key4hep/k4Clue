@@ -14,12 +14,12 @@ if(CMAKE_CUDA_COMPILER)
   target_link_libraries(main PRIVATE CLUEAlgo_lib CLUEAlgoGPU_lib edm4hep podio::podioRootIO DD4hep::DDCore)
 
   add_test(NAME main_CPU 
-           COMMAND main /eos/project-k/key4hep/www/key4hep/testFiles/k4clue/inputData/standardCandles/aniso_1000.csv 20 25 2 0 1 1)
+           COMMAND main ${TESTFILE_CSV} 20 25 2 0 1 1)
   set_tests_properties(main_CPU PROPERTIES
                        FAIL_REGULAR_EXPRESSION "Error;ERROR;Failed")
 
   add_test(NAME main_GPU 
-           COMMAND main /eos/project-k/key4hep/www/key4hep/testFiles/k4clue/inputData/standardCandles/aniso_1000.csv 20 25 2 1 1 1)
+           COMMAND main ${TESTFILE_CSV} 20 25 2 1 1 1)
   set_tests_properties(main_GPU PROPERTIES
                        FAIL_REGULAR_EXPRESSION "Error;ERROR;Failed")
 

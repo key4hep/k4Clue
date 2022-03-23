@@ -21,12 +21,12 @@ target_include_directories(mainCuplaCPUTBB PUBLIC
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 add_test(NAME mainCuplaCPUTBB_CPU 
-         COMMAND mainCuplaCPUTBB /eos/project-k/key4hep/www/key4hep/testFiles/k4clue/inputData/standardCandles/aniso_1000.csv 20 25 2 0 1 1)
+         COMMAND mainCuplaCPUTBB ${TESTFILE_CSV} 20 25 2 0 1 1)
 set_tests_properties(mainCuplaCPUTBB_CPU PROPERTIES
                      FAIL_REGULAR_EXPRESSION "Error;ERROR;Failed")
 
 add_test(NAME mainCuplaCPUTBB_TBB 
-         COMMAND mainCuplaCPUTBB /eos/project-k/key4hep/www/key4hep/testFiles/k4clue/inputData/standardCandles/aniso_1000.csv 20 25 2 1 1 1)
+         COMMAND mainCuplaCPUTBB ${TESTFILE_CSV} 20 25 2 1 1 1)
 set_tests_properties(mainCuplaCPUTBB_TBB PROPERTIES
                      FAIL_REGULAR_EXPRESSION "Error;ERROR;Failed")
 

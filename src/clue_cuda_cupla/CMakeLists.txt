@@ -18,12 +18,12 @@ if(CMAKE_CUDA_COMPILER)
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
   add_test(NAME mainCuplaCUDA_CPU 
-           COMMAND mainCuplaCUDA /eos/project-k/key4hep/www/key4hep/testFiles/k4clue/inputData/standardCandles/aniso_1000.csv 20 25 2 0 1 1)
+           COMMAND mainCuplaCUDA ${TESTFILE_CSV} 20 25 2 0 1 1)
   set_tests_properties(mainCuplaCUDA_CPU PROPERTIES
                        FAIL_REGULAR_EXPRESSION "Error;ERROR;Failed")
 
   add_test(NAME mainCuplaCUDA_GPU 
-           COMMAND mainCuplaCUDA /eos/project-k/key4hep/www/key4hep/testFiles/k4clue/inputData/standardCandles/aniso_1000.csv 20 25 2 1 1 1)
+           COMMAND mainCuplaCUDA ${TESTFILE_CSV} 20 25 2 1 1 1)
   set_tests_properties(mainCuplaCUDA_GPU PROPERTIES
                        FAIL_REGULAR_EXPRESSION "Error;ERROR;Failed")
 
