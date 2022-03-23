@@ -34,7 +34,6 @@ cmake --build build
 mkdir install
 cd build/ ; cmake .. -DCMAKE_INSTALL_PREFIX=../install; make install
 ```
-```
 
 ## 2. Run CLUE standalone
 CLUE needs three parameters: `dc`, `rhoc` and `outlierDeltaFactor` (in the past four parameters were needed: `dc`, `deltao`, `deltac` and `rhoc`)
