@@ -52,9 +52,9 @@ source_group(
   PREFIX "Header Files"
   FILES ${HEADER_LIST})
 ################################################################################
-set(WWWFILE "https://key4hep.web.cern.ch/testFiles/k4clue/inputData/standardCandles/aniso_1000.csv")
+set(WWWFILE_CSV "https://key4hep.web.cern.ch/testFiles/k4clue/inputData/standardCandles/aniso_1000.csv")
 set(TESTFILE_CSV "${PROJECT_SOURCE_DIR}/data/input/aniso_1000.csv")
-file(DOWNLOAD ${WWWFILE} ${TESTFILE_CSV} SHOW_PROGRESS)
+file(DOWNLOAD ${WWWFILE_CSV} ${TESTFILE_CSV} SHOW_PROGRESS)
 
 # Native C++ CLUE and native CUDA CLUE
 add_subdirectory(clue)
