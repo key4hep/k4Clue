@@ -2,13 +2,10 @@
 
 ![Logo](plots/k4Clue_logo.png)
 
-# Standalone CLUE Algorithm on GPU and CPU
+# k4CLUE on GPU and CPU
 
-Z.Chen[1], A. Di Pilato[2,3], F. Pantaleo[4], M. Rovere[4], C. Seez[5]
-
-*[1] Northwestern University, [2]University of Bari, [3]INFN, [4] CERN, [5]Imperial College London*
-
-Gitlab repository [here](https://gitlab.cern.ch/kalos/clue)
+The CLUE algorithm ([here](https://gitlab.cern.ch/kalos/clue) the gitLab repo)
+was adapted to run in the Gaudi software framework and to support EDM4hep data format for inputs and outputs.
 
 ## 1. Setup
 
@@ -80,7 +77,10 @@ The output file `output.root` contains `CLUEClusters` (currently also transforme
 
 ## 3. Run CLUE during the CLIC reconstruction
 
-Here a simple recipe (from beginning to end):
+The CLIC electromagnetic calorimeter is foreseen to be a sampling calorimeter with high
+granularity and is thus particularly well-suited to test the CLUE algorithm. 
+
+A simple recipe follows to run k4CLUE as part of the CLIC reconstruction chain:
 ```
 source /cvmfs/sw-nightlies.hsf.org/key4hep/setup.sh
 git clone --recurse-submodules https://github.com/key4hep/k4Clue.git
