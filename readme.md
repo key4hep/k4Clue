@@ -26,7 +26,7 @@ source /cvmfs/sft.cern.ch/lcg/releases/cuda/11.2-5cee1/x86_64-centos7-gcc8-opt/s
 
 # then setup this project
 git clone --recurse-submodules https://github.com/key4hep/k4Clue.git
-cd clue
+cd k4Clue
 cmake -S . -B build
 cmake --build build
 
@@ -36,11 +36,11 @@ cd build/ ; cmake .. -DCMAKE_INSTALL_PREFIX=../install; make install
 ```
 
 ## 2. Run CLUE standalone
-CLUE needs three parameters: `dc`, `rhoc` and `outlierDeltaFactor` (in the past four parameters were needed: `dc`, `deltao`, `deltac` and `rhoc`)
+CLUE needs three parameters: `dc`, `rhoc` and `outlierDeltaFactor` (in the past four parameters were needed: `dc`, `deltao`, `deltac` and `rhoc`):
 
-_dc_ is the critical distance used to compute the local density.
-_rhoc_ is the minimum local density for a point to be promoted as a Seed.
-_outlierDeltaFactor_ is  a multiplicative constant to be applied to `dc`.
+* `dc` is the critical distance used to compute the local density;
+* `rhoc` is the minimum local density for a point to be promoted as a seed;
+* `outlierDeltaFactor` is  a multiplicative constant to be applied to `dc`.
 
 ( _deltao_ is the maximum distance for a point to be linked to a nearest higher
 point.
@@ -76,10 +76,7 @@ The input files are `data/input/*.root` with data in the EDM4HEP format
 * `ECALBarrel` and `ECALEndcap` CalorimeterHit collections are required
 CLUE parameters and input/output file name are contained in `clue_gaudi_wrapper.py`.
 
-The output file contains ClueClusters (currently also transformed as CaloHits).
-
-If you encounter any error when compiling or running this project, please
-contact us.
+The output file `output.root` contains `CLUEClusters` (currently also transformed as CaloHits).
 
 ## 3. Run CLUE during the CLIC reconstruction
 
@@ -110,3 +107,9 @@ k4run clue_gaudi_wrapper.py --EventDataSvc.input my_output.root --out.filename o
 ```
 
 In case you have changed something from the original repo and you have rebuild the package, you should use `source build/clueenv.sh` to make `k4run` aware of your new changes.
+
+## Package maintainer(s)
+
+If you encounter any error when compiling or running this project, please contact:
+* Erica Brondolin, erica.brondolin@cern.ch
+
