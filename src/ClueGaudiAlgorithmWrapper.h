@@ -3,6 +3,9 @@
 
 #include <GaudiAlg/GaudiAlgorithm.h>
 
+#include "GaudiKernel/ITHistSvc.h"
+#include "TH1F.h"
+
 // FWCore
 #include <k4FWCore/DataHandle.h>
 
@@ -42,6 +45,9 @@ public:
   DataHandle<edm4hep::CalorimeterHitCollection> caloHitsHandle{"CLUEHits", Gaudi::DataHandle::Writer, this};
   DataHandle<edm4hep::ClusterCollection> clustersHandle{"CLUEClusters", Gaudi::DataHandle::Writer, this};
 
+  // Histograms
+  ITHistSvc* m_ths{nullptr};  // THistogram service
+  TH1F* h_clusters{nullptr};
 };
 
 #endif

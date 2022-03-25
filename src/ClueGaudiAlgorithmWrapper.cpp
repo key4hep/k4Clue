@@ -26,6 +26,16 @@ StatusCode ClueGaudiAlgorithmWrapper::initialize() {
     return StatusCode::FAILURE;
   }
 
+  if (service("THistSvc", m_ths).isFailure()) {
+    error() << "Couldn't get THistSvc" << endmsg;
+    return StatusCode::FAILURE;
+  }
+
+  h_clusters = new TH1F("Num_clusters","Num_clusters",100, 0, 100);
+  if (m_ths->regHist("/rec/Num_cluesters", h_clusters).isFailure()) {
+    error() << "Couldn't register clusters" << endmsg;
+  }
+
   return Algorithm::initialize();
 }
 
@@ -96,6 +106,8 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   edm4hep::ClusterCollection* finalClusters = clustersHandle.createAndPut();
   computeClusters(calo_coll, cellIDstr, clueClusters, finalClusters);
   info() << "Saved " << finalClusters->size() << " clusters" << endmsg;
+
+  h_clusters->Fill(finalClusters->size());
 
   // Save clusters as calo hits
   edm4hep::CalorimeterHitCollection* finalCaloHits = caloHitsHandle.createAndPut();

@@ -36,6 +36,13 @@ MyClueGaudiAlgorithmWrapper.CriticalDistance = 10.00
 MyClueGaudiAlgorithmWrapper.MinLocalDensity = 0.02
 MyClueGaudiAlgorithmWrapper.OutlierDeltaFactor = 1.00
 
+from Configurables import THistSvc
+THistSvc().Output = ["rec DATAFILE='output_k4clue_analysis.root' TYP='ROOT' OPT='RECREATE'"]
+THistSvc().OutputLevel = INFO
+THistSvc().PrintAll = True
+THistSvc().AutoSave = True
+THistSvc().AutoFlush = True
+
 from Configurables import PodioOutput
 out = PodioOutput("out")
 out.filename = "output.root"
