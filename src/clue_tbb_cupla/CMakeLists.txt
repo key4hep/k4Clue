@@ -21,6 +21,20 @@ target_include_directories(mainCuplaCPUTBB PUBLIC
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 add_test(NAME mainCuplaCPUTBB_CPU 
-         COMMAND mainCuplaCPUTBB ../../../data/input/aniso_1000.csv 20 25 2 0 1 1)
+         COMMAND mainCuplaCPUTBB ${TESTFILE_CSV} 20 25 2 0 1 1)
+set_tests_properties(mainCuplaCPUTBB_CPU PROPERTIES
+                     FAIL_REGULAR_EXPRESSION "Error;ERROR;Failed")
+
 add_test(NAME mainCuplaCPUTBB_TBB 
-         COMMAND mainCuplaCPUTBB ../../../data/input/aniso_1000.csv 20 25 2 1 1 1)
+         COMMAND mainCuplaCPUTBB ${TESTFILE_CSV} 20 25 2 1 1 1)
+set_tests_properties(mainCuplaCPUTBB_TBB PROPERTIES
+                     FAIL_REGULAR_EXPRESSION "Error;ERROR;Failed")
+
+set(WWWFILE_ROOT "https://key4hep.web.cern.ch/testFiles/k4clue/inputData/clic/20220322_gamma_10GeV_uniform_edm4hep.root")
+set(TESTFILE_ROOT "${PROJECT_SOURCE_DIR}/data/input/20220322_gamma_10GeV_uniform_edm4hep.root")
+file(DOWNLOAD ${WWWFILE_ROOT} ${TESTFILE_ROOT} SHOW_PROGRESS)
+
+add_test(NAME mainEDM4HEP 
+         COMMAND mainCuplaCPUTBB ${TESTFILE_ROOT} 20 25 2 0 1 1)
+set_tests_properties(mainEDM4HEP PROPERTIES
+                     FAIL_REGULAR_EXPRESSION "Error;ERROR;Failed")

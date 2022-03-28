@@ -84,7 +84,7 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   } else {
     throw std::runtime_error("Collection not found.");
   }
-  info() << EE_calo_coll->size() << " caloHits in " << EBCaloCollectionName << "." << endmsg;
+  info() << EE_calo_coll->size() << " caloHits in " << EECaloCollectionName << "." << endmsg;
 
   debug() << calo_coll->size() << " caloHits in total. " << endmsg;
   read_EDM4HEP_event(calo_coll, cellIDstr, x, y, layer, weight);
