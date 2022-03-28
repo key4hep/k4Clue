@@ -5,6 +5,7 @@ find_package(EDM4HEP)
 gaudi_add_module(ClueGaudiAlgorithmWrapper
   SOURCES
     ${PROJECT_SOURCE_DIR}/src/ClueGaudiAlgorithmWrapper.cpp
+    ${PROJECT_SOURCE_DIR}/src/CLUECalorimeterHit.cpp
   LINK
     Gaudi::GaudiAlgLib
     Gaudi::GaudiKernel

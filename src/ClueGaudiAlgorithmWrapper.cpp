@@ -2,6 +2,7 @@
 
 #include "IO_helper.h"
 #include "CLUEAlgo.h"
+#include "CLUECalorimeterHit.h"
 
 DECLARE_COMPONENT(ClueGaudiAlgorithmWrapper)
 
@@ -101,6 +102,14 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
 
   std::map<int, std::vector<int> > clueClusters = runAlgo(x, y, layer, weight);
   debug() << "Produced " << clueClusters.size() << " clusters" << endmsg;
+
+  // Save CLUECaloHits
+  for(auto ch : calo_coll) {
+    info() << "CH      : " << ch.getPosition().x << endmsg;
+    clue::CLUECalorimeterHit cch(ch, 100, 3.0, 1.2);
+    info() << "CH CLUE layer, pos : " << cch.getLayer() << " " << cch.getPosition().x << endmsg;
+    info() << endmsg;
+  }
 
   // Save clusters
   edm4hep::ClusterCollection* finalClusters = clustersHandle.createAndPut();
