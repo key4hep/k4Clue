@@ -6,6 +6,7 @@ gaudi_add_module(ClueGaudiAlgorithmWrapper
   SOURCES
     ${PROJECT_SOURCE_DIR}/src/ClueGaudiAlgorithmWrapper.cpp
     ${PROJECT_SOURCE_DIR}/src/CLUECalorimeterHit.cpp
+    ${PROJECT_SOURCE_DIR}/src/CLUEHistograms.cpp
   LINK
     Gaudi::GaudiAlgLib
     Gaudi::GaudiKernel
@@ -26,7 +27,6 @@ add_test(NAME gaudiWrapper
          COMMAND bash -c "source clueenv.sh; \
                  k4run ${PROJECT_SOURCE_DIR}/gaudi_opts/clue_gaudi_wrapper.py --ClueGaudiAlgorithmWrapperName.OutputLevel 2")
 
-set(eventClustersExpr "ClueGaudiAlgorithmWrapper::execute")
-set_property(TEST gaudiWrapper 
-             PROPERTY PASS_REGULAR_EXPRESSION "${eventClustersExpr}")
+set_tests_properties(gaudiWrapper PROPERTIES
+                     FAIL_REGULAR_EXPRESSION "ERROR;Failed")
 

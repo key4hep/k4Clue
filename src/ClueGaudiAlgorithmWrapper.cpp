@@ -2,7 +2,6 @@
 
 #include "IO_helper.h"
 #include "CLUEAlgo.h"
-#include "CLUECalorimeterHit.h"
 
 DECLARE_COMPONENT(ClueGaudiAlgorithmWrapper)
 
@@ -25,16 +24,6 @@ StatusCode ClueGaudiAlgorithmWrapper::initialize() {
   m_podioDataSvc = dynamic_cast<PodioDataSvc*>(m_eventDataSvc.get());
   if (m_podioDataSvc == nullptr) {
     return StatusCode::FAILURE;
-  }
-
-  if (service("THistSvc", m_ths).isFailure()) {
-    error() << "Couldn't get THistSvc" << endmsg;
-    return StatusCode::FAILURE;
-  }
-
-  h_clusters = new TH1F("Num_clusters","Num_clusters",100, 0, 100);
-  if (m_ths->regHist("/rec/Num_cluesters", h_clusters).isFailure()) {
-    error() << "Couldn't register clusters" << endmsg;
   }
 
   return Algorithm::initialize();
@@ -104,19 +93,23 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   debug() << "Produced " << clueClusters.size() << " clusters" << endmsg;
 
   // Save CLUECaloHits
+  clue::CLUECalorimeterHitCollection clue_coll;
   for(auto ch : calo_coll) {
     info() << "CH      : " << ch.getPosition().x << endmsg;
-    clue::CLUECalorimeterHit cch(ch, 100, 3.0, 1.2);
-    info() << "CH CLUE layer, pos : " << cch.getLayer() << " " << cch.getPosition().x << endmsg;
+    clue::CLUECalorimeterHit cluech(ch.clone(), 100, 1, 1, 3.0, 1.2);
+    clue_coll.vect.push_back(cluech);
+    info() << "CH CLUE layer, pos : " << cluech.getLayer() << " " << cluech.getPosition().x << endmsg;
     info() << endmsg;
   }
+  info() << "-> clue coll final size " << clue_coll.vect.size() << endmsg;
+
+  auto pCHV = std::make_unique<clue::CLUECalorimeterHitCollection>(clue_coll);
+  const StatusCode scStatusV = eventSvc()->registerObject("/Event/CLUECalorimeterHitCollection", pCHV.release());
 
   // Save clusters
   edm4hep::ClusterCollection* finalClusters = clustersHandle.createAndPut();
   computeClusters(calo_coll, cellIDstr, clueClusters, finalClusters);
   info() << "Saved " << finalClusters->size() << " clusters" << endmsg;
-
-  h_clusters->Fill(finalClusters->size());
 
   // Save clusters as calo hits
   edm4hep::CalorimeterHitCollection* finalCaloHits = caloHitsHandle.createAndPut();

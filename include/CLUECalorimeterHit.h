@@ -2,11 +2,13 @@
 #define K4CLUE_CLUECALORIMETERHIT_H
 
 #include "edm4hep/CalorimeterHit.h"
+#include <GaudiKernel/DataObject.h>
+
 using namespace edm4hep;
 
 namespace clue {
 
-class CLUECalorimeterHit : public CalorimeterHit {
+class CLUECalorimeterHit : public CalorimeterHit, public DataObject {
 public:
   using CalorimeterHit::CalorimeterHit;
 
@@ -54,6 +56,11 @@ private:
   float m_r{};
   float m_eta{};
   float m_phi{};
+};
+
+class CLUECalorimeterHitCollection : public DataObject {
+public:
+  std::vector<CLUECalorimeterHit> vect;
 };
 
 } // namespace clue
