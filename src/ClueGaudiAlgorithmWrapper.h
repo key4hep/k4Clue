@@ -11,6 +11,7 @@
 
 #include <edm4hep/CalorimeterHitCollection.h>
 #include <edm4hep/ClusterCollection.h>
+#include "CLUECalorimeterHit.h"
 
 class ClueGaudiAlgorithmWrapper : public GaudiAlgorithm {
 public:
@@ -31,6 +32,7 @@ public:
   float rhoc;
   float outlierDeltaFactor;
 
+  // CLUE inputs
   edm4hep::CalorimeterHitCollection calo_coll;
   std::vector<float> x;
   std::vector<float> y;
@@ -45,9 +47,6 @@ public:
   DataHandle<edm4hep::CalorimeterHitCollection> caloHitsHandle{"CLUEHits", Gaudi::DataHandle::Writer, this};
   DataHandle<edm4hep::ClusterCollection> clustersHandle{"CLUEClusters", Gaudi::DataHandle::Writer, this};
 
-  // Histograms
-  ITHistSvc* m_ths{nullptr};  // THistogram service
-  TH1F* h_clusters{nullptr};
 };
 
 #endif

@@ -36,6 +36,10 @@ MyClueGaudiAlgorithmWrapper.CriticalDistance = 10.00
 MyClueGaudiAlgorithmWrapper.MinLocalDensity = 0.02
 MyClueGaudiAlgorithmWrapper.OutlierDeltaFactor = 1.00
 
+from Configurables import CLUEHistograms
+MyCLUEHistograms = CLUEHistograms("CLUEAnalysis")
+MyCLUEHistograms.OutputLevel = INFO
+
 from Configurables import THistSvc
 THistSvc().Output = ["rec DATAFILE='output_k4clue_analysis.root' TYP='ROOT' OPT='RECREATE'"]
 THistSvc().OutputLevel = INFO
@@ -51,6 +55,7 @@ out.outputCommands = ["keep *"]
 algList.append(inp)
 algList.append(MyAIDAProcessor)
 algList.append(MyClueGaudiAlgorithmWrapper)
+algList.append(MyCLUEHistograms)
 algList.append(out)
 
 from Configurables import ApplicationMgr
