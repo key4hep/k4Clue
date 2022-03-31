@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
+cmake_policy(SET CMP0074 NEW) # use package_ROOT env var to find packages
 
 # Location of the cupla
 set(cupla_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cupla CACHE PATH "Path to CUPLA (by default: submodule)")
