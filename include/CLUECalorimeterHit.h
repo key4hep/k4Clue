@@ -12,20 +12,30 @@ class CLUECalorimeterHit : public CalorimeterHit, public DataObject {
 public:
   using CalorimeterHit::CalorimeterHit;
 
+  enum Status { outlier = 0, follower, seed };
+
+  enum DetectorRegion { barrel = 0, endcap };
+
   /// constructors
   CLUECalorimeterHit(const CalorimeterHit& ch);
 
-  CLUECalorimeterHit(const CalorimeterHit& ch, const int layer, const bool inBarrel, 
-                     const bool isSeed, const float rho, const float delta);
+  CLUECalorimeterHit(const CalorimeterHit& ch, const int layer, const CLUECalorimeterHit::DetectorRegion barrel, 
+                     const CLUECalorimeterHit::Status status, const float rho, const float delta);
 
   /// Access the layer number
   const std::uint64_t& getLayer() const;
 
-  /// Access the part of calorimeter
-  const bool& inBarrel() const;
+  /// Access the region of calorimeter
+  bool inBarrel() const;
 
-  /// Access the seed value
-  const bool& isSeed() const;
+  /// Access the region of calorimeter
+  bool inEndcap() const;
+
+  /// Status outlier value
+  bool isOutlier() const;
+
+  /// Status seed value
+  bool isSeed() const;
 
   /// Access the delta
   const float& getDelta() const;
@@ -49,8 +59,8 @@ public:
 
 private:
   std::uint64_t m_layer{};
-  bool  m_inBarrel{};
-  bool  m_isSeed{};
+  std::uint8_t m_status{0};
+  std::uint8_t m_detectorRegion{0};
   float m_rho{};
   float m_delta{};
   float m_r{};

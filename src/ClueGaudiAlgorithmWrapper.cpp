@@ -96,9 +96,9 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   clue::CLUECalorimeterHitCollection clue_coll;
   for(auto ch : calo_coll) {
     info() << "CH      : " << ch.getPosition().x << endmsg;
-    clue::CLUECalorimeterHit cluech(ch.clone(), 100, 1, 1, 3.0, 1.2);
+    clue::CLUECalorimeterHit cluech(ch.clone(), 100, clue::CLUECalorimeterHit::DetectorRegion::barrel, clue::CLUECalorimeterHit::Status::follower, 3.0, 1.2);
     clue_coll.vect.push_back(cluech);
-    info() << "CH CLUE layer, pos : " << cluech.getLayer() << " " << cluech.getPosition().x << endmsg;
+    info() << "CH CLUE layer, pos, status : " << cluech.getLayer() << " " << cluech.getPosition().x << " " << cluech.isSeed() << endmsg;
     info() << endmsg;
   }
   info() << "-> clue coll final size " << clue_coll.vect.size() << endmsg;

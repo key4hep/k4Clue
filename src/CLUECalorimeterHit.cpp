@@ -10,12 +10,12 @@ CLUECalorimeterHit::CLUECalorimeterHit(const CalorimeterHit& ch)
   setPhi();
 }
 
-CLUECalorimeterHit::CLUECalorimeterHit(const CalorimeterHit& ch, const int layer, const bool inBarrel,
-                                       const bool isSeed, const float rho, const float delta)
+CLUECalorimeterHit::CLUECalorimeterHit(const CalorimeterHit& ch, const int layer, const CLUECalorimeterHit::DetectorRegion barrel,
+                                       const CLUECalorimeterHit::Status status, const float rho, const float delta)
   : CalorimeterHit(ch),
     m_layer(layer),
-    m_inBarrel(inBarrel),
-    m_isSeed(isSeed),
+    m_detectorRegion(barrel),
+    m_status(status),
     m_rho(rho),
     m_delta(delta) {
   setR();
@@ -24,8 +24,10 @@ CLUECalorimeterHit::CLUECalorimeterHit(const CalorimeterHit& ch, const int layer
 }
 
 const std::uint64_t& CLUECalorimeterHit::getLayer() const { return m_layer; }
-const bool&  CLUECalorimeterHit::inBarrel() const { return m_inBarrel; }
-const bool&  CLUECalorimeterHit::isSeed() const { return m_isSeed; }
+bool         CLUECalorimeterHit::inBarrel() const { return (m_detectorRegion == barrel ? true : false ) ; }
+bool         CLUECalorimeterHit::inEndcap() const { return (m_detectorRegion == endcap ? true : false ) ; }
+bool         CLUECalorimeterHit::isSeed() const { return (m_status == seed ? true : false ) ; }
+bool         CLUECalorimeterHit::isOutlier() const { return (m_status == outlier ? true : false ) ; }
 const float& CLUECalorimeterHit::getRho() const { return m_rho; }
 const float& CLUECalorimeterHit::getDelta() const { return m_delta; }
 const float& CLUECalorimeterHit::getR() const { return m_r; }
