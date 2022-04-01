@@ -21,19 +21,28 @@ public:
   virtual StatusCode finalize() override final;
   virtual StatusCode initialize() override final;
 
+  void fillInputs(const clue::CLUECalorimeterHitCollection& clueCaloHits,
+                  std::vector<float>& x, std::vector<float>& y, std::vector<int>& layer, std::vector<float>& weight);
   std::map<int, std::vector<int> > runAlgo(std::vector<float>& x, std::vector<float>& y, 
                                            std::vector<int>& layer, std::vector<float>& weight);
+  void fillFinalClusters(const clue::CLUECalorimeterHitCollection& clue_coll,
+                         const std::map<int, std::vector<int> > clusterMap, 
+                         edm4hep::ClusterCollection* clusters);
+  void transformClustersInCaloHits(edm4hep::ClusterCollection* clusters,
+                                 edm4hep::CalorimeterHitCollection* caloHits);
 
   private:
   // Parameters in input
   std::string EBCaloCollectionName;
   std::string EECaloCollectionName;
+  const edm4hep::CalorimeterHitCollection* EB_calo_coll; 
+  const edm4hep::CalorimeterHitCollection* EE_calo_coll;
   float dc;
   float rhoc;
   float outlierDeltaFactor;
 
   // CLUE inputs
-  edm4hep::CalorimeterHitCollection calo_coll;
+  clue::CLUECalorimeterHitCollection clue_hit_coll;
   std::vector<float> x;
   std::vector<float> y;
   std::vector<int> layer;

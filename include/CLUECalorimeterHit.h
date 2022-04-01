@@ -19,6 +19,8 @@ public:
   /// constructors
   CLUECalorimeterHit(const CalorimeterHit& ch);
 
+  CLUECalorimeterHit(const CalorimeterHit& ch, const int layer, const CLUECalorimeterHit::DetectorRegion barrel);
+
   CLUECalorimeterHit(const CalorimeterHit& ch, const int layer, const CLUECalorimeterHit::DetectorRegion barrel, 
                      const CLUECalorimeterHit::Status status, const float rho, const float delta);
 

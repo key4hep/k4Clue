@@ -3,6 +3,12 @@
 #include "IO_helper.h"
 #include "CLUEAlgo.h"
 
+// podio specific includes
+#include "DDSegmentation/BitFieldCoder.h"
+
+using namespace dd4hep ;
+using namespace DDSegmentation ;
+
 DECLARE_COMPONENT(ClueGaudiAlgorithmWrapper)
 
 ClueGaudiAlgorithmWrapper::ClueGaudiAlgorithmWrapper(const std::string& name, ISvcLocator* pSL) :
@@ -29,6 +35,19 @@ StatusCode ClueGaudiAlgorithmWrapper::initialize() {
   return Algorithm::initialize();
 }
 
+void ClueGaudiAlgorithmWrapper::fillInputs(const clue::CLUECalorimeterHitCollection& clueCaloHits,
+                                           std::vector<float>& x, std::vector<float>& y, std::vector<int>& layer, std::vector<float>& weight) {
+
+  for (const auto& ch : clueCaloHits.vect) {
+    x.push_back(ch.getEta());
+    y.push_back(ch.getPhi());
+    layer.push_back(ch.getLayer());
+    weight.push_back(ch.getEnergy());
+  }
+
+  return;
+}
+
 std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo( std::vector<float>& x, std::vector<float>& y, 
                                                                      std::vector<int>& layer, std::vector<float>& weight ){
 
@@ -50,70 +69,152 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo( std::vector
   return clueClusters;
 }
 
+void ClueGaudiAlgorithmWrapper::fillFinalClusters(const clue::CLUECalorimeterHitCollection& clue_coll,
+                                                  const std::map<int, std::vector<int> > clusterMap, 
+                                                  edm4hep::ClusterCollection* clusters){
+
+  for(auto cl : clusterMap){
+    //std::cout << cl.first << std::endl;
+    std::map<int, std::vector<int> > clustersLayer;
+    for(auto index : cl.second){
+      clustersLayer[clue_coll.vect.at(index).getLayer()].push_back(index);
+    }
+
+    for(auto clLay : clustersLayer){
+      float energy = 0.f;
+      float sumEnergyErrSquared = 0.f;
+      auto position = edm4hep::Vector3f({0,0,0});
+
+      auto cluster = clusters->create();
+      unsigned int maxEnergyIndex = 0;
+      float maxEnergyValue = 0.f;
+      //std::cout << "  layer = " << clLay.first << std::endl;
+      for(auto index : clLay.second){
+        //std::cout << "    " << index << std::endl;
+        energy += clue_coll.vect.at(index).getEnergy();
+        sumEnergyErrSquared += pow(clue_coll.vect.at(index).getEnergyError()/(1.*clue_coll.vect.at(index).getEnergy()), 2);
+        position.x += clue_coll.vect.at(index).getPosition().x;
+        position.y += clue_coll.vect.at(index).getPosition().y;
+        position.z += clue_coll.vect.at(index).getPosition().z;
+        if( EB_calo_coll->size() != 0){
+          if( index < EB_calo_coll->size() ) {
+            cluster.addToHits(EB_calo_coll->at(index));
+            cluster.addToHitContributions(1.0);
+          } else {
+            cluster.addToHits(EE_calo_coll->at(index - EB_calo_coll->size()));
+            cluster.addToHitContributions(1.0);
+          }
+        } else {
+          cluster.addToHits(EE_calo_coll->at(index));
+          cluster.addToHitContributions(1.0);
+        }
+
+        if (clue_coll.vect.at(index).getEnergy() > maxEnergyValue) {
+          maxEnergyValue = clue_coll.vect.at(index).getEnergy();
+          maxEnergyIndex = index;
+        }
+      }
+
+      cluster.setEnergy(energy);
+      cluster.setEnergyError(sqrt(sumEnergyErrSquared));
+      // one could (should?) re-weight the barycentre with energy
+      cluster.setPosition({position.x/clLay.second.size(), position.y/clLay.second.size(), position.z/clLay.second.size()});
+      //JUST A PLACEHOLDER FOR NOW: TO BE FIXED
+      cluster.setPositionError({0.00, 0.00, 0.00, 0.00, 0.00, 0.00});
+      cluster.setType(clue_coll.vect.at(maxEnergyIndex).getType());
+    }
+    clustersLayer.clear();
+  }
+  return;
+}
+
+void ClueGaudiAlgorithmWrapper::transformClustersInCaloHits(edm4hep::ClusterCollection* clusters,
+                                                            edm4hep::CalorimeterHitCollection* caloHits){
+
+  float time = 0.f;
+  float maxEnergy = 0.f;
+  std::uint64_t maxEnergyCellID = 0;
+
+  for(auto cl : *clusters){
+    auto caloHit = caloHits->create();
+    caloHit.setEnergy(cl.getEnergy());
+    caloHit.setEnergyError(cl.getEnergyError());
+    caloHit.setPosition(cl.getPosition());
+    caloHit.setType(cl.getType());
+
+    time = 0.0;
+    maxEnergy = 0.0;
+    maxEnergyCellID = 0;
+    for(auto hit : cl.getHits()){
+      time += hit.getTime();
+      if (hit.getEnergy() > maxEnergy) {
+        maxEnergy = hit.getEnergy();
+        maxEnergyCellID = hit.getCellID();
+      }
+    }
+    caloHit.setCellID(maxEnergyCellID);
+    caloHit.setTime(time/cl.hits_size());
+  }
+
+  return;
+}
+
 StatusCode ClueGaudiAlgorithmWrapper::execute() {
   debug() << "ClueGaudiAlgorithmWrapper::execute()" << endmsg ;
 
-  // Read data and run algo
+  // Read EB collection
   DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {  
     EBCaloCollectionName, Gaudi::DataHandle::Reader, this};
+  EB_calo_coll = EB_calo_handle.get();
 
-  const auto EB_calo_coll = EB_calo_handle.get();
+  // Read EE collection
+  DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {  
+    EECaloCollectionName, Gaudi::DataHandle::Reader, this};
+  EE_calo_coll = EE_calo_handle.get();
 
+  // Get collection metadata cellID which is valid for both EB and EE
+  auto collID = EB_calo_coll->getID();
+  const auto cellIDstr = EB_calo_handle.getCollMetadataCellID(collID);
+  const BitFieldCoder bf(cellIDstr);
+
+  // Fill CLUECaloHits
   if( EB_calo_coll->isValid() ) {
-    for(const auto& calo_hit_EB : (*EB_calo_coll) ){
-      calo_coll->push_back(calo_hit_EB.clone());
+    for(const auto& calo_hit : (*EB_calo_coll) ){
+      clue_hit_coll.vect.push_back(clue::CLUECalorimeterHit(calo_hit.clone(), bf.get( calo_hit.getCellID(), "layer"), clue::CLUECalorimeterHit::DetectorRegion::barrel));
     }
   } else {
     throw std::runtime_error("Collection not found.");
   }
   info() << EB_calo_coll->size() << " caloHits in " << EBCaloCollectionName << "." << endmsg;
 
-  // Get collection metadata cellID which is valid for both EB and EE
-  auto EB_collID = EB_calo_coll->getID();
-  const auto cellIDstr = EB_calo_handle.getCollMetadataCellID(EB_collID);
-
-  DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {  
-    EECaloCollectionName, Gaudi::DataHandle::Reader, this};
-
-  const auto EE_calo_coll = EE_calo_handle.get();
-
   if( EE_calo_coll->isValid() ) {
-    for(const auto& calo_hit_EE : (*EE_calo_coll) ){
-      calo_coll->push_back(calo_hit_EE.clone());
+    for(const auto& calo_hit : (*EE_calo_coll) ){
+      clue_hit_coll.vect.push_back(clue::CLUECalorimeterHit(calo_hit.clone(), bf.get( calo_hit.getCellID(), "layer"), clue::CLUECalorimeterHit::DetectorRegion::barrel));
     }
   } else {
     throw std::runtime_error("Collection not found.");
   }
   info() << EE_calo_coll->size() << " caloHits in " << EECaloCollectionName << "." << endmsg;
 
-  debug() << calo_coll->size() << " caloHits in total. " << endmsg;
-  read_EDM4HEP_event(calo_coll, cellIDstr, x, y, layer, weight);
+  debug() << clue_hit_coll.vect.size() << " caloHits in total. " << endmsg;
+
+  // Fill CLUECaloHits
+  fillInputs(clue_hit_coll, x, y, layer, weight);
 
   std::map<int, std::vector<int> > clueClusters = runAlgo(x, y, layer, weight);
   debug() << "Produced " << clueClusters.size() << " clusters" << endmsg;
 
-  // Save CLUECaloHits
-  clue::CLUECalorimeterHitCollection clue_coll;
-  for(auto ch : calo_coll) {
-    info() << "CH      : " << ch.getPosition().x << endmsg;
-    clue::CLUECalorimeterHit cluech(ch.clone(), 100, clue::CLUECalorimeterHit::DetectorRegion::barrel, clue::CLUECalorimeterHit::Status::follower, 3.0, 1.2);
-    clue_coll.vect.push_back(cluech);
-    info() << "CH CLUE layer, pos, status : " << cluech.getLayer() << " " << cluech.getPosition().x << " " << cluech.isSeed() << endmsg;
-    info() << endmsg;
-  }
-  info() << "-> clue coll final size " << clue_coll.vect.size() << endmsg;
-
-  auto pCHV = std::make_unique<clue::CLUECalorimeterHitCollection>(clue_coll);
+  auto pCHV = std::make_unique<clue::CLUECalorimeterHitCollection>(clue_hit_coll);
   const StatusCode scStatusV = eventSvc()->registerObject("/Event/CLUECalorimeterHitCollection", pCHV.release());
 
   // Save clusters
   edm4hep::ClusterCollection* finalClusters = clustersHandle.createAndPut();
-  computeClusters(calo_coll, cellIDstr, EB_calo_coll, EE_calo_coll, clueClusters, finalClusters);
+  fillFinalClusters(clue_hit_coll, clueClusters, finalClusters);
   info() << "Saved " << finalClusters->size() << " clusters" << endmsg;
 
   // Save clusters as calo hits
   edm4hep::CalorimeterHitCollection* finalCaloHits = caloHitsHandle.createAndPut();
-  computeCaloHits(calo_coll, cellIDstr, clueClusters, finalCaloHits);
+  transformClustersInCaloHits(finalClusters, finalCaloHits);
   // Add cellID to calohits
   auto& calohits_md = m_podioDataSvc->getProvider().getCollectionMetaData(finalCaloHits->getID());
   calohits_md.setValue("CellIDEncodingString", cellIDstr);
@@ -121,7 +222,7 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   debug() << "Saved " << finalCaloHits->size() << " clusters as calo hits" << endmsg;
 
   //Cleaning
-  calo_coll.clear();
+  clue_hit_coll.vect.clear();
   x.clear();
   y.clear();
   layer.clear();

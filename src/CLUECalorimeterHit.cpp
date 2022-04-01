@@ -10,6 +10,15 @@ CLUECalorimeterHit::CLUECalorimeterHit(const CalorimeterHit& ch)
   setPhi();
 }
 
+CLUECalorimeterHit::CLUECalorimeterHit(const CalorimeterHit& ch, const int layer, const CLUECalorimeterHit::DetectorRegion barrel)
+  : CalorimeterHit(ch),
+    m_layer(layer),
+    m_detectorRegion(barrel) {
+  setR();
+  setEta();
+  setPhi();
+}
+
 CLUECalorimeterHit::CLUECalorimeterHit(const CalorimeterHit& ch, const int layer, const CLUECalorimeterHit::DetectorRegion barrel,
                                        const CLUECalorimeterHit::Status status, const float rho, const float delta)
   : CalorimeterHit(ch),
