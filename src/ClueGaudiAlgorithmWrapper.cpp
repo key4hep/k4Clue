@@ -211,6 +211,8 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   edm4hep::ClusterCollection* finalClusters = clustersHandle.createAndPut();
   fillFinalClusters(clue_hit_coll, clueClusters, finalClusters);
   info() << "Saved " << finalClusters->size() << " clusters" << endmsg;
+  auto& clusters_md = m_podioDataSvc->getProvider().getCollectionMetaData(finalClusters->getID());
+  clusters_md.setValue("CellIDEncodingString", cellIDstr);
 
   // Save clusters as calo hits
   edm4hep::CalorimeterHitCollection* finalCaloHits = caloHitsHandle.createAndPut();

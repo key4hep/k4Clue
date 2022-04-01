@@ -39,6 +39,7 @@ MyClueGaudiAlgorithmWrapper.OutlierDeltaFactor = 1.00
 from Configurables import CLUEHistograms
 MyCLUEHistograms = CLUEHistograms("CLUEAnalysis")
 MyCLUEHistograms.OutputLevel = INFO
+MyCLUEHistograms.ClusterCollection = "CLUEClusters"
 
 from Configurables import THistSvc
 THistSvc().Output = ["rec DATAFILE='output_k4clue_analysis.root' TYP='ROOT' OPT='RECREATE'"]
