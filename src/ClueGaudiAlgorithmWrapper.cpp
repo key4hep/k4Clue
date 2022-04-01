@@ -108,7 +108,7 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
 
   // Save clusters
   edm4hep::ClusterCollection* finalClusters = clustersHandle.createAndPut();
-  computeClusters(calo_coll, cellIDstr, clueClusters, finalClusters);
+  computeClusters(calo_coll, cellIDstr, EB_calo_coll, EE_calo_coll, clueClusters, finalClusters);
   info() << "Saved " << finalClusters->size() << " clusters" << endmsg;
 
   // Save clusters as calo hits
