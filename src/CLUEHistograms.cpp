@@ -8,13 +8,20 @@ using namespace DDSegmentation ;
 
 DECLARE_COMPONENT(CLUEHistograms)
 
-CLUEHistograms::CLUEHistograms(const std::string& name, ISvcLocator* svcLoc) : GaudiAlgorithm(name, svcLoc) {
+CLUEHistograms::CLUEHistograms(const std::string& name, ISvcLocator* svcLoc) : GaudiAlgorithm(name, svcLoc), m_eventDataSvc("EventDataSvc", "CLUEHistograms") {
+  declareProperty("SaveEachEvent", saveEachEvent, "Allow to save further plots per event");
   declareProperty("ClusterCollection", ClusterCollectionName, "Collection of clusters in input");
+  StatusCode sc = m_eventDataSvc.retrieve();
 }
 
 StatusCode CLUEHistograms::initialize() {
   info() << "CLUEHistograms::initialize()" << endmsg;
   if (GaudiAlgorithm::initialize().isFailure()) return StatusCode::FAILURE;
+
+  m_podioDataSvc = dynamic_cast<PodioDataSvc*>(m_eventDataSvc.get());
+  if (m_podioDataSvc == nullptr) {
+    return StatusCode::FAILURE;
+  }
 
   if (service("THistSvc", m_ths).isFailure()) {
     error() << "Couldn't get THistSvc" << endmsg;
@@ -50,11 +57,41 @@ StatusCode CLUEHistograms::initialize() {
   if (m_ths->regHist("/rec/ClusterHitsEnergy_layer", h_clHitsEnergyLayer).isFailure()) {
     error() << "Couldn't register ClusterHitsEnergy_layer hist" << endmsg;
   }
+
+  graphNames = {"Pos_clusters_XZ", "Pos_clusters_YZ",
+                "Pos_clusterHits_XZ", "Pos_clusterHits_YZ",
+                "Pos_followers_XZ", "Pos_followers_YZ",
+                "Pos_seeds_XZ", "Pos_seeds_YZ",
+                "Pos_outliers_XZ", "Pos_outliers_YZ"};
+
   return StatusCode::SUCCESS;
 }
 
 StatusCode CLUEHistograms::execute() {
   info() << "CLUEHistograms::execute()" << endmsg;
+
+  if(saveEachEvent){
+    warning() << "Careful! You will be saving more plots than you actually want!" << endmsg;
+
+    DataHandle<edm4hep::EventHeaderCollection> ev_handle {
+      "EventHeader", Gaudi::DataHandle::Reader, this};
+    auto evs = ev_handle.get();
+    evNum = (*evs)[0].getEventNumber();
+    info() << "Event number = " << evNum << endmsg;
+
+    std::string nameFolderEvent = "/rec/Event" + std::to_string(evNum) + "/ClusterHitsEnergy_layer";
+    for (auto iName : graphNames) {
+      std::string nameGraphInFolder = "/rec/Event" + std::to_string(evNum) + "/" + iName;
+      TGraph* g_clHitsEnergyLayerperEv = new TGraph();
+      graphPos[evNum].push_back(g_clHitsEnergyLayerperEv);
+      g_clHitsEnergyLayerperEv->SetName(TString(iName));
+      if (m_ths->regGraph(nameGraphInFolder, g_clHitsEnergyLayerperEv).isFailure()) {
+        error() << "Couldn't register " << nameGraphInFolder << endmsg;
+      }
+
+    }
+
+  } // endif saveEachEvent
 
   DataObject* pStatus  = nullptr;
   StatusCode  scStatus = eventSvc()->retrieveObject("/Event/CLUECalorimeterHitCollection", pStatus);
@@ -77,19 +114,52 @@ StatusCode CLUEHistograms::execute() {
   std::cout << cellIDstr << std::endl;
 
   std::uint64_t ch_layer = 0;
+  std::uint64_t nClusters = 0;
+  std::uint64_t nClusterHits = 0;
 
   h_clusters->Fill(cluster_coll->size());
   for (const auto& cl : *cluster_coll) {
+
     h_clEnergy->Fill(cl.getEnergy());
     h_clSize->Fill(cl.hits_size());
+    if(saveEachEvent){
+      graphPos[evNum][0]->SetPoint(nClusters, cl.getPosition().z, cl.getPosition().x);
+      graphPos[evNum][1]->SetPoint(nClusters, cl.getPosition().z, cl.getPosition().y);
+    }
+
     for (const auto& hit : cl.getHits()) {
       ch_layer = bf.get( hit.getCellID(), "layer");
       h_clHitsLayer->Fill(ch_layer);
       h_clHitsEnergyLayer->Fill(ch_layer, hit.getEnergy());
+      if(saveEachEvent){
+        graphPos[evNum][2]->SetPoint(nClusterHits, hit.getPosition().z, hit.getPosition().x);
+        graphPos[evNum][3]->SetPoint(nClusterHits, hit.getPosition().z, hit.getPosition().y);
+      }
+      nClusterHits++;
     }
+
+
     h_clLayer->Fill(ch_layer);
+    nClusters++;
   }
 
+  std::uint64_t nSeeds = 0;
+  std::uint64_t nFollowers = 0;
+  std::uint64_t nOutliers = 0;
+  for (const auto& clue_hit : (clue_calo_coll->vect)) {
+    if(saveEachEvent){
+      if(clue_hit.isSeed()){
+        graphPos[evNum][4]->SetPoint(nSeeds, clue_hit.getPosition().z, clue_hit.getPosition().x);
+        graphPos[evNum][5]->SetPoint(nSeeds, clue_hit.getPosition().z, clue_hit.getPosition().y);
+      }
+      if(clue_hit.isOutlier()){
+        graphPos[evNum][6]->SetPoint(nOutliers, clue_hit.getPosition().z, clue_hit.getPosition().x);
+        graphPos[evNum][7]->SetPoint(nOutliers, clue_hit.getPosition().z, clue_hit.getPosition().y);
+      }
+    }
+    nSeeds++;
+    nOutliers++;
+  }
   return StatusCode::SUCCESS;
 }
 
