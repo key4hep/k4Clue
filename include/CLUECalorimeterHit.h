@@ -33,6 +33,9 @@ public:
   /// Access the region of calorimeter
   bool inEndcap() const;
 
+  /// Status follower value
+  bool isFollower() const;
+
   /// Status outlier value
   bool isOutlier() const;
 

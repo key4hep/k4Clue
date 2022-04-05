@@ -10,6 +10,7 @@ evtsvc.input = 'https://key4hep.web.cern.ch/testFiles/k4clue/inputData/clic/2022
 
 inp = PodioInput('InputReader')
 inp.collections = [
+  'EventHeader',
   'ECALBarrel',
   'ECALEndcap'
 ]
@@ -39,6 +40,7 @@ MyClueGaudiAlgorithmWrapper.OutlierDeltaFactor = 1.00
 from Configurables import CLUEHistograms
 MyCLUEHistograms = CLUEHistograms("CLUEAnalysis")
 MyCLUEHistograms.OutputLevel = INFO
+MyCLUEHistograms.SaveEachEvent = True
 MyCLUEHistograms.ClusterCollection = "CLUEClusters"
 
 from Configurables import THistSvc

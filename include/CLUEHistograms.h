@@ -7,9 +7,11 @@
 
 #include <edm4hep/CalorimeterHitCollection.h>
 #include <edm4hep/ClusterCollection.h>
+#include <edm4hep/EventHeaderCollection.h>
 #include "CLUECalorimeterHit.h"
 
 #include "TH1F.h"
+#include "TGraph.h"
 
 class CLUEHistograms : public GaudiAlgorithm {
 
@@ -28,6 +30,10 @@ private:
   std::string ClusterCollectionName;
   const edm4hep::ClusterCollection* cluster_coll; 
 
+  // PODIO data service
+  ServiceHandle<IDataProviderSvc> m_eventDataSvc;
+  PodioDataSvc* m_podioDataSvc;
+
   ITHistSvc* m_ths{nullptr};  ///< THistogram service
   TH1F* h_clusters{nullptr};
   TH1F* h_clSize{nullptr};
@@ -36,6 +42,10 @@ private:
   TH1F* h_clHitsLayer{nullptr};
   TH1F* h_clHitsEnergyLayer{nullptr};
 
+  bool saveEachEvent{false};
+  std::int32_t evNum;
+  std::vector<std::string> graphNames{}; 
+  std::map<const std::int32_t, std::vector<TGraph*>> graphPos{};
 };
 
 #endif  // CLUE_HISTOGRAMS_H

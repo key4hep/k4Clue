@@ -35,6 +35,7 @@ CLUECalorimeterHit::CLUECalorimeterHit(const CalorimeterHit& ch, const int layer
 const std::uint64_t& CLUECalorimeterHit::getLayer() const { return m_layer; }
 bool         CLUECalorimeterHit::inBarrel() const { return (m_detectorRegion == barrel ? true : false ) ; }
 bool         CLUECalorimeterHit::inEndcap() const { return (m_detectorRegion == endcap ? true : false ) ; }
+bool         CLUECalorimeterHit::isFollower() const { return (m_status == follower ? true : false ) ; }
 bool         CLUECalorimeterHit::isSeed() const { return (m_status == seed ? true : false ) ; }
 bool         CLUECalorimeterHit::isOutlier() const { return (m_status == outlier ? true : false ) ; }
 const float& CLUECalorimeterHit::getRho() const { return m_rho; }
