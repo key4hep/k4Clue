@@ -20,11 +20,12 @@ CLUECalorimeterHit::CLUECalorimeterHit(const CalorimeterHit& ch, const int layer
 }
 
 CLUECalorimeterHit::CLUECalorimeterHit(const CalorimeterHit& ch, const int layer, const CLUECalorimeterHit::DetectorRegion barrel,
-                                       const CLUECalorimeterHit::Status status, const float rho, const float delta)
+                                       const CLUECalorimeterHit::Status status, const int clusterIndex, const float rho, const float delta)
   : CalorimeterHit(ch),
     m_layer(layer),
     m_detectorRegion(barrel),
     m_status(status),
+    m_clusterIndex(clusterIndex),
     m_rho(rho),
     m_delta(delta) {
   setR();

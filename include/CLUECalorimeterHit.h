@@ -22,7 +22,7 @@ public:
   CLUECalorimeterHit(const CalorimeterHit& ch, const int layer, const CLUECalorimeterHit::DetectorRegion barrel);
 
   CLUECalorimeterHit(const CalorimeterHit& ch, const int layer, const CLUECalorimeterHit::DetectorRegion barrel, 
-                     const CLUECalorimeterHit::Status status, const float rho, const float delta);
+                     const CLUECalorimeterHit::Status status, const int clusterIndex, const float rho, const float delta);
 
   /// Access the layer number
   const std::uint64_t& getLayer() const;
@@ -62,6 +62,11 @@ public:
   void setEta();
   void setPhi();
 
+  void setRho( float rho ) { m_rho = rho; };
+  void setDelta( float delta ) { m_delta = delta; };
+  void setStatus( Status status ) { m_status = status; };
+  void setClusterIndex( int clIdx ) { m_clusterIndex = clIdx; };
+
 private:
   std::uint64_t m_layer{};
   std::uint8_t m_status{0};
@@ -71,6 +76,7 @@ private:
   float m_r{};
   float m_eta{};
   float m_phi{};
+  std::uint64_t m_clusterIndex{};
 };
 
 class CLUECalorimeterHitCollection : public DataObject {

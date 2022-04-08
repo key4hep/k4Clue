@@ -18,12 +18,9 @@ public:
   virtual StatusCode finalize() override final;
   virtual StatusCode initialize() override final;
 
-  void fillInputs(const clue::CLUECalorimeterHitCollection& clueCaloHits,
-                  std::vector<float>& x, std::vector<float>& y, std::vector<int>& layer, std::vector<float>& weight);
-  std::map<int, std::vector<int> > runAlgo(std::vector<float>& x, std::vector<float>& y, 
-                                           std::vector<int>& layer, std::vector<float>& weight);
-  void fillFinalClusters(const clue::CLUECalorimeterHitCollection& clue_coll,
-                         const std::map<int, std::vector<int> > clusterMap, 
+  void fillInputs();
+  std::map<int, std::vector<int> > runAlgo();
+  void fillFinalClusters(const std::map<int, std::vector<int> > clusterMap, 
                          edm4hep::ClusterCollection* clusters);
   void calculatePosition(edm4hep::MutableCluster* cluster) ;
   void transformClustersInCaloHits(edm4hep::ClusterCollection* clusters,

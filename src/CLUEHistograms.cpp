@@ -60,9 +60,9 @@ StatusCode CLUEHistograms::initialize() {
 
   graphNames = {"Pos_clusters_XY", "Pos_clusters_YZ", "Pos_clusters_RZ",
                 "Pos_clusterHits_XY", "Pos_clusterHits_YZ", "Pos_clusterHits_RZ",
-                "Pos_followers_XZ", "Pos_followers_YZ",
-                "Pos_seeds_XZ", "Pos_seeds_YZ",
-                "Pos_outliers_XZ", "Pos_outliers_YZ"};
+                "Pos_followers_XY", "Pos_followers_YZ",
+                "Pos_seeds_XY", "Pos_seeds_YZ",
+                "Pos_outliers_XY", "Pos_outliers_YZ"};
 
   return StatusCode::SUCCESS;
 }
@@ -146,25 +146,37 @@ StatusCode CLUEHistograms::execute() {
     h_clLayer->Fill(ch_layer);
     nClusters++;
   }
-/*
+
   std::uint64_t nSeeds = 0;
   std::uint64_t nFollowers = 0;
   std::uint64_t nOutliers = 0;
   for (const auto& clue_hit : (clue_calo_coll->vect)) {
-    if(saveEachEvent){
-      if(clue_hit.isSeed()){
-        graphPos[evNum][4]->SetPoint(nSeeds, clue_hit.getPosition().z, clue_hit.getPosition().x);
-        graphPos[evNum][5]->SetPoint(nSeeds, clue_hit.getPosition().z, clue_hit.getPosition().y);
-      }
-      if(clue_hit.isOutlier()){
-        graphPos[evNum][6]->SetPoint(nOutliers, clue_hit.getPosition().z, clue_hit.getPosition().x);
-        graphPos[evNum][7]->SetPoint(nOutliers, clue_hit.getPosition().z, clue_hit.getPosition().y);
+    if(clue_hit.isFollower()){
+      nFollowers++;
+      if(saveEachEvent){
+        graphPos[evNum][6]->SetPoint(nFollowers, clue_hit.getPosition().y, clue_hit.getPosition().x);
+        graphPos[evNum][7]->SetPoint(nFollowers, clue_hit.getPosition().z, clue_hit.getPosition().y);
       }
     }
-    nSeeds++;
-    nOutliers++;
+    if(clue_hit.isSeed()){
+      nSeeds++;
+      if(saveEachEvent){
+        graphPos[evNum][8]->SetPoint(nSeeds, clue_hit.getPosition().y, clue_hit.getPosition().x);
+        graphPos[evNum][9]->SetPoint(nSeeds, clue_hit.getPosition().z, clue_hit.getPosition().y);
+      }
+    }
+
+    if(clue_hit.isOutlier()){
+      nOutliers++;
+      if(saveEachEvent){
+        graphPos[evNum][10]->SetPoint(nOutliers, clue_hit.getPosition().y, clue_hit.getPosition().x);
+        graphPos[evNum][11]->SetPoint(nOutliers, clue_hit.getPosition().z, clue_hit.getPosition().y);
+      }
+    }
   }
-*/
+  info() << nSeeds << " seeds." << endmsg;
+  info() << nOutliers << " outliers." << endmsg;
+  info() << nFollowers << " followers." << endmsg;
   return StatusCode::SUCCESS;
 }
 
