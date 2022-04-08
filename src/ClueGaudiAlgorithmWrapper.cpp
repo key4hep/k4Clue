@@ -74,25 +74,30 @@ void ClueGaudiAlgorithmWrapper::fillFinalClusters(const clue::CLUECalorimeterHit
                                                   edm4hep::ClusterCollection* clusters){
 
   for(auto cl : clusterMap){
-    //std::cout << cl.first << std::endl;
+
+    info() << cl.first << " with size " << cl.second.size() << endmsg;
+
+    // Outliers should not create a cluster
+    if(cl.first == -1){
+      continue;
+    }
+
     std::map<int, std::vector<int> > clustersLayer;
     for(auto index : cl.second){
       clustersLayer[clue_coll.vect.at(index).getLayer()].push_back(index);
     }
 
     for(auto clLay : clustersLayer){
-      float energy = 0.f;
-      float sumEnergyErrSquared = 0.f;
       auto position = edm4hep::Vector3f({0,0,0});
 
+      info() << " New cluster!" << endmsg;
       auto cluster = clusters->create();
       unsigned int maxEnergyIndex = 0;
       float maxEnergyValue = 0.f;
-      //std::cout << "  layer = " << clLay.first << std::endl;
+      //info() << "  layer = " << clLay.first << endmsg;
       for(auto index : clLay.second){
-        //std::cout << "    " << index << std::endl;
-        energy += clue_coll.vect.at(index).getEnergy();
-        sumEnergyErrSquared += pow(clue_coll.vect.at(index).getEnergyError()/(1.*clue_coll.vect.at(index).getEnergy()), 2);
+        //info() << "    " << index << endmsg;
+
         position.x += clue_coll.vect.at(index).getPosition().x;
         position.y += clue_coll.vect.at(index).getPosition().y;
         position.z += clue_coll.vect.at(index).getPosition().z;
@@ -114,17 +119,56 @@ void ClueGaudiAlgorithmWrapper::fillFinalClusters(const clue::CLUECalorimeterHit
           maxEnergyIndex = index;
         }
       }
-
+      float energy = 0.f;
+      float sumEnergyErrSquared = 0.f;
+      std::for_each(cluster.getHits().begin(), cluster.getHits().end(),
+                    [&energy, &sumEnergyErrSquared] (edm4hep::CalorimeterHit elem) { energy += elem.getEnergy(); 
+                                                               sumEnergyErrSquared += pow(elem.getEnergyError()/(1.*elem.getEnergy()), 2);
+                                                             });
       cluster.setEnergy(energy);
       cluster.setEnergyError(sqrt(sumEnergyErrSquared));
-      // one could (should?) re-weight the barycentre with energy
-      cluster.setPosition({position.x/clLay.second.size(), position.y/clLay.second.size(), position.z/clLay.second.size()});
+
+      calculatePosition(&cluster);
+      info() << "calculatePosition = " << cluster.getPosition() << endmsg;
+
       //JUST A PLACEHOLDER FOR NOW: TO BE FIXED
       cluster.setPositionError({0.00, 0.00, 0.00, 0.00, 0.00, 0.00});
       cluster.setType(clue_coll.vect.at(maxEnergyIndex).getType());
     }
     clustersLayer.clear();
   }
+  info() << "Total num clusters = " << clusters->size() << endmsg;
+  return;
+}
+
+void ClueGaudiAlgorithmWrapper::calculatePosition(edm4hep::MutableCluster* cluster) {
+
+  float total_weight = cluster->getEnergy();
+  if(total_weight <= 0)
+    warning() << "Zero energy in the cluster" << endmsg;
+
+  float total_weight_log = 0.f;
+  float x_log = 0.f;
+  float y_log = 0.f;
+  float z_log = 0.f;
+  double thresholdW0_ = 2.9; //Min percentage of energy to contribute to the log-reweight position
+
+  float maxEnergyValue = 0.f;
+  unsigned int maxEnergyIndex = 0;
+  for (int i = 0; i < cluster->hits_size(); i++) {
+    float rhEnergy = cluster->getHits(i).getEnergy();
+    float Wi = std::max(thresholdW0_ - std::log(rhEnergy / total_weight), 0.);
+    x_log += cluster->getHits(i).getPosition().x * Wi;
+    y_log += cluster->getHits(i).getPosition().y * Wi;
+    z_log += cluster->getHits(i).getPosition().z * Wi;
+    total_weight_log += Wi;
+  }
+
+  if (total_weight_log != 0.) {
+    float inv_tot_weight_log = 1.f / total_weight_log;
+    cluster->setPosition({x_log * inv_tot_weight_log, y_log * inv_tot_weight_log, z_log * inv_tot_weight_log});
+  }
+
   return;
 }
 
@@ -211,17 +255,19 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   edm4hep::ClusterCollection* finalClusters = clustersHandle.createAndPut();
   fillFinalClusters(clue_hit_coll, clueClusters, finalClusters);
   info() << "Saved " << finalClusters->size() << " clusters" << endmsg;
+
+  // Add cellID to clusters
   auto& clusters_md = m_podioDataSvc->getProvider().getCollectionMetaData(finalClusters->getID());
   clusters_md.setValue("CellIDEncodingString", cellIDstr);
 
   // Save clusters as calo hits
   edm4hep::CalorimeterHitCollection* finalCaloHits = caloHitsHandle.createAndPut();
   transformClustersInCaloHits(finalClusters, finalCaloHits);
+  debug() << "Saved " << finalCaloHits->size() << " clusters as calo hits" << endmsg;
+
   // Add cellID to calohits
   auto& calohits_md = m_podioDataSvc->getProvider().getCollectionMetaData(finalCaloHits->getID());
   calohits_md.setValue("CellIDEncodingString", cellIDstr);
-
-  debug() << "Saved " << finalCaloHits->size() << " clusters as calo hits" << endmsg;
 
   //Cleaning
   clue_hit_coll.vect.clear();
