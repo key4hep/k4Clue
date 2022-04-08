@@ -61,6 +61,7 @@ public:
 
   void makeClusters();
   std::map<int, std::vector<int> > getClusters();
+  Points const getPoints() const { return points_; };
 
   void infoSeeds();
   void infoHits();
