@@ -3,9 +3,6 @@
 
 #include <GaudiAlg/GaudiAlgorithm.h>
 
-#include "GaudiKernel/ITHistSvc.h"
-#include "TH1F.h"
-
 // FWCore
 #include <k4FWCore/DataHandle.h>
 
@@ -28,6 +25,7 @@ public:
   void fillFinalClusters(const clue::CLUECalorimeterHitCollection& clue_coll,
                          const std::map<int, std::vector<int> > clusterMap, 
                          edm4hep::ClusterCollection* clusters);
+  void calculatePosition(edm4hep::MutableCluster* cluster) ;
   void transformClustersInCaloHits(edm4hep::ClusterCollection* clusters,
                                  edm4hep::CalorimeterHitCollection* caloHits);
 

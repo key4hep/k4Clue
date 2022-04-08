@@ -58,8 +58,8 @@ StatusCode CLUEHistograms::initialize() {
     error() << "Couldn't register ClusterHitsEnergy_layer hist" << endmsg;
   }
 
-  graphNames = {"Pos_clusters_XZ", "Pos_clusters_YZ",
-                "Pos_clusterHits_XZ", "Pos_clusterHits_YZ",
+  graphNames = {"Pos_clusters_XY", "Pos_clusters_YZ", "Pos_clusters_RZ",
+                "Pos_clusterHits_XY", "Pos_clusterHits_YZ", "Pos_clusterHits_RZ",
                 "Pos_followers_XZ", "Pos_followers_YZ",
                 "Pos_seeds_XZ", "Pos_seeds_YZ",
                 "Pos_outliers_XZ", "Pos_outliers_YZ"};
@@ -123,8 +123,10 @@ StatusCode CLUEHistograms::execute() {
     h_clEnergy->Fill(cl.getEnergy());
     h_clSize->Fill(cl.hits_size());
     if(saveEachEvent){
-      graphPos[evNum][0]->SetPoint(nClusters, cl.getPosition().z, cl.getPosition().x);
+      double r = sqrt(cl.getPosition().x*cl.getPosition().x + cl.getPosition().y*cl.getPosition().y);
+      graphPos[evNum][0]->SetPoint(nClusters, cl.getPosition().y, cl.getPosition().x);
       graphPos[evNum][1]->SetPoint(nClusters, cl.getPosition().z, cl.getPosition().y);
+      graphPos[evNum][2]->SetPoint(nClusters, cl.getPosition().z, r);
     }
 
     for (const auto& hit : cl.getHits()) {
@@ -132,8 +134,10 @@ StatusCode CLUEHistograms::execute() {
       h_clHitsLayer->Fill(ch_layer);
       h_clHitsEnergyLayer->Fill(ch_layer, hit.getEnergy());
       if(saveEachEvent){
-        graphPos[evNum][2]->SetPoint(nClusterHits, hit.getPosition().z, hit.getPosition().x);
-        graphPos[evNum][3]->SetPoint(nClusterHits, hit.getPosition().z, hit.getPosition().y);
+        double r = sqrt(hit.getPosition().x*hit.getPosition().x + hit.getPosition().y*hit.getPosition().y);
+        graphPos[evNum][3]->SetPoint(nClusterHits, hit.getPosition().y, hit.getPosition().x);
+        graphPos[evNum][4]->SetPoint(nClusterHits, hit.getPosition().z, hit.getPosition().y);
+        graphPos[evNum][5]->SetPoint(nClusterHits, hit.getPosition().z, r);
       }
       nClusterHits++;
     }
@@ -142,7 +146,7 @@ StatusCode CLUEHistograms::execute() {
     h_clLayer->Fill(ch_layer);
     nClusters++;
   }
-
+/*
   std::uint64_t nSeeds = 0;
   std::uint64_t nFollowers = 0;
   std::uint64_t nOutliers = 0;
@@ -160,6 +164,7 @@ StatusCode CLUEHistograms::execute() {
     nSeeds++;
     nOutliers++;
   }
+*/
   return StatusCode::SUCCESS;
 }
 
