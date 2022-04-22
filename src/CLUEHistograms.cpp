@@ -58,11 +58,24 @@ StatusCode CLUEHistograms::initialize() {
     error() << "Couldn't register ClusterHitsEnergy_layer hist" << endmsg;
   }
 
-  graphNames = {"Pos_clusters_XY", "Pos_clusters_YZ", "Pos_clusters_RZ",
-                "Pos_clusterHits_XY", "Pos_clusterHits_YZ", "Pos_clusterHits_RZ",
-                "Pos_followers_XY", "Pos_followers_YZ",
-                "Pos_seeds_XY", "Pos_seeds_YZ",
-                "Pos_outliers_XY", "Pos_outliers_YZ"};
+  graphPosNames = {"Pos_clusters_XY", "Pos_clusters_YZ", "Pos_clusters_RZ",
+                   "Pos_clusterHits_XY", "Pos_clusterHits_YZ", "Pos_clusterHits_RZ",
+                   "Pos_followers_XY", "Pos_followers_YZ",
+                   "Pos_seeds_XY", "Pos_seeds_YZ",
+                   "Pos_outliers_XY", "Pos_outliers_YZ"};
+
+  graphClueNames = {"Delta_Rho_followers", "Delta_Rho_seeds", "Delta_Rho_outliers" };
+
+  for (auto iName : graphClueNames) {
+    std::string nameGraphInFolder = "/rec/" + iName;
+    TGraph* gr = new TGraph();
+    graphClue.push_back(gr);
+    gr->SetName(TString(iName));
+    if (m_ths->regGraph(nameGraphInFolder, gr).isFailure()) {
+      error() << "Couldn't register " << nameGraphInFolder << endmsg;
+    }
+
+  }
 
   return StatusCode::SUCCESS;
 }
@@ -79,13 +92,12 @@ StatusCode CLUEHistograms::execute() {
     evNum = (*evs)[0].getEventNumber();
     info() << "Event number = " << evNum << endmsg;
 
-    std::string nameFolderEvent = "/rec/Event" + std::to_string(evNum) + "/ClusterHitsEnergy_layer";
-    for (auto iName : graphNames) {
+    for (auto iName : graphPosNames) {
       std::string nameGraphInFolder = "/rec/Event" + std::to_string(evNum) + "/" + iName;
-      TGraph* g_clHitsEnergyLayerperEv = new TGraph();
-      graphPos[evNum].push_back(g_clHitsEnergyLayerperEv);
-      g_clHitsEnergyLayerperEv->SetName(TString(iName));
-      if (m_ths->regGraph(nameGraphInFolder, g_clHitsEnergyLayerperEv).isFailure()) {
+      TGraph* gr = new TGraph();
+      graphPos[evNum].push_back(gr);
+      gr->SetName(TString(iName));
+      if (m_ths->regGraph(nameGraphInFolder, gr).isFailure()) {
         error() << "Couldn't register " << nameGraphInFolder << endmsg;
       }
 
@@ -152,26 +164,32 @@ StatusCode CLUEHistograms::execute() {
   std::uint64_t nOutliers = 0;
   for (const auto& clue_hit : (clue_calo_coll->vect)) {
     if(clue_hit.isFollower()){
-      nFollowers++;
+      graphClue[0]->SetPoint(nFollowers_tot, clue_hit.getDelta(), clue_hit.getRho());
       if(saveEachEvent){
         graphPos[evNum][6]->SetPoint(nFollowers, clue_hit.getPosition().y, clue_hit.getPosition().x);
         graphPos[evNum][7]->SetPoint(nFollowers, clue_hit.getPosition().z, clue_hit.getPosition().y);
       }
+      nFollowers++;
+      nFollowers_tot++;
     }
     if(clue_hit.isSeed()){
-      nSeeds++;
+      graphClue[1]->SetPoint(nSeeds_tot, clue_hit.getDelta(), clue_hit.getRho());
       if(saveEachEvent){
         graphPos[evNum][8]->SetPoint(nSeeds, clue_hit.getPosition().y, clue_hit.getPosition().x);
         graphPos[evNum][9]->SetPoint(nSeeds, clue_hit.getPosition().z, clue_hit.getPosition().y);
       }
+      nSeeds++;
+      nSeeds_tot++;
     }
 
     if(clue_hit.isOutlier()){
-      nOutliers++;
+      graphClue[2]->SetPoint(nOutliers_tot, clue_hit.getDelta(), clue_hit.getRho());
       if(saveEachEvent){
         graphPos[evNum][10]->SetPoint(nOutliers, clue_hit.getPosition().y, clue_hit.getPosition().x);
         graphPos[evNum][11]->SetPoint(nOutliers, clue_hit.getPosition().z, clue_hit.getPosition().y);
       }
+      nOutliers++;
+      nOutliers_tot++;
     }
   }
   info() << nSeeds << " seeds." << endmsg;
