@@ -9,6 +9,7 @@ gaudi_add_module(ClueGaudiAlgorithmWrapper
     Gaudi::GaudiAlgLib
     Gaudi::GaudiKernel
     k4FWCore::k4FWCore
+    DD4hep::DDCore
     EDM4HEP::edm4hep
     CLUEAlgo_lib
 )
