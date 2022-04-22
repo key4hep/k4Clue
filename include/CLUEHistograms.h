@@ -30,6 +30,10 @@ private:
   std::string ClusterCollectionName;
   const edm4hep::ClusterCollection* cluster_coll; 
 
+  std::uint64_t nSeeds_tot = 0;
+  std::uint64_t nFollowers_tot = 0;
+  std::uint64_t nOutliers_tot = 0;
+
   // PODIO data service
   ServiceHandle<IDataProviderSvc> m_eventDataSvc;
   PodioDataSvc* m_podioDataSvc;
@@ -41,10 +45,12 @@ private:
   TH1F* h_clLayer{nullptr};
   TH1F* h_clHitsLayer{nullptr};
   TH1F* h_clHitsEnergyLayer{nullptr};
+  std::vector<std::string> graphClueNames{}; 
+  std::vector<TGraph*> graphClue{}; 
 
   bool saveEachEvent{false};
   std::int32_t evNum;
-  std::vector<std::string> graphNames{}; 
+  std::vector<std::string> graphPosNames{}; 
   std::map<const std::int32_t, std::vector<TGraph*>> graphPos{};
 };
 
