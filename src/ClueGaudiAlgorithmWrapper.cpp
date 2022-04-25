@@ -236,7 +236,7 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   // Fill CLUECaloHits
   if( EB_calo_coll->isValid() ) {
     for(const auto& calo_hit : (*EB_calo_coll) ){
-      clue_hit_coll.vect.push_back(clue::CLUECalorimeterHit(calo_hit.clone(), bf.get( calo_hit.getCellID(), "layer"), clue::CLUECalorimeterHit::DetectorRegion::barrel));
+      clue_hit_coll.vect.push_back(clue::CLUECalorimeterHit(calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::barrel, bf.get( calo_hit.getCellID(), "layer")));
     }
   } else {
     throw std::runtime_error("Collection not found.");
@@ -245,7 +245,7 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
 
   if( EE_calo_coll->isValid() ) {
     for(const auto& calo_hit : (*EE_calo_coll) ){
-      clue_hit_coll.vect.push_back(clue::CLUECalorimeterHit(calo_hit.clone(), bf.get( calo_hit.getCellID(), "layer"), clue::CLUECalorimeterHit::DetectorRegion::barrel));
+      clue_hit_coll.vect.push_back(clue::CLUECalorimeterHit(calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::endcap, bf.get( calo_hit.getCellID(), "layer")));
     }
   } else {
     throw std::runtime_error("Collection not found.");

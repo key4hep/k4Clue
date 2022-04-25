@@ -59,23 +59,15 @@ StatusCode CLUEHistograms::initialize() {
   }
 
   graphPosNames = {"Pos_clusters_XY", "Pos_clusters_YZ", "Pos_clusters_RZ",
-                   "Pos_clusterHits_XY", "Pos_clusterHits_YZ", "Pos_clusterHits_RZ",
-                   "Pos_followers_XY", "Pos_followers_YZ",
-                   "Pos_seeds_XY", "Pos_seeds_YZ",
-                   "Pos_outliers_XY", "Pos_outliers_YZ"};
+                   "Pos_clusterHits_XY", "Pos_clusterHits_YZ", "Pos_clusterHits_RZ"
+                   };
 
-  graphClueNames = {"Delta_Rho_followers", "Delta_Rho_seeds", "Delta_Rho_outliers" };
-
-  for (auto iName : graphClueNames) {
-    std::string nameGraphInFolder = "/rec/" + iName;
-    TGraph* gr = new TGraph();
-    graphClue.push_back(gr);
-    gr->SetName(TString(iName));
-    if (m_ths->regGraph(nameGraphInFolder, gr).isFailure()) {
-      error() << "Couldn't register " << nameGraphInFolder << endmsg;
-    }
-
+  t_hits = new TTree ("hits", "CLUE calo hits ntuple");
+  if (m_ths->regTree("/rec/NtuplesHits", t_hits).isFailure()) {
+    error() << "Couldn't register hits tree" << endmsg;
   }
+
+  initializeTree();
 
   return StatusCode::SUCCESS;
 }
@@ -159,43 +151,91 @@ StatusCode CLUEHistograms::execute() {
     nClusters++;
   }
 
+  cleanTree();
+
   std::uint64_t nSeeds = 0;
   std::uint64_t nFollowers = 0;
   std::uint64_t nOutliers = 0;
   for (const auto& clue_hit : (clue_calo_coll->vect)) {
+    m_event->push_back (evNum);
+    if(clue_hit.inBarrel()){
+      m_region->push_back (0);
+    } else {
+      m_region->push_back (1);
+    }
+    m_layer->push_back (clue_hit.getLayer());
+    m_x->push_back (clue_hit.getPosition().x);
+    m_y->push_back (clue_hit.getPosition().y);
+    m_z->push_back (clue_hit.getPosition().z);
+    m_eta->push_back (clue_hit.getEta());
+    m_phi->push_back (clue_hit.getPhi());
+    m_rho->push_back (clue_hit.getRho());
+    m_delta->push_back (clue_hit.getDelta());
+
     if(clue_hit.isFollower()){
-      graphClue[0]->SetPoint(nFollowers_tot, clue_hit.getDelta(), clue_hit.getRho());
-      if(saveEachEvent){
-        graphPos[evNum][6]->SetPoint(nFollowers, clue_hit.getPosition().y, clue_hit.getPosition().x);
-        graphPos[evNum][7]->SetPoint(nFollowers, clue_hit.getPosition().z, clue_hit.getPosition().y);
-      }
+      m_status->push_back(1);
       nFollowers++;
-      nFollowers_tot++;
     }
     if(clue_hit.isSeed()){
-      graphClue[1]->SetPoint(nSeeds_tot, clue_hit.getDelta(), clue_hit.getRho());
-      if(saveEachEvent){
-        graphPos[evNum][8]->SetPoint(nSeeds, clue_hit.getPosition().y, clue_hit.getPosition().x);
-        graphPos[evNum][9]->SetPoint(nSeeds, clue_hit.getPosition().z, clue_hit.getPosition().y);
-      }
+      m_status->push_back(2);
       nSeeds++;
-      nSeeds_tot++;
     }
 
     if(clue_hit.isOutlier()){
-      graphClue[2]->SetPoint(nOutliers_tot, clue_hit.getDelta(), clue_hit.getRho());
-      if(saveEachEvent){
-        graphPos[evNum][10]->SetPoint(nOutliers, clue_hit.getPosition().y, clue_hit.getPosition().x);
-        graphPos[evNum][11]->SetPoint(nOutliers, clue_hit.getPosition().z, clue_hit.getPosition().y);
-      }
+      m_status->push_back(0);
       nOutliers++;
-      nOutliers_tot++;
     }
   }
   info() << nSeeds << " seeds." << endmsg;
   info() << nOutliers << " outliers." << endmsg;
   info() << nFollowers << " followers." << endmsg;
+  t_hits->Fill ();
   return StatusCode::SUCCESS;
+}
+
+void CLUEHistograms::initializeTree() {
+
+  m_event = new std::vector<int>();
+  m_region = new std::vector<int>();
+  m_layer = new std::vector<int>();
+  m_status = new std::vector<int>();
+  m_x = new std::vector<float>();
+  m_y = new std::vector<float>();
+  m_z = new std::vector<float>();
+  m_eta = new std::vector<float>();
+  m_phi = new std::vector<float>();
+  m_rho = new std::vector<float>();
+  m_delta = new std::vector<float>();
+
+  t_hits->Branch ("event", &m_event);
+  t_hits->Branch ("region", &m_region);
+  t_hits->Branch ("layer", &m_layer);
+  t_hits->Branch ("status", &m_status);
+  t_hits->Branch ("x", &m_x);
+  t_hits->Branch ("y", &m_y);
+  t_hits->Branch ("z", &m_z);
+  t_hits->Branch ("eta", &m_eta);
+  t_hits->Branch ("phi", &m_phi);
+  t_hits->Branch ("rho", &m_rho);
+  t_hits->Branch ("delta", &m_delta);
+
+  return;
+}
+
+void CLUEHistograms::cleanTree() {
+  m_event->clear();
+  m_region->clear(); 
+  m_layer->clear();
+  m_status->clear();
+  m_x->clear();
+  m_y->clear();
+  m_z->clear();
+  m_eta->clear();
+  m_phi->clear();
+  m_rho->clear();
+  m_delta ->clear();
+
+  return;
 }
 
 StatusCode CLUEHistograms::finalize() {

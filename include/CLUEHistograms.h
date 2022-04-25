@@ -18,21 +18,36 @@ class CLUEHistograms : public GaudiAlgorithm {
 public:
   /// Constructor.
   CLUEHistograms(const std::string& name, ISvcLocator* svcLoc);
+  /// Destructor.
+  ~CLUEHistograms() {
+    delete m_event;
+    delete m_region;
+    delete m_layer;
+    delete m_status;
+    delete m_x;
+    delete m_y;
+    delete m_z;
+    delete m_eta;
+    delete m_phi;
+    delete m_rho;
+    delete m_delta;
+  };
   /// Initialize.
   virtual StatusCode initialize();
+  /// Initialize tree.
+  void initializeTree();
+  /// Clean tree.
+  void cleanTree();
   /// Execute.
   virtual StatusCode execute();
   /// Finalize.
   virtual StatusCode finalize();
 
+
 private:
   const clue::CLUECalorimeterHitCollection* clue_calo_coll;
   std::string ClusterCollectionName;
   const edm4hep::ClusterCollection* cluster_coll; 
-
-  std::uint64_t nSeeds_tot = 0;
-  std::uint64_t nFollowers_tot = 0;
-  std::uint64_t nOutliers_tot = 0;
 
   // PODIO data service
   ServiceHandle<IDataProviderSvc> m_eventDataSvc;
@@ -45,8 +60,19 @@ private:
   TH1F* h_clLayer{nullptr};
   TH1F* h_clHitsLayer{nullptr};
   TH1F* h_clHitsEnergyLayer{nullptr};
-  std::vector<std::string> graphClueNames{}; 
-  std::vector<TGraph*> graphClue{}; 
+
+  TTree* t_hits{nullptr};
+  std::vector<int> *m_event = nullptr;
+  std::vector<int> *m_region = nullptr;
+  std::vector<int> *m_layer = nullptr;
+  std::vector<int> *m_status = nullptr;
+  std::vector<float> *m_x = nullptr;
+  std::vector<float> *m_y = nullptr;
+  std::vector<float> *m_z = nullptr;
+  std::vector<float> *m_eta = nullptr;
+  std::vector<float> *m_phi = nullptr;
+  std::vector<float> *m_rho = nullptr;
+  std::vector<float> *m_delta = nullptr;
 
   bool saveEachEvent{false};
   std::int32_t evNum;

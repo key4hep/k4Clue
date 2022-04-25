@@ -19,9 +19,9 @@ public:
   /// constructors
   CLUECalorimeterHit(const CalorimeterHit& ch);
 
-  CLUECalorimeterHit(const CalorimeterHit& ch, const int layer, const CLUECalorimeterHit::DetectorRegion barrel);
+  CLUECalorimeterHit(const CalorimeterHit& ch, const CLUECalorimeterHit::DetectorRegion detRegion, const int layer);
 
-  CLUECalorimeterHit(const CalorimeterHit& ch, const int layer, const CLUECalorimeterHit::DetectorRegion barrel, 
+  CLUECalorimeterHit(const CalorimeterHit& ch, const CLUECalorimeterHit::DetectorRegion detRegion, const int layer, 
                      const CLUECalorimeterHit::Status status, const int clusterIndex, const float rho, const float delta);
 
   /// Access the layer number
@@ -68,9 +68,9 @@ public:
   void setClusterIndex( int clIdx ) { m_clusterIndex = clIdx; };
 
 private:
+  std::uint8_t m_detectorRegion{0};
   std::uint64_t m_layer{};
   std::uint8_t m_status{0};
-  std::uint8_t m_detectorRegion{0};
   float m_rho{};
   float m_delta{};
   float m_r{};
