@@ -7,6 +7,7 @@ algList = []
 from Configurables import PodioInput
 evtsvc = k4DataSvc('EventDataSvc')
 evtsvc.input = 'https://key4hep.web.cern.ch/testFiles/k4clue/inputData/clic/20220322_gamma_10GeV_uniform_edm4hep.root'
+#evtsvc.input = "../data/input/Output_edm4hep_gamma_10GeV_endcap.root"
 
 inp = PodioInput('InputReader')
 inp.collections = [
@@ -45,8 +46,8 @@ MyCLUEHistograms.ClusterCollection = "CLUEClusters"
 
 from Configurables import THistSvc
 THistSvc().Output = ["rec DATAFILE='output_k4clue_analysis.root' TYP='ROOT' OPT='RECREATE'"]
-THistSvc().OutputLevel = INFO
-THistSvc().PrintAll = True
+THistSvc().OutputLevel = WARNING
+THistSvc().PrintAll = False
 THistSvc().AutoSave = True
 THistSvc().AutoFlush = True
 
