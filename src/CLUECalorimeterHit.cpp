@@ -10,20 +10,20 @@ CLUECalorimeterHit::CLUECalorimeterHit(const CalorimeterHit& ch)
   setPhi();
 }
 
-CLUECalorimeterHit::CLUECalorimeterHit(const CalorimeterHit& ch, const int layer, const CLUECalorimeterHit::DetectorRegion barrel)
+CLUECalorimeterHit::CLUECalorimeterHit(const CalorimeterHit& ch, const CLUECalorimeterHit::DetectorRegion detRegion, const int layer)
   : CalorimeterHit(ch),
     m_layer(layer),
-    m_detectorRegion(barrel) {
+    m_detectorRegion(detRegion) {
   setR();
   setEta();
   setPhi();
 }
 
-CLUECalorimeterHit::CLUECalorimeterHit(const CalorimeterHit& ch, const int layer, const CLUECalorimeterHit::DetectorRegion barrel,
+CLUECalorimeterHit::CLUECalorimeterHit(const CalorimeterHit& ch, const CLUECalorimeterHit::DetectorRegion detRegion, const int layer,
                                        const CLUECalorimeterHit::Status status, const int clusterIndex, const float rho, const float delta)
   : CalorimeterHit(ch),
+    m_detectorRegion(detRegion),
     m_layer(layer),
-    m_detectorRegion(barrel),
     m_status(status),
     m_clusterIndex(clusterIndex),
     m_rho(rho),
