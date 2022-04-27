@@ -171,6 +171,7 @@ StatusCode CLUEHistograms::execute() {
     m_phi->push_back (clue_hit.getPhi());
     m_rho->push_back (clue_hit.getRho());
     m_delta->push_back (clue_hit.getDelta());
+    m_energy->push_back (clue_hit.getEnergy());
 
     if(clue_hit.isFollower()){
       m_status->push_back(1);
@@ -206,6 +207,7 @@ void CLUEHistograms::initializeTree() {
   m_phi = new std::vector<float>();
   m_rho = new std::vector<float>();
   m_delta = new std::vector<float>();
+  m_energy = new std::vector<float>();
 
   t_hits->Branch ("event", &m_event);
   t_hits->Branch ("region", &m_region);
@@ -218,6 +220,7 @@ void CLUEHistograms::initializeTree() {
   t_hits->Branch ("phi", &m_phi);
   t_hits->Branch ("rho", &m_rho);
   t_hits->Branch ("delta", &m_delta);
+  t_hits->Branch ("energy", &m_energy);
 
   return;
 }
