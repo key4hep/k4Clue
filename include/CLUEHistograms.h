@@ -31,6 +31,7 @@ public:
     delete m_phi;
     delete m_rho;
     delete m_delta;
+    delete m_energy;
   };
   /// Initialize.
   virtual StatusCode initialize();
@@ -73,6 +74,7 @@ private:
   std::vector<float> *m_phi = nullptr;
   std::vector<float> *m_rho = nullptr;
   std::vector<float> *m_delta = nullptr;
+  std::vector<float> *m_energy = nullptr;
 
   bool saveEachEvent{false};
   std::int32_t evNum;
