@@ -237,6 +237,7 @@ void CLUEHistograms::cleanTree() {
   m_phi->clear();
   m_rho->clear();
   m_delta ->clear();
+  m_energy ->clear();
 
   return;
 }
