@@ -35,9 +35,9 @@ StatusCode ClueGaudiAlgorithmWrapper::initialize() {
   return Algorithm::initialize();
 }
 
-void ClueGaudiAlgorithmWrapper::fillInputs(){
+void ClueGaudiAlgorithmWrapper::fillInputs(std::vector<clue::CLUECalorimeterHit>& clue_hits){
 
-  for (const auto& ch : clue_hit_coll.vect) {
+  for (const auto& ch : clue_hits) {
     if(ch.inBarrel()){
       x.push_back(ch.getPhi());
       y.push_back(ch.getPosition().z);
@@ -51,7 +51,11 @@ void ClueGaudiAlgorithmWrapper::fillInputs(){
   return;
 }
 
-std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(){
+std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, 
+								    bool isBarrel = false){
+
+  // Fill CLUECaloHits
+  fillInputs(clue_hits);
 
   // Run CLUE
   debug() << "Using CLUEAlgo ... " << endmsg;
@@ -72,27 +76,35 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(){
 
   for(int i = 0; i < cluePoints.n; i++){
 
-    clue_hit_coll.vect[i].setRho(cluePoints.rho[i]);
-    clue_hit_coll.vect[i].setDelta(cluePoints.delta[i]);
-    clue_hit_coll.vect[i].setClusterIndex(cluePoints.clusterIndex[i]);
+    clue_hits[i].setRho(cluePoints.rho[i]);
+    clue_hits[i].setDelta(cluePoints.delta[i]);
+    clue_hits[i].setClusterIndex(cluePoints.clusterIndex[i]);
     info() << "CLUE Points : (x,y,z) = " 
-           << clue_hit_coll.vect[i].getPosition().x << ","
-           << clue_hit_coll.vect[i].getPosition().y << ","
-           << clue_hit_coll.vect[i].getPosition().z << endmsg;
+           << clue_hits[i].getPosition().x << ","
+           << clue_hits[i].getPosition().y << ","
+           << clue_hits[i].getPosition().z << endmsg;
 
     if(cluePoints.isSeed[i] == 1){
       info() << "    is seed" << endmsg; 
-      clue_hit_coll.vect[i].setStatus(clue::CLUECalorimeterHit::Status::seed);
+      clue_hits[i].setStatus(clue::CLUECalorimeterHit::Status::seed);
     } else if (cluePoints.clusterIndex[i] == -1) {
       info() << "    is outlier" << endmsg; 
-      clue_hit_coll.vect[i].setStatus(clue::CLUECalorimeterHit::Status::outlier);
+      clue_hits[i].setStatus(clue::CLUECalorimeterHit::Status::outlier);
     } else {
       info() << "    is follower of cluster #" << cluePoints.clusterIndex[i] << endmsg; 
-      clue_hit_coll.vect[i].setStatus(clue::CLUECalorimeterHit::Status::follower);
+      clue_hits[i].setStatus(clue::CLUECalorimeterHit::Status::follower);
     }
 
   }
   return clueClusters;
+}
+
+void ClueGaudiAlgorithmWrapper::cleanCLUEinputs(){
+  //Cleaning
+  x.clear();
+  y.clear();
+  layer.clear();
+  weight.clear();
 }
 
 void ClueGaudiAlgorithmWrapper::fillFinalClusters(const std::map<int, std::vector<int> > clusterMap, 
@@ -243,17 +255,27 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   const BitFieldCoder bf(cellIDstr);
 
   int maxLayer = CLICdetLayerTilesConstants::nLayers;
+  clue::CLUECalorimeterHitCollection clue_hit_coll_barrel;
+  clue::CLUECalorimeterHitCollection clue_hit_coll_endcap;
 
   // Fill CLUECaloHits
   if( EB_calo_coll->isValid() ) {
     for(const auto& calo_hit : (*EB_calo_coll) ){
-      clue_hit_coll.vect.push_back(clue::CLUECalorimeterHit(calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::barrel, bf.get( calo_hit.getCellID(), "layer")));
+      clue_hit_coll_barrel.vect.push_back(clue::CLUECalorimeterHit(calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::barrel, bf.get( calo_hit.getCellID(), "layer")));
     }
   } else {
     throw std::runtime_error("Collection not found.");
   }
   info() << EB_calo_coll->size() << " caloHits in " << EBCaloCollectionName << "." << endmsg;
 
+  // Run CLUE in the barrel
+  std::map<int, std::vector<int> > clueClusters = runAlgo(clue_hit_coll_barrel.vect, true);
+  debug() << "Produced " << clueClusters.size() << " clusters" << endmsg;
+
+  clue_hit_coll.vect.insert(clue_hit_coll.vect.end(), clue_hit_coll_barrel.vect.begin(), clue_hit_coll_barrel.vect.end());
+  cleanCLUEinputs();
+
+  // FIXME:: Maybe to be run twice for EE+ and EE-?
   if( EE_calo_coll->isValid() ) {
     for(const auto& calo_hit : (*EE_calo_coll) ){
       clue_hit_coll.vect.push_back(clue::CLUECalorimeterHit(calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::endcap, bf.get( calo_hit.getCellID(), "layer")));
@@ -266,13 +288,16 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   }
   info() << EE_calo_coll->size() << " caloHits in " << EECaloCollectionName << "." << endmsg;
 
+  // Run CLUE in the endcap
+  std::map<int, std::vector<int> > clueClustersEndcap = runAlgo(clue_hit_coll_endcap.vect, false);
+  debug() << "Produced " << clueClustersEndcap.size() << " clusters" << endmsg;
+
+  clue_hit_coll.vect.insert(clue_hit_coll.vect.end(), clue_hit_coll_endcap.vect.begin(), clue_hit_coll_endcap.vect.end());
+  clueClusters.insert(clueClustersEndcap.begin(), clueClustersEndcap.end());
+  cleanCLUEinputs();
+
   debug() << clue_hit_coll.vect.size() << " caloHits in total. " << endmsg;
-
-  // Fill CLUECaloHits
-  fillInputs();
-
-  std::map<int, std::vector<int> > clueClusters = runAlgo();
-  debug() << "Produced " << clueClusters.size() << " clusters" << endmsg;
+  debug() << clueClusters.size() << " clusters in total." << endmsg;
 
   auto pCHV = std::make_unique<clue::CLUECalorimeterHitCollection>(clue_hit_coll);
   const StatusCode scStatusV = eventSvc()->registerObject("/Event/CLUECalorimeterHitCollection", pCHV.release());
@@ -297,10 +322,7 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
 
   //Cleaning
   clue_hit_coll.vect.clear();
-  x.clear();
-  y.clear();
-  layer.clear();
-  weight.clear();
+  cleanCLUEinputs();
  
   return StatusCode::SUCCESS;
 }
