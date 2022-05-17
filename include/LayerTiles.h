@@ -1,7 +1,6 @@
 #ifndef LayerTiles_h
 #define LayerTiles_h
 
-
 #include <vector>
 #include <array>
 #include <cmath>
@@ -10,13 +9,14 @@
 #include <iostream>
 
 #include "LayerTilesConstants.h"
+#include "CLICdetLayerTilesConstants.h"
 
-
-class LayerTiles {
+template <typename T>
+class LayerTilesT {
 
   public:
-    LayerTiles(){
-      layerTiles_.resize(LayerTilesConstants::nColumns * LayerTilesConstants::nRows);
+    LayerTilesT(){
+      layerTiles_.resize(T::nColumns * T::nRows);
     }
 
     void fill(const std::vector<float>& x, const std::vector<float>& y) {
@@ -32,29 +32,29 @@ class LayerTiles {
 
 
     int getXBin(float x) const {
-      constexpr float xRange = LayerTilesConstants::maxX - LayerTilesConstants::minX;
+      constexpr float xRange = T::maxX - T::minX;
       static_assert(xRange>=0.);
-      int xBin = (x - LayerTilesConstants::minX)*LayerTilesConstants::rX;
-      xBin = std::min(xBin,LayerTilesConstants::nColumns-1);
+      int xBin = (x - T::minX)*T::rX;
+      xBin = std::min(xBin,T::nColumns-1);
       xBin = std::max(xBin,0);
       return xBin;
     }
 
     int getYBin(float y) const {
-      constexpr float yRange = LayerTilesConstants::maxY - LayerTilesConstants::minY;
+      constexpr float yRange = T::maxY - T::minY;
       static_assert(yRange>=0.);
-      int yBin = (y - LayerTilesConstants::minY)*LayerTilesConstants::rY;
-      yBin = std::min(yBin,LayerTilesConstants::nRows-1);
+      int yBin = (y - T::minY)*T::rY;
+      yBin = std::min(yBin,T::nRows-1);
       yBin = std::max(yBin,0);
       return yBin;
     }
 
     int getGlobalBin(float x, float y) const {
-      return getXBin(x) + getYBin(y)*LayerTilesConstants::nColumns;
+      return getXBin(x) + getYBin(y)*T::nColumns;
     }
 
     int getGlobalBinByBin(int xBin, int yBin) const {
-      return xBin + yBin*LayerTilesConstants::nColumns;
+      return xBin + yBin*T::nColumns;
     }
 
     std::array<int,4> searchBox(float xMin, float xMax, float yMin, float yMax){
@@ -82,5 +82,7 @@ class LayerTiles {
 
 };
 
+using LayerTiles = LayerTilesT<LayerTilesConstants>;
+using CLICdetLayerTiles = LayerTilesT<CLICdetLayerTilesConstants>;
 
 #endif //LayerTiles_h

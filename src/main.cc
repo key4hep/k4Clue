@@ -99,7 +99,7 @@ void mainRun( std::vector<float>& x, std::vector<float>& y, std::vector<int>& la
       clueAlgo.verboseResults(outputFileName, -1);
 #else
     std::cout << "Using CLUEAlgoCupla ... " << std::endl;
-    CLUEAlgoCupla<cupla::Acc> clueAlgo(dc, rhoc, outlierDeltaFactor,
+    CLUEAlgoCuplaT<cupla::Acc, LayerTilesConstants> clueAlgo(dc, rhoc, outlierDeltaFactor,
 				       verbose);
     clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]);
     // measure excution time of makeClusters
@@ -114,10 +114,11 @@ void mainRun( std::vector<float>& x, std::vector<float>& y, std::vector<int>& la
 #endif
   } else {
     std::cout << "Using CLUEAlgo ... " << std::endl;
-    CLUEAlgo clueAlgo(dc, rhoc, outlierDeltaFactor, verbose);
+    CLUEAlgoT<LayerTilesConstants> clueAlgo(dc, rhoc, outlierDeltaFactor, verbose);
     clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]);
     // measure excution time of makeClusters
     auto start = std::chrono::high_resolution_clock::now();
+    std::cout << "clueAlgo.makeClusters" << std::endl;
     clueAlgo.makeClusters();
     auto finish = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = finish - start;
@@ -266,3 +267,4 @@ int main(int argc, char *argv[]) {
   return 0;
 
 }
+

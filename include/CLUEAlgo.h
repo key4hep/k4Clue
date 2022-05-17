@@ -15,16 +15,17 @@
 #include "LayerTiles.h"
 #include "Points.h"
 
-class CLUEAlgo{
+template <typename TILE_CONST>
+class CLUEAlgoT {
 
 public:
-  CLUEAlgo(float dc, float rhoc, float outlierDeltaFactor, bool verbose) {
+  CLUEAlgoT(float dc, float rhoc, float outlierDeltaFactor, bool verbose) {
     dc_ = dc; 
     rhoc_ = rhoc;
     outlierDeltaFactor_ = outlierDeltaFactor;
     verbose_ = verbose;
   }
-  ~CLUEAlgo(){} 
+  ~CLUEAlgoT(){} 
     
   // public variables
   float dc_, rhoc_, outlierDeltaFactor_;
@@ -109,11 +110,14 @@ public:
         
 private:
   // private member methods
-  void prepareDataStructures(std::array<LayerTiles, NLAYERS> & );
-  void calculateLocalDensity(std::array<LayerTiles, NLAYERS> & );
-  void calculateDistanceToHigher(std::array<LayerTiles, NLAYERS> & );
+  void prepareDataStructures(std::array<LayerTilesT<TILE_CONST>, TILE_CONST::nLayers> & );
+  void calculateLocalDensity(std::array<LayerTilesT<TILE_CONST>, TILE_CONST::nLayers> & );
+  void calculateDistanceToHigher(std::array<LayerTilesT<TILE_CONST>, TILE_CONST::nLayers> & );
   void findAndAssignClusters();
   inline float distance(int , int) const ;
 };
+
+using CLUEAlgo = CLUEAlgoT<LayerTilesConstants>;
+using CLICdetCLUEAlgo = CLUEAlgoT<CLICdetLayerTilesConstants>;
 
 #endif
