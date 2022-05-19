@@ -8,7 +8,7 @@ if(CMAKE_CUDA_COMPILER)
   target_compile_options(mainCuplaCUDA PRIVATE -DUSE_CUPLA -DFOR_CUDA -DALPAKA_ACC_GPU_CUDA_ENABLED=1)
   
   target_compile_options(mainCuplaCUDA PRIVATE -DUSE_EDM4HEP)
-  target_link_libraries(mainCuplaCUDA PRIVATE CLUEAlgo_lib edm4hep podio::podioRootIO DD4hep::DDCore)
+  target_link_libraries(mainCuplaCUDA PRIVATE CLUEAlgo_lib EDM4hep::edm4hep podio::podioRootIO DD4hep::DDCore)
 
   target_include_directories(mainCuplaCUDA PUBLIC
     $<BUILD_INTERFACE:${cupla_DIR}/include>
