@@ -12,14 +12,14 @@ was adapted to run in the Gaudi software framework and to support EDM4hep data f
 ### On a lxplus machine:
 
 If CUDA/nvcc are found on the machine, the compilation is performed automatically also for the GPU case.
-The path to the nvcc compiler will be automatically taken from the machine. In this case, `>=cuda10` and `<=nvcc11.2` are also required.
+The path to the nvcc compiler will be automatically taken from the machine. In this case, `>=cuda10` and `>=gcc11` are also required.
 
 ```bash
 # source key4hep environment
 source /cvmfs/sw.hsf.org/key4hep/setup.sh
 
-# get nvcc 11.2, if needed
-source /cvmfs/sft.cern.ch/lcg/releases/cuda/11.2-5cee1/x86_64-centos7-gcc8-opt/setup.sh
+# get nvcc 11.4, if needed
+source /cvmfs/sft.cern.ch/lcg/releases/cuda/11.4-166ec/x86_64-centos7-gcc11-opt/setup.sh
 
 # then setup this project
 git clone --recurse-submodules https://github.com/key4hep/k4Clue.git
