@@ -11,7 +11,7 @@ if(CMAKE_CUDA_COMPILER)
   add_executable(main ${PROJECT_SOURCE_DIR}/src/main.cc)
   
   target_compile_options(main PRIVATE -DUSE_EDM4HEP)
-  target_link_libraries(main PRIVATE CLUEAlgo_lib CLUEAlgoGPU_lib edm4hep podio::podioRootIO DD4hep::DDCore)
+  target_link_libraries(main PRIVATE CLUEAlgo_lib CLUEAlgoGPU_lib EDM4HEP::edm4hep podio::podioRootIO DD4hep::DDCore)
 
   add_test(NAME main_CPU 
            COMMAND main ${TESTFILE_CSV} 20 25 2 0 1 1)
