@@ -40,7 +40,6 @@ MyClueGaudiAlgorithmWrapper.OutlierDeltaFactor = 1.00
 from Configurables import CLUEHistograms
 MyCLUEHistograms = CLUEHistograms("CLUEAnalysis")
 MyCLUEHistograms.OutputLevel = INFO
-MyCLUEHistograms.SaveEachEvent = True
 MyCLUEHistograms.ClusterCollection = "CLUEClusters"
 
 from Configurables import THistSvc
