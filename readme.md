@@ -19,7 +19,7 @@ The path to the nvcc compiler will be automatically taken from the machine. In t
 source /cvmfs/sw.hsf.org/key4hep/setup.sh
 
 # get nvcc 11.4, if needed
-source /cvmfs/sft.cern.ch/lcg/releases/cuda/11.4-166ec/x86_64-centos7-gcc11-opt/setup.sh
+source /cvmfs/sft.cern.ch/lcg/contrib/cuda/11.4/x86_64-centos8/setup.sh
 
 # then setup this project
 git clone --recurse-submodules https://github.com/key4hep/k4Clue.git
