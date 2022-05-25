@@ -10,6 +10,7 @@
 
 #include "LayerTilesConstants.h"
 #include "CLICdetLayerTilesConstants.h"
+#include "CLDLayerTilesConstants.h"
 
 template <typename T>
 class LayerTilesT {
@@ -84,5 +85,6 @@ class LayerTilesT {
 
 using LayerTiles = LayerTilesT<LayerTilesConstants>;
 using CLICdetLayerTiles = LayerTilesT<CLICdetLayerTilesConstants>;
+using CLDLayerTiles = LayerTilesT<CLDLayerTilesConstants>;
 
 #endif //LayerTiles_h

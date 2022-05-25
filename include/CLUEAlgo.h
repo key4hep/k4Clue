@@ -119,5 +119,6 @@ private:
 
 using CLUEAlgo = CLUEAlgoT<LayerTilesConstants>;
 using CLICdetCLUEAlgo = CLUEAlgoT<CLICdetLayerTilesConstants>;
+using CLDCLUEAlgo = CLUEAlgoT<CLDLayerTilesConstants>;
 
 #endif
