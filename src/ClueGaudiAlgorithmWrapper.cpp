@@ -38,8 +38,13 @@ StatusCode ClueGaudiAlgorithmWrapper::initialize() {
 void ClueGaudiAlgorithmWrapper::fillInputs(){
 
   for (const auto& ch : clue_hit_coll.vect) {
-    x.push_back(ch.getEta());
-    y.push_back(ch.getPhi());
+    if(ch.inBarrel()){
+      x.push_back(ch.getPhi());
+      y.push_back(ch.getPosition().z);
+    } else {
+      x.push_back(ch.getPosition().x);
+      y.push_back(ch.getPosition().y);
+    }
     layer.push_back(ch.getLayer());
     weight.push_back(ch.getEnergy());
   }
@@ -50,7 +55,7 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(){
 
   // Run CLUE
   debug() << "Using CLUEAlgo ... " << endmsg;
-  CLUEAlgo clueAlgo(dc, rhoc, outlierDeltaFactor, false);
+  CLDCLUEAlgo clueAlgo(dc, rhoc, outlierDeltaFactor, false);
   clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]);
   // measure excution time of makeClusters
   auto start = std::chrono::high_resolution_clock::now();
@@ -70,12 +75,19 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(){
     clue_hit_coll.vect[i].setRho(cluePoints.rho[i]);
     clue_hit_coll.vect[i].setDelta(cluePoints.delta[i]);
     clue_hit_coll.vect[i].setClusterIndex(cluePoints.clusterIndex[i]);
+    info() << "CLUE Points : (x,y,z) = " 
+           << clue_hit_coll.vect[i].getPosition().x << ","
+           << clue_hit_coll.vect[i].getPosition().y << ","
+           << clue_hit_coll.vect[i].getPosition().z << endmsg;
 
     if(cluePoints.isSeed[i] == 1){
+      info() << "    is seed" << endmsg; 
       clue_hit_coll.vect[i].setStatus(clue::CLUECalorimeterHit::Status::seed);
     } else if (cluePoints.clusterIndex[i] == -1) {
+      info() << "    is outlier" << endmsg; 
       clue_hit_coll.vect[i].setStatus(clue::CLUECalorimeterHit::Status::outlier);
     } else {
+      info() << "    is follower of cluster #" << cluePoints.clusterIndex[i] << endmsg; 
       clue_hit_coll.vect[i].setStatus(clue::CLUECalorimeterHit::Status::follower);
     }
 
@@ -229,6 +241,8 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   auto collID = EB_calo_coll->getID();
   const auto cellIDstr = EB_calo_handle.getCollMetadataCellID(collID);
   const BitFieldCoder bf(cellIDstr);
+
+  int maxLayer = CLICdetLayerTilesConstants::nLayers;
 
   // Fill CLUECaloHits
   if( EB_calo_coll->isValid() ) {
