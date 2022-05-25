@@ -33,13 +33,16 @@ public:
     delete m_hits_delta;
     delete m_hits_energy;
 
+    delete m_clusters;
     delete m_clusters_event;
     delete m_clusters_layer;
     delete m_clusters_size;
+    delete m_clusters_totSize;
     delete m_clusters_x;
     delete m_clusters_y;
     delete m_clusters_z;
     delete m_clusters_energy;
+    delete m_clusters_totEnergy;
   };
   /// Initialize.
   virtual StatusCode initialize();
@@ -79,13 +82,16 @@ private:
   std::vector<float> *m_hits_energy = nullptr;
 
   TTree* t_clusters{nullptr};
+  std::vector<int> *m_clusters = nullptr;
   std::vector<int> *m_clusters_event = nullptr;
   std::vector<int> *m_clusters_layer = nullptr;
   std::vector<int> *m_clusters_size = nullptr;
+  std::vector<int> *m_clusters_totSize = nullptr;
   std::vector<float> *m_clusters_x = nullptr;
   std::vector<float> *m_clusters_y = nullptr;
   std::vector<float> *m_clusters_z = nullptr;
   std::vector<float> *m_clusters_energy = nullptr;
+  std::vector<float> *m_clusters_totEnergy = nullptr;
 
   std::int32_t evNum;
 };
