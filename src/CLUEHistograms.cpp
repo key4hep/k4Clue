@@ -37,6 +37,12 @@ StatusCode CLUEHistograms::initialize() {
     error() << "Couldn't register clusters tree" << endmsg;
   }
 
+  std::string ClusterHitsCollectionName = ClusterCollectionName + "Hits";
+  t_clhits = new TTree (TString(ClusterHitsCollectionName), "Clusters ntuple");
+  if (m_ths->regTree("/rec/"+ClusterHitsCollectionName, t_clhits).isFailure()) {
+    error() << "Couldn't register cluster hits tree" << endmsg;
+  }
+
   initializeTrees();
 
   return StatusCode::SUCCESS;
@@ -44,7 +50,6 @@ StatusCode CLUEHistograms::initialize() {
 
 StatusCode CLUEHistograms::execute() {
   info() << "CLUEHistograms::execute()" << endmsg;
-
 
   DataHandle<edm4hep::EventHeaderCollection> ev_handle {
     "EventHeader", Gaudi::DataHandle::Reader, this};
@@ -61,22 +66,32 @@ StatusCode CLUEHistograms::execute() {
     info() << "Status NOT success" << endmsg;
   }
 
+  // Read EB collection for metadata cellID
+  DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {
+    EBCaloCollectionName, Gaudi::DataHandle::Reader, this};
+  EB_calo_coll = EB_calo_handle.get();
+
+  // Read EE collection
+  DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {
+    EECaloCollectionName, Gaudi::DataHandle::Reader, this};
+  EE_calo_coll = EE_calo_handle.get();
+
   // Read cluster collection
   DataHandle<edm4hep::ClusterCollection> cluster_handle {  
     ClusterCollectionName, Gaudi::DataHandle::Reader, this};
   cluster_coll = cluster_handle.get();
 
-  // Get collection metadata cellID which is valid for both EB and EE
-  auto collID = cluster_coll->getID();
-  const auto cellIDstr = cluster_handle.getCollMetadataCellID(collID);
+  // Get collection metadata cellID which is valid for both EB, EE and Clusters
+  auto collID = EB_calo_coll->getID();
+  const auto cellIDstr = EB_calo_handle.getCollMetadataCellID(collID);
   const BitFieldCoder bf(cellIDstr);
-  std::cout << cellIDstr << std::endl;
 
   cleanTrees();
 
   std::uint64_t ch_layer = 0;
   std::uint64_t nClusters = 0;
   float totEnergy = 0;
+  float totEnergyHits = 0;
   std::uint64_t totSize = 0;
 
   for (const auto& cl : *cluster_coll) {
@@ -89,28 +104,30 @@ StatusCode CLUEHistograms::execute() {
     m_clusters_y->push_back (cl.getPosition().y);
     m_clusters_z->push_back (cl.getPosition().z);
 
-    totSize += cl.getHits().size();
-/*
-    for (const auto& hit : cl.getHits()) {
-//      ch_layer = bf.get( hit.getCellID(), "layer");
-      // Do we need to plot anything specific from the hits
-      // belonging to the clusters?
+   for (const auto& hit : cl.getHits()) {
+      ch_layer = bf.get( hit.getCellID(), "layer");
+      m_clhits_event->push_back (evNum);
+      m_clhits_layer->push_back (ch_layer);
+      m_clhits_x->push_back (hit.getPosition().x);
+      m_clhits_y->push_back (hit.getPosition().y);
+      m_clhits_z->push_back (hit.getPosition().z);
+      m_clhits_energy->push_back (hit.getEnergy());
+      totEnergyHits += hit.getEnergy();
+
     }
-*/
-    // not working currently for PandoraClusters
-    if(ClusterCollectionName == "CLUEClusters"){
-      ch_layer = bf.get( cl.getHits().at(0).getCellID(), "layer");
-      m_clusters_layer->push_back (ch_layer);
-    }
+
     nClusters++;
     totEnergy += cl.getEnergy();
+    totSize += cl.getHits().size();
+
   }
   m_clusters->push_back (nClusters);
   m_clusters_totEnergy->push_back (totEnergy);
+  m_clusters_totEnergyHits->push_back (totEnergyHits);
   m_clusters_totSize->push_back (totSize);
   t_clusters->Fill ();
-  info() << "total hits cluster: " << totEnergy << endmsg; 
-  info() << "total number hits : " << totSize << endmsg; 
+  t_clhits->Fill ();
+  info() << ClusterCollectionName << " :: Total number hits = " << totSize << " with total energy (cl) = " << totEnergy << "; (hits) = " << totEnergyHits << endmsg; 
 
   std::uint64_t nSeeds = 0;
   std::uint64_t nFollowers = 0;
@@ -195,6 +212,7 @@ void CLUEHistograms::initializeTrees() {
   m_clusters_z = new std::vector<float>();
   m_clusters_energy = new std::vector<float>();
   m_clusters_totEnergy = new std::vector<float>();
+  m_clusters_totEnergyHits = new std::vector<float>();
 
   t_clusters->Branch ("clusters", &m_clusters);
   t_clusters->Branch ("event", &m_clusters_event);
@@ -206,6 +224,21 @@ void CLUEHistograms::initializeTrees() {
   t_clusters->Branch ("z", &m_clusters_z);
   t_clusters->Branch ("energy", &m_clusters_energy);
   t_clusters->Branch ("totEnergy", &m_clusters_totEnergy);
+  t_clusters->Branch ("totEnergyHits", &m_clusters_totEnergyHits);
+
+  m_clhits_event = new std::vector<int>();
+  m_clhits_layer = new std::vector<int>();
+  m_clhits_x = new std::vector<float>();
+  m_clhits_y = new std::vector<float>();
+  m_clhits_z = new std::vector<float>();
+  m_clhits_energy = new std::vector<float>();
+
+  t_clhits->Branch ("event", &m_clhits_event);
+  t_clhits->Branch ("layer", &m_clhits_layer);
+  t_clhits->Branch ("x", &m_clhits_x);
+  t_clhits->Branch ("y", &m_clhits_y);
+  t_clhits->Branch ("z", &m_clhits_z);
+  t_clhits->Branch ("energy", &m_clhits_energy);
 
   return;
 }
@@ -234,6 +267,14 @@ void CLUEHistograms::cleanTrees() {
   m_clusters_z->clear();
   m_clusters_energy->clear();
   m_clusters_totEnergy->clear();
+  m_clusters_totEnergyHits->clear();
+
+  m_clhits_event->clear();
+  m_clhits_layer->clear();
+  m_clhits_x->clear();
+  m_clhits_y->clear();
+  m_clhits_z->clear();
+  m_clhits_energy->clear();
 
   return;
 }
