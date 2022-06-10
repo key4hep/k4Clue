@@ -43,6 +43,14 @@ public:
     delete m_clusters_z;
     delete m_clusters_energy;
     delete m_clusters_totEnergy;
+    delete m_clusters_totEnergyHits;
+
+    delete m_clhits_event;
+    delete m_clhits_layer;
+    delete m_clhits_x;
+    delete m_clhits_y;
+    delete m_clhits_z;
+    delete m_clhits_energy;
   };
   /// Initialize.
   virtual StatusCode initialize();
@@ -60,6 +68,10 @@ private:
   const clue::CLUECalorimeterHitCollection* clue_calo_coll;
   std::string ClusterCollectionName;
   const edm4hep::ClusterCollection* cluster_coll; 
+  std::string EBCaloCollectionName = "ECALBarrel";
+  std::string EECaloCollectionName = "ECALEndcap";
+  const edm4hep::CalorimeterHitCollection* EB_calo_coll;
+  const edm4hep::CalorimeterHitCollection* EE_calo_coll;
 
   // PODIO data service
   ServiceHandle<IDataProviderSvc> m_eventDataSvc;
@@ -92,6 +104,15 @@ private:
   std::vector<float> *m_clusters_z = nullptr;
   std::vector<float> *m_clusters_energy = nullptr;
   std::vector<float> *m_clusters_totEnergy = nullptr;
+  std::vector<float> *m_clusters_totEnergyHits = nullptr;
+
+  TTree* t_clhits{nullptr};
+  std::vector<int> *m_clhits_event = nullptr;
+  std::vector<int> *m_clhits_layer = nullptr;
+  std::vector<float> *m_clhits_x = nullptr;
+  std::vector<float> *m_clhits_y = nullptr;
+  std::vector<float> *m_clhits_z = nullptr;
+  std::vector<float> *m_clhits_energy = nullptr;
 
   std::int32_t evNum;
 };
