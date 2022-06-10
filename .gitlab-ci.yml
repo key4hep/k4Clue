@@ -1,0 +1,23 @@
+
+# for compatibility with old git versions on centos
+variables:
+  GIT_STRATEGY: clone
+
+### create an artifact with a pre-configured spack on each push
+compile_and_test:
+    tags:
+        - fcc-gpu-ci
+    only:
+      refs:
+          - pushes
+          - merge_requests
+          - schedules
+    script:
+        - source /cvmfs/sw.hsf.org/key4hep/setup.sh
+        - source /cvmfs/sft.cern.ch/lcg/contrib/cuda/11.4/x86_64-centos8/setup.sh
+        - git submodule init; git submodule update
+        - mkdir build; cd build
+        - cmake .. -G Ninja
+        - ninja -j 4
+        - ninja install
+        - ninja test
