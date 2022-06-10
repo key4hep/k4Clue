@@ -116,14 +116,11 @@ void ClueGaudiAlgorithmWrapper::fillFinalClusters(const std::map<int, std::vecto
         if( EB_calo_coll->size() != 0){
           if( index < EB_calo_coll->size() ) {
             cluster.addToHits(EB_calo_coll->at(index));
-            cluster.addToHitContributions(1.0);
           } else {
             cluster.addToHits(EE_calo_coll->at(index - EB_calo_coll->size()));
-            cluster.addToHitContributions(1.0);
           }
         } else {
           cluster.addToHits(EE_calo_coll->at(index));
-          cluster.addToHitContributions(1.0);
         }
 
         if (clue_hit_coll.vect.at(index).getEnergy() > maxEnergyValue) {
