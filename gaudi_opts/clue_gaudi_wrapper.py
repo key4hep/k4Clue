@@ -7,12 +7,14 @@ algList = []
 from Configurables import PodioInput
 evtsvc = k4DataSvc('EventDataSvc')
 evtsvc.input = 'https://key4hep.web.cern.ch/testFiles/k4clue/inputData/clic/20220322_gamma_10GeV_uniform_edm4hep.root'
+#evtsvc.input = '/afs/cern.ch/user/e/ebrondol/work/clue/k4Clue/data/input/Output_gamma_10GeV_endcap_500events_edm4hep.root'
 
 inp = PodioInput('InputReader')
 inp.collections = [
   'EventHeader',
   'ECALBarrel',
-  'ECALEndcap'
+  'ECALEndcap',
+  'PandoraClusters'
 ]
 inp.OutputLevel = DEBUG
 
@@ -33,14 +35,19 @@ MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper("ClueGaudiAlgorithmWrapp
 MyClueGaudiAlgorithmWrapper.OutputLevel = WARNING
 MyClueGaudiAlgorithmWrapper.BarrelCaloHitsCollection = "ECALBarrel"
 MyClueGaudiAlgorithmWrapper.EndcapCaloHitsCollection = "ECALEndcap"
-MyClueGaudiAlgorithmWrapper.CriticalDistance = 10.00
+MyClueGaudiAlgorithmWrapper.CriticalDistance = 15.00
 MyClueGaudiAlgorithmWrapper.MinLocalDensity = 0.02
-MyClueGaudiAlgorithmWrapper.OutlierDeltaFactor = 1.00
+MyClueGaudiAlgorithmWrapper.OutlierDeltaFactor = 2.00
 
 from Configurables import CLUEHistograms
 MyCLUEHistograms = CLUEHistograms("CLUEAnalysis")
-MyCLUEHistograms.OutputLevel = INFO
+MyCLUEHistograms.OutputLevel = WARNING
 MyCLUEHistograms.ClusterCollection = "CLUEClusters"
+
+from Configurables import CLUEHistograms
+MyPandoraHistograms = CLUEHistograms("PandoraAnalysis")
+MyPandoraHistograms.OutputLevel = WARNING
+MyPandoraHistograms.ClusterCollection = "PandoraClusters"
 
 from Configurables import THistSvc
 THistSvc().Output = ["rec DATAFILE='output_k4clue_analysis.root' TYP='ROOT' OPT='RECREATE'"]
@@ -58,6 +65,7 @@ algList.append(inp)
 algList.append(MyAIDAProcessor)
 algList.append(MyClueGaudiAlgorithmWrapper)
 algList.append(MyCLUEHistograms)
+algList.append(MyPandoraHistograms)
 algList.append(out)
 
 from Configurables import ApplicationMgr

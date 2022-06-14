@@ -55,7 +55,7 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(){
 
   // Run CLUE
   debug() << "Using CLUEAlgo ... " << endmsg;
-  CLDCLUEAlgo clueAlgo(dc, rhoc, outlierDeltaFactor, false);
+  CLICdetCLUEAlgo clueAlgo(dc, rhoc, outlierDeltaFactor, false);
   clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]);
   // measure excution time of makeClusters
   auto start = std::chrono::high_resolution_clock::now();
@@ -257,6 +257,9 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   if( EE_calo_coll->isValid() ) {
     for(const auto& calo_hit : (*EE_calo_coll) ){
       clue_hit_coll.vect.push_back(clue::CLUECalorimeterHit(calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::endcap, bf.get( calo_hit.getCellID(), "layer")));
+      info() << "  calo cellID : " << calo_hit.getCellID()
+             << ", layer : " << bf.get( calo_hit.getCellID(), "layer")  
+             << ", energy : " << calo_hit.getEnergy() << endmsg; 
     }
   } else {
     throw std::runtime_error("Collection not found.");
