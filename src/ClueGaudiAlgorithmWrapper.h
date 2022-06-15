@@ -18,11 +18,12 @@ public:
   virtual StatusCode finalize() override final;
   virtual StatusCode initialize() override final;
 
-  void fillInputs(std::vector<clue::CLUECalorimeterHit>& clue_hits);
+  void fillCLUEinputs(std::vector<clue::CLUECalorimeterHit>& clue_hits);
   std::map<int, std::vector<int> > runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, 
                                            bool isBarrel);
   void cleanCLUEinputs();
-  void fillFinalClusters(const std::map<int, std::vector<int> > clusterMap, 
+  void fillFinalClusters(std::vector<clue::CLUECalorimeterHit>& clue_hits,
+                         const std::map<int, std::vector<int> > clusterMap, 
                          edm4hep::ClusterCollection* clusters);
   void calculatePosition(edm4hep::MutableCluster* cluster) ;
   void transformClustersInCaloHits(edm4hep::ClusterCollection* clusters,

@@ -35,7 +35,7 @@ StatusCode ClueGaudiAlgorithmWrapper::initialize() {
   return Algorithm::initialize();
 }
 
-void ClueGaudiAlgorithmWrapper::fillInputs(std::vector<clue::CLUECalorimeterHit>& clue_hits){
+void ClueGaudiAlgorithmWrapper::fillCLUEinputs(std::vector<clue::CLUECalorimeterHit>& clue_hits){
 
   for (const auto& ch : clue_hits) {
     if(ch.inBarrel()){
@@ -54,8 +54,8 @@ void ClueGaudiAlgorithmWrapper::fillInputs(std::vector<clue::CLUECalorimeterHit>
 std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, 
 								    bool isBarrel = false){
 
-  // Fill CLUECaloHits
-  fillInputs(clue_hits);
+  // Fill CLUE inputs
+  fillCLUEinputs(clue_hits);
 
   // Run CLUE
   debug() << "Using CLUEAlgo ... " << endmsg;
@@ -79,23 +79,27 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<
     clue_hits[i].setRho(cluePoints.rho[i]);
     clue_hits[i].setDelta(cluePoints.delta[i]);
     clue_hits[i].setClusterIndex(cluePoints.clusterIndex[i]);
-    info() << "CLUE Points : (x,y,z) = " 
-           << clue_hits[i].getPosition().x << ","
-           << clue_hits[i].getPosition().y << ","
-           << clue_hits[i].getPosition().z << endmsg;
+//    info() << "CLUE Points : (x,y,z) = " 
+//           << clue_hits[i].getPosition().x << ","
+//           << clue_hits[i].getPosition().y << ","
+//           << clue_hits[i].getPosition().z << endmsg;
 
     if(cluePoints.isSeed[i] == 1){
-      info() << "    is seed" << endmsg; 
+//      info() << "    is seed" << endmsg; 
       clue_hits[i].setStatus(clue::CLUECalorimeterHit::Status::seed);
     } else if (cluePoints.clusterIndex[i] == -1) {
-      info() << "    is outlier" << endmsg; 
+//      info() << "    is outlier" << endmsg; 
       clue_hits[i].setStatus(clue::CLUECalorimeterHit::Status::outlier);
     } else {
-      info() << "    is follower of cluster #" << cluePoints.clusterIndex[i] << endmsg; 
+//      info() << "    is follower of cluster #" << cluePoints.clusterIndex[i] << endmsg; 
       clue_hits[i].setStatus(clue::CLUECalorimeterHit::Status::follower);
     }
 
   }
+
+  // Clean CLUE inputs
+  cleanCLUEinputs();
+
   return clueClusters;
 }
 
@@ -107,7 +111,8 @@ void ClueGaudiAlgorithmWrapper::cleanCLUEinputs(){
   weight.clear();
 }
 
-void ClueGaudiAlgorithmWrapper::fillFinalClusters(const std::map<int, std::vector<int> > clusterMap, 
+void ClueGaudiAlgorithmWrapper::fillFinalClusters(std::vector<clue::CLUECalorimeterHit>& clue_hits, 
+                                                  const std::map<int, std::vector<int> > clusterMap, 
                                                   edm4hep::ClusterCollection* clusters){
 
   for(auto cl : clusterMap){
@@ -121,7 +126,7 @@ void ClueGaudiAlgorithmWrapper::fillFinalClusters(const std::map<int, std::vecto
 
     std::map<int, std::vector<int> > clustersLayer;
     for(auto index : cl.second){
-      clustersLayer[clue_hit_coll.vect.at(index).getLayer()].push_back(index);
+      clustersLayer[clue_hits[index].getLayer()].push_back(index);
     }
 
     for(auto clLay : clustersLayer){
@@ -134,21 +139,18 @@ void ClueGaudiAlgorithmWrapper::fillFinalClusters(const std::map<int, std::vecto
       for(auto index : clLay.second){
         //info() << "    " << index << endmsg;
 
-        position.x += clue_hit_coll.vect.at(index).getPosition().x;
-        position.y += clue_hit_coll.vect.at(index).getPosition().y;
-        position.z += clue_hit_coll.vect.at(index).getPosition().z;
-        if( EB_calo_coll->size() != 0){
-          if( index < EB_calo_coll->size() ) {
-            cluster.addToHits(EB_calo_coll->at(index));
-          } else {
-            cluster.addToHits(EE_calo_coll->at(index - EB_calo_coll->size()));
-          }
-        } else {
+        position.x += clue_hits[index].getPosition().x;
+        position.y += clue_hits[index].getPosition().y;
+        position.z += clue_hits[index].getPosition().z;
+        if(clue_hits[index].inBarrel()){
+          cluster.addToHits(EB_calo_coll->at(index));
+        }
+        if(clue_hits[index].inEndcap()){
           cluster.addToHits(EE_calo_coll->at(index));
         }
-
-        if (clue_hit_coll.vect.at(index).getEnergy() > maxEnergyValue) {
-          maxEnergyValue = clue_hit_coll.vect.at(index).getEnergy();
+        
+        if (clue_hits[index].getEnergy() > maxEnergyValue) {
+          maxEnergyValue = clue_hits[index].getEnergy();
           maxEnergyIndex = index;
         }
       }
@@ -166,7 +168,7 @@ void ClueGaudiAlgorithmWrapper::fillFinalClusters(const std::map<int, std::vecto
 
       //JUST A PLACEHOLDER FOR NOW: TO BE FIXED
       cluster.setPositionError({0.00, 0.00, 0.00, 0.00, 0.00, 0.00});
-      cluster.setType(clue_hit_coll.vect.at(maxEnergyIndex).getType());
+      cluster.setType(clue_hits[maxEnergyIndex].getType());
     }
     clustersLayer.clear();
   }
@@ -254,6 +256,9 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   const auto cellIDstr = EB_calo_handle.getCollMetadataCellID(collID);
   const BitFieldCoder bf(cellIDstr);
 
+  // Output CLUE clusters
+  edm4hep::ClusterCollection* finalClusters = clustersHandle.createAndPut();
+
   int maxLayer = CLICdetLayerTilesConstants::nLayers;
   clue::CLUECalorimeterHitCollection clue_hit_coll_barrel;
   clue::CLUECalorimeterHitCollection clue_hit_coll_endcap;
@@ -269,19 +274,25 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   info() << EB_calo_coll->size() << " caloHits in " << EBCaloCollectionName << "." << endmsg;
 
   // Run CLUE in the barrel
-  std::map<int, std::vector<int> > clueClusters = runAlgo(clue_hit_coll_barrel.vect, true);
-  debug() << "Produced " << clueClusters.size() << " clusters" << endmsg;
+  if(!clue_hit_coll_barrel.vect.empty()){
 
-  clue_hit_coll.vect.insert(clue_hit_coll.vect.end(), clue_hit_coll_barrel.vect.begin(), clue_hit_coll_barrel.vect.end());
-  cleanCLUEinputs();
+    std::map<int, std::vector<int> > clueClustersBarrel = runAlgo(clue_hit_coll_barrel.vect, true);
+    debug() << "Produced " << clueClustersBarrel.size() << " clusters in " << EBCaloCollectionName << endmsg;
+  
+    clue_hit_coll.vect.insert(clue_hit_coll.vect.end(), clue_hit_coll_barrel.vect.begin(), clue_hit_coll_barrel.vect.end());
+
+    fillFinalClusters(clue_hit_coll_barrel.vect, clueClustersBarrel, finalClusters);
+    info() << "Saved " << finalClusters->size() << " clusters in " << EBCaloCollectionName << endmsg;
+
+  }
 
   // FIXME:: Maybe to be run twice for EE+ and EE-?
   if( EE_calo_coll->isValid() ) {
     for(const auto& calo_hit : (*EE_calo_coll) ){
-      clue_hit_coll.vect.push_back(clue::CLUECalorimeterHit(calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::endcap, bf.get( calo_hit.getCellID(), "layer")));
-      info() << "  calo cellID : " << calo_hit.getCellID()
-             << ", layer : " << bf.get( calo_hit.getCellID(), "layer")  
-             << ", energy : " << calo_hit.getEnergy() << endmsg; 
+      clue_hit_coll_endcap.vect.push_back(clue::CLUECalorimeterHit(calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::endcap, bf.get( calo_hit.getCellID(), "layer")));
+//      info() << "  calo cellID : " << calo_hit.getCellID()
+//             << ", layer : " << bf.get( calo_hit.getCellID(), "layer")  
+//             << ", energy : " << calo_hit.getEnergy() << endmsg; 
     }
   } else {
     throw std::runtime_error("Collection not found.");
@@ -289,23 +300,22 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   info() << EE_calo_coll->size() << " caloHits in " << EECaloCollectionName << "." << endmsg;
 
   // Run CLUE in the endcap
-  std::map<int, std::vector<int> > clueClustersEndcap = runAlgo(clue_hit_coll_endcap.vect, false);
-  debug() << "Produced " << clueClustersEndcap.size() << " clusters" << endmsg;
+  if(!clue_hit_coll_endcap.vect.empty()){
+    std::map<int, std::vector<int> > clueClustersEndcap = runAlgo(clue_hit_coll_endcap.vect, false);
+    debug() << "Produced " << clueClustersEndcap.size() << " clusters in " << EECaloCollectionName << endmsg;
+  
+    clue_hit_coll.vect.insert(clue_hit_coll.vect.end(), clue_hit_coll_endcap.vect.begin(), clue_hit_coll_endcap.vect.end());
 
-  clue_hit_coll.vect.insert(clue_hit_coll.vect.end(), clue_hit_coll_endcap.vect.begin(), clue_hit_coll_endcap.vect.end());
-  clueClusters.insert(clueClustersEndcap.begin(), clueClustersEndcap.end());
-  cleanCLUEinputs();
+    fillFinalClusters(clue_hit_coll_endcap.vect, clueClustersEndcap, finalClusters);
+//    info() << "Saved " << finalClusters->size() << " clusters in " << EECaloCollectionName << endmsg;
+
+  }
 
   debug() << clue_hit_coll.vect.size() << " caloHits in total. " << endmsg;
-  debug() << clueClusters.size() << " clusters in total." << endmsg;
+  debug() << finalClusters->size() << " clusters in total." << endmsg;
 
   auto pCHV = std::make_unique<clue::CLUECalorimeterHitCollection>(clue_hit_coll);
   const StatusCode scStatusV = eventSvc()->registerObject("/Event/CLUECalorimeterHitCollection", pCHV.release());
-
-  // Save clusters
-  edm4hep::ClusterCollection* finalClusters = clustersHandle.createAndPut();
-  fillFinalClusters(clueClusters, finalClusters);
-  info() << "Saved " << finalClusters->size() << " clusters" << endmsg;
 
   // Add cellID to clusters
   auto& clusters_md = m_podioDataSvc->getProvider().getCollectionMetaData(finalClusters->getID());
