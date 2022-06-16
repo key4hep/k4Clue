@@ -8,7 +8,7 @@
 
 #include "GPUVecArrayCupla.h"
 #include "LayerTilesConstants.h"
-#include "CLICdetLayerTilesConstants.h"
+#include "CLICdetEndcapLayerTilesConstants.h"
 
 
 #if !defined(ALPAKA_ACC_GPU_CUDA_ENABLED) && !defined(ALPAKA_ACC_GPU_HIP_ENABLED)

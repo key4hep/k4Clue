@@ -1,15 +1,15 @@
-#ifndef CLDLayerTilesConstants_h
-#define CLDLayerTilesConstants_h
+#ifndef CLICdetEndcapLayerTilesConstants_h
+#define CLICdetEndcapLayerTilesConstants_h
 
 #include "constexpr_cmath.h"
 #include <array>
 
-struct CLDLayerTilesConstants {
+struct CLICdetEndcapLayerTilesConstants {
 
-  static constexpr float minX =  -2455.f;
-  static constexpr float maxX =   2455.f;
-  static constexpr float minY =  -2455.f;
-  static constexpr float maxY =   2455.f;
+  static constexpr float minX =  -1700.f;
+  static constexpr float maxX =   1700.f;
+  static constexpr float minY =  -1700.f;
+  static constexpr float maxY =   1700.f;
   static constexpr float tileSize = 15.f;
   static constexpr int nColumns = reco::ceil((maxX-minX)/tileSize);
   static constexpr int nRows    = reco::ceil((maxY-minY)/tileSize);
@@ -20,8 +20,8 @@ struct CLDLayerTilesConstants {
 
   static constexpr int nTiles = nColumns * nRows;
 
-  static constexpr int nLayers = 40;
+  static constexpr int nLayers = 80; // Includes EE+ and EE-
   static constexpr bool endcap = true;
 };
 
-#endif // CLDLayerTilesConstants_h
+#endif // CLICdetEndcapLayerTilesConstants_h

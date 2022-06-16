@@ -1,15 +1,15 @@
-#ifndef CLICdetLayerTilesConstants_h
-#define CLICdetLayerTilesConstants_h
+#ifndef CLICdetBarrelLayerTilesConstants_h
+#define CLICdetBarrelLayerTilesConstants_h
 
 #include "constexpr_cmath.h"
 #include <array>
 
-struct CLICdetLayerTilesConstants {
+struct CLICdetBarrelLayerTilesConstants {
 
-  static constexpr float minX =  -1700.f;
-  static constexpr float maxX =   1700.f;
-  static constexpr float minY =  -1700.f;
-  static constexpr float maxY =   1700.f;
+  static constexpr float minX =  -6000.f;
+  static constexpr float maxX =   6000.f;
+  static constexpr float minY =  -2210.f;
+  static constexpr float maxY =   2210.f;
   static constexpr float tileSize = 15.f;
   static constexpr int nColumns = reco::ceil((maxX-minX)/tileSize);
   static constexpr int nRows    = reco::ceil((maxY-minY)/tileSize);
@@ -21,6 +21,7 @@ struct CLICdetLayerTilesConstants {
   static constexpr int nTiles = nColumns * nRows;
 
   static constexpr int nLayers = 40;
+  static constexpr bool endcap = false;
 };
 
-#endif // CLICdetLayerTilesConstants_h
+#endif // CLICdetBarrelLayerTilesConstants_h

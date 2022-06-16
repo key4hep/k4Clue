@@ -209,5 +209,6 @@ inline float CLUEAlgoT<TILE_CONST>::distance(int i, int j) const {
 
 // explicit template instantiation
 template class CLUEAlgoT<LayerTilesConstants>;
-template class CLUEAlgoT<CLICdetLayerTilesConstants>;
+template class CLUEAlgoT<CLICdetEndcapLayerTilesConstants>;
+template class CLUEAlgoT<CLICdetBarrelLayerTilesConstants>;
 template class CLUEAlgoT<CLDLayerTilesConstants>;
