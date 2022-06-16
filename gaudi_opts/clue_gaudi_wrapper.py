@@ -6,8 +6,7 @@ algList = []
 
 from Configurables import PodioInput
 evtsvc = k4DataSvc('EventDataSvc')
-evtsvc.input = 'https://key4hep.web.cern.ch/testFiles/k4clue/inputData/clic/20220322_gamma_10GeV_uniform_edm4hep.root'
-#evtsvc.input = '/afs/cern.ch/user/e/ebrondol/work/clue/k4Clue/data/input/Output_gamma_10GeV_endcap_500events_edm4hep.root'
+evtsvc.input = 'https://key4hep.web.cern.ch/testFiles/k4clue/inputData/clic/20220616_gamma_10GeV_uniform_edm4hep.root'
 
 inp = PodioInput('InputReader')
 inp.collections = [
