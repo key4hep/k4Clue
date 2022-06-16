@@ -2,6 +2,7 @@
 
 #include "IO_helper.h"
 #include "CLUEAlgo.h"
+#include "CLICdetBarrelLayerTilesConstants.h"
 
 // podio specific includes
 #include "DDSegmentation/BitFieldCoder.h"
@@ -39,7 +40,7 @@ void ClueGaudiAlgorithmWrapper::fillCLUEinputs(std::vector<clue::CLUECalorimeter
 
   for (const auto& ch : clue_hits) {
     if(ch.inBarrel()){
-      x.push_back(ch.getPhi());
+      x.push_back(ch.getPhi()*ch.getR());
       y.push_back(ch.getPosition().z);
     } else {
       x.push_back(ch.getPosition().x);
@@ -54,25 +55,31 @@ void ClueGaudiAlgorithmWrapper::fillCLUEinputs(std::vector<clue::CLUECalorimeter
 std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, 
 								    bool isBarrel = false){
 
+  std::map<int, std::vector<int> > clueClusters;
+  Points cluePoints;
+
   // Fill CLUE inputs
   fillCLUEinputs(clue_hits);
 
   // Run CLUE
   debug() << "Using CLUEAlgo ... " << endmsg;
-  CLICdetCLUEAlgo clueAlgo(dc, rhoc, outlierDeltaFactor, false);
-  clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]);
-  // measure excution time of makeClusters
-  auto start = std::chrono::high_resolution_clock::now();
-  clueAlgo.makeClusters();
-  auto finish = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> elapsed = finish - start;
-  debug() << "Elapsed time: " << elapsed.count() *1000 << " ms" << endmsg ;
-  // output result to outputFileName. -1 means all points.
+  if(isBarrel){
+    CLUEAlgoT<CLICdetBarrelLayerTilesConstants> clueAlgo(dc, rhoc, outlierDeltaFactor, false);
+    if(clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]))
+      throw std::runtime_error("Some problem happen in setting the clue points.");
+    clueAlgo.makeClusters();
+    clueClusters = clueAlgo.getClusters();
+    cluePoints = clueAlgo.getPoints();
+  } else {
+    CLUEAlgoT<CLICdetEndcapLayerTilesConstants> clueAlgo(dc, rhoc, outlierDeltaFactor, false);
+    if(clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]))
+      throw std::runtime_error("Some problem happen in setting the clue points.");
+    clueAlgo.makeClusters();
+    clueClusters = clueAlgo.getClusters();
+    cluePoints = clueAlgo.getPoints();
+  }
 
   debug() << "Finished running CLUE algorithm" << endmsg;
-
-  std::map<int, std::vector<int> > clueClusters = clueAlgo.getClusters();
-  Points cluePoints = clueAlgo.getPoints();
 
   for(int i = 0; i < cluePoints.n; i++){
 
@@ -259,13 +266,15 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   // Output CLUE clusters
   edm4hep::ClusterCollection* finalClusters = clustersHandle.createAndPut();
 
-  int maxLayer = CLICdetLayerTilesConstants::nLayers;
   clue::CLUECalorimeterHitCollection clue_hit_coll_barrel;
   clue::CLUECalorimeterHitCollection clue_hit_coll_endcap;
 
-  // Fill CLUECaloHits
+  // Fill CLUECaloHits in the barrel
   if( EB_calo_coll->isValid() ) {
     for(const auto& calo_hit : (*EB_calo_coll) ){
+      info() << "  calo cellID : " << calo_hit.getCellID()
+             << ", layer : " << bf.get( calo_hit.getCellID(), "layer")  
+             << ", energy : " << calo_hit.getEnergy() << endmsg; 
       clue_hit_coll_barrel.vect.push_back(clue::CLUECalorimeterHit(calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::barrel, bf.get( calo_hit.getCellID(), "layer")));
     }
   } else {
@@ -286,13 +295,22 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
 
   }
 
-  // FIXME:: Maybe to be run twice for EE+ and EE-?
+  // Total amount of EE+ and EE- layers (80)
+  // already described in `include/CLICdetEndcapLayerTilesConstants.h` 
+  int maxLayerPerSide = 40;
+
+  // Fill CLUECaloHits in the endcap
   if( EE_calo_coll->isValid() ) {
     for(const auto& calo_hit : (*EE_calo_coll) ){
-      clue_hit_coll_endcap.vect.push_back(clue::CLUECalorimeterHit(calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::endcap, bf.get( calo_hit.getCellID(), "layer")));
-//      info() << "  calo cellID : " << calo_hit.getCellID()
-//             << ", layer : " << bf.get( calo_hit.getCellID(), "layer")  
-//             << ", energy : " << calo_hit.getEnergy() << endmsg; 
+      info() << "  calo cellID : " << calo_hit.getCellID()
+             << ", side : " << bf.get( calo_hit.getCellID(), "side")  
+             << ", layer : " << bf.get( calo_hit.getCellID(), "layer")  
+             << ", energy : " << calo_hit.getEnergy() << endmsg; 
+      if(bf.get( calo_hit.getCellID(), "side") < 0){
+        clue_hit_coll_endcap.vect.push_back(clue::CLUECalorimeterHit(calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::endcap, bf.get( calo_hit.getCellID(), "layer")));
+      } else { 
+        clue_hit_coll_endcap.vect.push_back(clue::CLUECalorimeterHit(calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::endcap, bf.get( calo_hit.getCellID(), "layer") + maxLayerPerSide));
+      }
     }
   } else {
     throw std::runtime_error("Collection not found.");

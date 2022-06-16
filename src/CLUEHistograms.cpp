@@ -63,7 +63,7 @@ StatusCode CLUEHistograms::execute() {
     clue_calo_coll = static_cast<clue::CLUECalorimeterHitCollection*>(pStatus);
     info() << "CH SIZE : " << clue_calo_coll->vect.size() << endmsg;
   } else {
-    info() << "Status NOT success" << endmsg;
+    throw std::runtime_error("CLUE hits collection not available");
   }
 
   // Read EB collection for metadata cellID

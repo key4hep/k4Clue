@@ -55,6 +55,31 @@ public:
     points_.followers.resize(points_.n);
     points_.clusterIndex.resize(points_.n,-1);
     points_.isSeed.resize(points_.n,0);
+
+    // consistency checks
+    auto maxLayer = *std::max_element(points_.layer.begin(), points_.layer.end()); 
+    if(maxLayer > TILE_CONST::nLayers){
+      std::cout << "Max layer(" << maxLayer << ") is larger "
+                << "than the number of layers(" << TILE_CONST::nLayers << ") defined for the current detector" << std::endl;
+      return 1;
+    }
+
+    auto minX = *std::min_element(points_.x.begin(), points_.x.end()); 
+    auto maxX = *std::max_element(points_.x.begin(), points_.x.end()); 
+    if(maxX > TILE_CONST::maxX || minX < TILE_CONST::minX){
+      std::cout << "Min and/or max x element (" << minX << "," << maxX << ")"
+                << " are outside the boundaries defined for the current detector (" << TILE_CONST::minX << "," << TILE_CONST::maxX << ")" << std::endl;
+      return 1;
+    }
+
+    auto minY = *std::min_element(points_.y.begin(), points_.y.end()); 
+    auto maxY = *std::max_element(points_.y.begin(), points_.y.end()); 
+    if(maxY > TILE_CONST::maxY || minY < TILE_CONST::minY){
+      std::cout << "Min and/or max x element (" << minY << "," << maxY << ")"
+                << " are outside the boundaries defined for the current detector (" << TILE_CONST::minY << "," << TILE_CONST::maxY << ")" << std::endl;
+      return 1;
+    }
+
     return 0;
   }
 
@@ -118,7 +143,8 @@ private:
 };
 
 using CLUEAlgo = CLUEAlgoT<LayerTilesConstants>;
-using CLICdetCLUEAlgo = CLUEAlgoT<CLICdetLayerTilesConstants>;
+using CLICdetendcapCLUEAlgo = CLUEAlgoT<CLICdetEndcapLayerTilesConstants>;
+using CLICdetBarrelCLUEAlgo = CLUEAlgoT<CLICdetBarrelLayerTilesConstants>;
 using CLDCLUEAlgo = CLUEAlgoT<CLDLayerTilesConstants>;
 
 #endif

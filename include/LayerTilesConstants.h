@@ -21,6 +21,7 @@ struct LayerTilesConstants {
   static constexpr int nTiles = nColumns * nRows;
 
   static constexpr int nLayers = 100;
+  static constexpr bool endcap = true;
 };
 
 #endif // LayerTilesConstants_h
