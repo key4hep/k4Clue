@@ -42,9 +42,12 @@ void ClueGaudiAlgorithmWrapper::fillCLUEinputs(std::vector<clue::CLUECalorimeter
     if(ch.inBarrel()){
       x.push_back(ch.getPhi()*ch.getR());
       y.push_back(ch.getPosition().z);
+      phi.push_back(ch.getPhi());
     } else {
       x.push_back(ch.getPosition().x);
       y.push_back(ch.getPosition().y);
+      // For the endcap the phi info is filled but not used
+      phi.push_back(ch.getPhi());
     }
     layer.push_back(ch.getLayer());
     weight.push_back(ch.getEnergy());
@@ -65,14 +68,14 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<
   debug() << "Using CLUEAlgo ... " << endmsg;
   if(isBarrel){
     CLUEAlgoT<CLICdetBarrelLayerTilesConstants> clueAlgo(dc, rhoc, outlierDeltaFactor, false);
-    if(clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]))
+    if(clueAlgo.setPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0], &phi[0]))
       throw std::runtime_error("Some problem happen in setting the clue points.");
     clueAlgo.makeClusters();
     clueClusters = clueAlgo.getClusters();
     cluePoints = clueAlgo.getPoints();
   } else {
     CLUEAlgoT<CLICdetEndcapLayerTilesConstants> clueAlgo(dc, rhoc, outlierDeltaFactor, false);
-    if(clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]))
+    if(clueAlgo.setPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0], &phi[0]))
       throw std::runtime_error("Some problem happen in setting the clue points.");
     clueAlgo.makeClusters();
     clueClusters = clueAlgo.getClusters();
@@ -114,6 +117,7 @@ void ClueGaudiAlgorithmWrapper::cleanCLUEinputs(){
   //Cleaning
   x.clear();
   y.clear();
+  phi.clear();
   layer.clear();
   weight.clear();
 }
@@ -272,9 +276,9 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   // Fill CLUECaloHits in the barrel
   if( EB_calo_coll->isValid() ) {
     for(const auto& calo_hit : (*EB_calo_coll) ){
-      info() << "  calo cellID : " << calo_hit.getCellID()
-             << ", layer : " << bf.get( calo_hit.getCellID(), "layer")  
-             << ", energy : " << calo_hit.getEnergy() << endmsg; 
+//      info() << "  calo cellID : " << calo_hit.getCellID()
+//             << ", layer : " << bf.get( calo_hit.getCellID(), "layer")  
+//             << ", energy : " << calo_hit.getEnergy() << endmsg; 
       clue_hit_coll_barrel.vect.push_back(clue::CLUECalorimeterHit(calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::barrel, bf.get( calo_hit.getCellID(), "layer")));
     }
   } else {
@@ -302,10 +306,10 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   // Fill CLUECaloHits in the endcap
   if( EE_calo_coll->isValid() ) {
     for(const auto& calo_hit : (*EE_calo_coll) ){
-      info() << "  calo cellID : " << calo_hit.getCellID()
-             << ", side : " << bf.get( calo_hit.getCellID(), "side")  
-             << ", layer : " << bf.get( calo_hit.getCellID(), "layer")  
-             << ", energy : " << calo_hit.getEnergy() << endmsg; 
+//      info() << "  calo cellID : " << calo_hit.getCellID()
+//             << ", side : " << bf.get( calo_hit.getCellID(), "side")  
+//             << ", layer : " << bf.get( calo_hit.getCellID(), "layer")  
+//             << ", energy : " << calo_hit.getEnergy() << endmsg; 
       if(bf.get( calo_hit.getCellID(), "side") < 0){
         clue_hit_coll_endcap.vect.push_back(clue::CLUECalorimeterHit(calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::endcap, bf.get( calo_hit.getCellID(), "layer")));
       } else { 

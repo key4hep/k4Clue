@@ -97,7 +97,6 @@ StatusCode CLUEHistograms::execute() {
   for (const auto& cl : *cluster_coll) {
     m_clusters_event->push_back (evNum);
     m_clusters_energy->push_back (cl.getEnergy());
-    info() << "energy in cluster : " << cl.getEnergy() << endmsg; 
     m_clusters_size->push_back (cl.hits_size());
 
     m_clusters_x->push_back (cl.getPosition().x);

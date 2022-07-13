@@ -21,17 +21,20 @@ class LayerTilesT {
       layerTiles_.resize(T::nColumns * T::nRows);
     }
 
-    void fill(const std::vector<float>& x, const std::vector<float>& y) {
+    void fill(const std::vector<float>& x, const std::vector<float>& y, const std::vector<float>& phi) {
       auto cellsSize = x.size();
       for(unsigned int i = 0; i< cellsSize; ++i) {
-          layerTiles_[getGlobalBin(x[i],y[i])].push_back(i);
+        fill(x[i],y[i],phi[i]);
       }
     }
 
-    void fill(float x, float y, int i) {
-      layerTiles_[getGlobalBin(x,y)].push_back(i);
+    void fill(float x, float y, float phi, int i) {
+      if(T::endcap){
+        layerTiles_[getGlobalBin(x,y)].push_back(i);
+      } else { 
+        layerTiles_[getGlobalBinPhi(phi,y)].push_back(i);
+      }
     }
-
 
     int getXBin(float x) const {
       constexpr float xRange = T::maxX - T::minX;
@@ -51,12 +54,27 @@ class LayerTilesT {
       return yBin;
     }
 
+    int getPhiBin(float phi) const {
+      auto normPhi = reco::normalizedPhi(phi);
+      constexpr float r = T::nColumnsPhi * M_1_PI * 0.5f;
+      int phiBin = (normPhi + M_PI) * r;
+      return phiBin;
+    }
+
     int getGlobalBin(float x, float y) const {
       return getXBin(x) + getYBin(y)*T::nColumns;
     }
 
     int getGlobalBinByBin(int xBin, int yBin) const {
       return xBin + yBin*T::nColumns;
+    }
+
+    int getGlobalBinPhi(float phi, float y) const {
+      return getPhiBin(phi) + getYBin(y)*T::nColumnsPhi;
+    }
+
+    int getGlobalBinByBinPhi(int phiBin, int yBin) const {
+      return phiBin + yBin*T::nColumnsPhi;
     }
 
     std::array<int,4> searchBox(float xMin, float xMax, float yMin, float yMax){
@@ -67,6 +85,23 @@ class LayerTilesT {
       return std::array<int, 4>({{ xBinMin,xBinMax,yBinMin,yBinMax }});
     }
 
+    std::array<int, 4> searchBoxPhiZ(float phiMin, float phiMax, float zMin, float zMax) const {
+      int phiBinMin = getPhiBin(phiMin);
+      int phiBinMax = getPhiBin(phiMax);
+      // If the search window cross the phi-bin boundary, add T::nPhiBins to the
+      // MAx value. This guarantees that the caller can perform a valid doule
+      // loop on eta and phi. It is the caller responsibility to perform a module
+      // operation on the phiBin values returned by this function, to explore the
+      // correct bins.
+      if (phiBinMax < phiBinMin) {
+        phiBinMax += T::nColumnsPhi;
+      }
+      // In the case of z, I can re-use the Y binning
+      int zBinMin = getYBin(zMin);
+      int zBinMax = getYBin(zMax);
+  
+      return std::array<int, 4>({{phiBinMin, phiBinMax, zBinMin, zBinMax}});
+    }
 
     void clear() {
       for(auto& t: layerTiles_) {
