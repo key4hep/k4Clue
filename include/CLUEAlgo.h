@@ -33,7 +33,7 @@ public:
     
   Points points_;
   
-  bool setPoints(int n, float* x, float* y, int* layer, float* weight) {
+  bool setPoints(int n, float* x, float* y, int* layer, float* weight, float* phi = NULL) {
     points_.clear();
     // input variables
     for(int i=0; i<n; ++i)
@@ -42,6 +42,12 @@ public:
 	points_.y.push_back(y[i]);
 	points_.layer.push_back(layer[i]);
 	points_.weight.push_back(weight[i]);
+	if(phi != NULL){
+          points_.phi.push_back(phi[i]);
+        } else {
+          std::cout << "WARNING: phi info is not present, make sure you are using an endcap LayerTile " << std::endl;
+          points_.phi.push_back(0.0);
+        }
       }
 
     points_.n = points_.x.size();
@@ -69,7 +75,7 @@ public:
     if(maxX > TILE_CONST::maxX || minX < TILE_CONST::minX){
       std::cout << "Min and/or max x element (" << minX << "," << maxX << ")"
                 << " are outside the boundaries defined for the current detector (" << TILE_CONST::minX << "," << TILE_CONST::maxX << ")" << std::endl;
-      return 1;
+      return 0;
     }
 
     auto minY = *std::min_element(points_.y.begin(), points_.y.end()); 
@@ -77,7 +83,7 @@ public:
     if(maxY > TILE_CONST::maxY || minY < TILE_CONST::minY){
       std::cout << "Min and/or max x element (" << minY << "," << maxY << ")"
                 << " are outside the boundaries defined for the current detector (" << TILE_CONST::minY << "," << TILE_CONST::maxY << ")" << std::endl;
-      return 1;
+      return 0;
     }
 
     return 0;
@@ -139,7 +145,7 @@ private:
   void calculateLocalDensity(std::array<LayerTilesT<TILE_CONST>, TILE_CONST::nLayers> & );
   void calculateDistanceToHigher(std::array<LayerTilesT<TILE_CONST>, TILE_CONST::nLayers> & );
   void findAndAssignClusters();
-  inline float distance(int , int) const ;
+  inline float distance(int i, int j, bool isPhi = false, float r = 0.0) const ;
 };
 
 using CLUEAlgo = CLUEAlgoT<LayerTilesConstants>;
