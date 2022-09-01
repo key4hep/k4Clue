@@ -7,6 +7,7 @@
 
 #include <edm4hep/CalorimeterHitCollection.h>
 #include <edm4hep/ClusterCollection.h>
+#include <edm4hep/MCParticleCollection.h>
 #include <edm4hep/EventHeaderCollection.h>
 #include "CLUECalorimeterHit.h"
 
@@ -44,6 +45,7 @@ public:
     delete m_clusters_energy;
     delete m_clusters_totEnergy;
     delete m_clusters_totEnergyHits;
+    delete m_clusters_MCEnergy;
 
     delete m_clhits_event;
     delete m_clhits_layer;
@@ -105,6 +107,7 @@ private:
   std::vector<float> *m_clusters_energy = nullptr;
   std::vector<float> *m_clusters_totEnergy = nullptr;
   std::vector<float> *m_clusters_totEnergyHits = nullptr;
+  std::vector<float> *m_clusters_MCEnergy = nullptr;
 
   TTree* t_clhits{nullptr};
   std::vector<int> *m_clhits_event = nullptr;
