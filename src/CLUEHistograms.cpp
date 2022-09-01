@@ -55,7 +55,24 @@ StatusCode CLUEHistograms::execute() {
     "EventHeader", Gaudi::DataHandle::Reader, this};
   auto evs = ev_handle.get();
   evNum = (*evs)[0].getEventNumber();
-  info() << "Event number = " << evNum << endmsg;
+  std::cout << "Event number = " << evNum << std::endl;
+
+  DataHandle<edm4hep::MCParticleCollection> mcp_handle {
+    "MCParticles", Gaudi::DataHandle::Reader, this};
+  auto mcps = mcp_handle.get();
+  int mcps_primary = 0;
+  float mcp_primary_energy = 0.f;
+  std::for_each((*mcps).begin(), (*mcps).end(),
+                [&mcps_primary, &mcp_primary_energy] (edm4hep::MCParticle mcp) { 
+                  if(mcp.getGeneratorStatus() == 1){
+                    mcps_primary += 1;
+                    mcp_primary_energy = mcp.getEnergy();
+                  }
+                });
+  std::cout << "MC Particles = " << mcps->size() << " (of which primaries = " << mcps_primary << ")" << std::endl;
+  // If there is more than one primary, skip event
+  if(mcps_primary > 1)
+    return StatusCode::SUCCESS;
 
   DataObject* pStatus  = nullptr;
   StatusCode  scStatus = eventSvc()->retrieveObject("/Event/CLUECalorimeterHitCollection", pStatus);
@@ -85,7 +102,6 @@ StatusCode CLUEHistograms::execute() {
   auto collID = EB_calo_coll->getID();
   const auto cellIDstr = EB_calo_handle.getCollMetadataCellID(collID);
   const BitFieldCoder bf(cellIDstr);
-
   cleanTrees();
 
   std::uint64_t ch_layer = 0;
@@ -93,6 +109,7 @@ StatusCode CLUEHistograms::execute() {
   float totEnergy = 0;
   float totEnergyHits = 0;
   std::uint64_t totSize = 0;
+  bool foundInECAL = false;
 
   for (const auto& cl : *cluster_coll) {
     m_clusters_event->push_back (evNum);
@@ -103,26 +120,55 @@ StatusCode CLUEHistograms::execute() {
     m_clusters_y->push_back (cl.getPosition().y);
     m_clusters_z->push_back (cl.getPosition().z);
 
-   for (const auto& hit : cl.getHits()) {
-      ch_layer = bf.get( hit.getCellID(), "layer");
-      m_clhits_event->push_back (evNum);
-      m_clhits_layer->push_back (ch_layer);
-      m_clhits_x->push_back (hit.getPosition().x);
-      m_clhits_y->push_back (hit.getPosition().y);
-      m_clhits_z->push_back (hit.getPosition().z);
-      m_clhits_energy->push_back (hit.getEnergy());
-      totEnergyHits += hit.getEnergy();
-
+    for (const auto& hit : cl.getHits()) {
+      foundInECAL = false;
+      for (const auto& clEB : *EB_calo_coll) {
+          if( clEB.getCellID() == hit.getCellID()){
+            foundInECAL = true;
+          }
+        if(foundInECAL) {
+          info() << "  Found in EB ! " << endmsg;
+          break;
+        } 
+      }
+      if(!foundInECAL){
+        for (const auto& clEE : *EE_calo_coll) {
+          if( clEE.getCellID() == hit.getCellID()){
+            foundInECAL = true;
+          }
+          if(foundInECAL) {
+            info() << "  Found in EE ! " << endmsg;
+            break;
+          }
+        }
+      }
+      if(foundInECAL){
+        ch_layer = bf.get( hit.getCellID(), "layer");
+        info() << "  ch cellID : " << hit.getCellID()
+               << ", layer : " << ch_layer   
+               << ", energy : " << hit.getEnergy() << endmsg; 
+        m_clhits_event->push_back (evNum);
+        m_clhits_layer->push_back (ch_layer);
+        m_clhits_x->push_back (hit.getPosition().x);
+        m_clhits_y->push_back (hit.getPosition().y);
+        m_clhits_z->push_back (hit.getPosition().z);
+        m_clhits_energy->push_back (hit.getEnergy());
+        totEnergyHits += hit.getEnergy();
+        totSize += 1;
+      } else {
+        info() << "  NOT found ch cellID : " << hit.getCellID()
+               << ", layer : " << ch_layer   
+               << ", energy : " << hit.getEnergy() << endmsg; 
+      }
     }
-
     nClusters++;
     totEnergy += cl.getEnergy();
-    totSize += cl.getHits().size();
 
   }
   m_clusters->push_back (nClusters);
   m_clusters_totEnergy->push_back (totEnergy);
   m_clusters_totEnergyHits->push_back (totEnergyHits);
+  m_clusters_MCEnergy->push_back (mcp_primary_energy);
   m_clusters_totSize->push_back (totSize);
   t_clusters->Fill ();
   t_clhits->Fill ();
@@ -212,6 +258,7 @@ void CLUEHistograms::initializeTrees() {
   m_clusters_energy = new std::vector<float>();
   m_clusters_totEnergy = new std::vector<float>();
   m_clusters_totEnergyHits = new std::vector<float>();
+  m_clusters_MCEnergy = new std::vector<float>();
 
   t_clusters->Branch ("clusters", &m_clusters);
   t_clusters->Branch ("event", &m_clusters_event);
@@ -224,6 +271,7 @@ void CLUEHistograms::initializeTrees() {
   t_clusters->Branch ("energy", &m_clusters_energy);
   t_clusters->Branch ("totEnergy", &m_clusters_totEnergy);
   t_clusters->Branch ("totEnergyHits", &m_clusters_totEnergyHits);
+  t_clusters->Branch ("MCEnergy", &m_clusters_MCEnergy);
 
   m_clhits_event = new std::vector<int>();
   m_clhits_layer = new std::vector<int>();
@@ -267,6 +315,7 @@ void CLUEHistograms::cleanTrees() {
   m_clusters_energy->clear();
   m_clusters_totEnergy->clear();
   m_clusters_totEnergyHits->clear();
+  m_clusters_MCEnergy->clear();
 
   m_clhits_event->clear();
   m_clhits_layer->clear();

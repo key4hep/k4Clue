@@ -11,6 +11,7 @@ evtsvc.input = 'https://key4hep.web.cern.ch/testFiles/k4clue/inputData/clic/2022
 inp = PodioInput('InputReader')
 inp.collections = [
   'EventHeader',
+  'MCParticles',
   'ECALBarrel',
   'ECALEndcap',
   'PandoraClusters'
