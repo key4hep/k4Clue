@@ -52,7 +52,7 @@ public:
   PodioDataSvc* m_podioDataSvc;
 
   // Collections in output
-  DataHandle<edm4hep::CalorimeterHitCollection> caloHitsHandle{"CLUEHits", Gaudi::DataHandle::Writer, this};
+  DataHandle<edm4hep::CalorimeterHitCollection> caloHitsHandle{"CLUEClustersAsHits", Gaudi::DataHandle::Writer, this};
   DataHandle<edm4hep::ClusterCollection> clustersHandle{"CLUEClusters", Gaudi::DataHandle::Writer, this};
 
 };

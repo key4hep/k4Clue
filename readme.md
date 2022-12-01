@@ -73,7 +73,7 @@ The input files are `data/input/*.root` with data in the EDM4HEP format
 * `ECALBarrel` and `ECALEndcap` CalorimeterHit collections are required
 CLUE parameters and input/output file name are contained in `clue_gaudi_wrapper.py`.
 
-The output file `output.root` contains `CLUEClusters` (currently also transformed as CaloHits).
+The output file `output.root` contains `CLUEClusters` (currently also transformed as CaloHits in `CLUEClustersAsHits`).
 
 ## 3. Run CLUE during the CLIC reconstruction
 
@@ -94,19 +94,25 @@ ddsim --steeringFile clic_steer.py --compactFile $LCGEO/CLIC/compact/CLIC_o3_v14
 cp ../../k4MarlinWrapper/test/gaudi_opts/clicRec_e4h_input.py .
 k4run clicRec_e4h_input.py --EventDataSvc.input gamma_10GeV_edm4hep.root
 
-#You can still visualise the output in slcio with:
-ced2go -d ../Visualisation/CLIC_o3_v06_CED/CLIC_o3_v06_CED.xml -s 1 Output_REC.slcio
-
 #Run CLUE in CLIC reconstruction
 cp ../../k4Clue/gaudi_opts/clicRec_e4h_input_clue.py .
-k4run clicRec_e4h_input_clue.py
+k4run clicRec_e4h_input_clue.py --EventDataSvc.input gamma_10GeV_edm4hep.root
 
 #Run CLUE standalone
 cp ../../k4Clue/gaudi_opts/clue_gaudi_wrapper.py .
-k4run clue_gaudi_wrapper.py --EventDataSvc.input my_output.root --out.filename output_clue_standalone.root
+k4run clue_gaudi_wrapper.py --EventDataSvc.input my_output.root
 ```
 
 In case you have changed something from the original repo and you have rebuild the package, you should use `source build/clueenv.sh` to make `k4run` aware of your new changes.
+
+If you want to visualise the output as event display using CED:
+```
+cd ../..
+glced &
+k4run k4MarlinWrapper/k4MarlinWrapper/examples/event_display.py --EventDataSvc.input=CLICPerformance/clicConfig/gamma_10GeV_edm4hep.root
+```
+
+The recipe is taken from the [following webpage](https://key4hep.github.io/key4hep-doc/k4marlinwrapper/doc/starterkit/k4MarlinWrapperCLIC/CEDViaWrapper.html).
 
 ## Package maintainer(s)
 

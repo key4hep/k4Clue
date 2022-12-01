@@ -23,7 +23,7 @@ from Configurables import MarlinProcessorWrapper
 MyAIDAProcessor = MarlinProcessorWrapper("MyAIDAProcessor")
 MyAIDAProcessor.OutputLevel = WARNING
 MyAIDAProcessor.ProcessorType = "AIDAProcessor"
-MyAIDAProcessor.Parameters = {"FileName": ["histograms"],
+MyAIDAProcessor.Parameters = {"FileName": ["histograms_clue_standalone"],
                     "FileType": ["root"],
                     "Compress": ["1"],
                     }
@@ -58,7 +58,7 @@ THistSvc().AutoFlush = True
 
 from Configurables import PodioOutput
 out = PodioOutput("out")
-out.filename = "output.root"
+out.filename = "my_output_clue_standalone.root"
 out.outputCommands = ["keep *"]
 
 algList.append(inp)
