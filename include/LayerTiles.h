@@ -24,7 +24,7 @@ class LayerTilesT {
     void fill(const std::vector<float>& x, const std::vector<float>& y, const std::vector<float>& phi) {
       auto cellsSize = x.size();
       for(unsigned int i = 0; i< cellsSize; ++i) {
-        fill(x[i],y[i],phi[i]);
+        fill(x[i],y[i],phi[i],i);
       }
     }
 

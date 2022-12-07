@@ -21,9 +21,13 @@ class LayerTilesGPUT {
     LayerTilesGPUT(){};
 
     __device__
-    void fill(float x, float y, int i)
+    void fill(float x, float y, float phi, int i)
     {
-      layerTiles_[getGlobalBin(x,y)].push_back(i);
+      if(T::endcap){
+        layerTiles_[getGlobalBin(x,y)].push_back(i);
+      } else { 
+        layerTiles_[getGlobalBinPhi(phi,y)].push_back(i);
+      }
     }
 
     __host__ __device__
@@ -43,8 +47,21 @@ class LayerTilesGPUT {
     }
 
     __host__ __device__
+    int getPhiBin(float phi) const {
+      auto normPhi = reco::normalizedPhi(phi);
+      constexpr float r = T::nColumnsPhi * M_1_PI * 0.5f;
+      int phiBin = (normPhi + M_PI) * r;
+      return phiBin;
+    }
+
+    __host__ __device__
     int getGlobalBin(float x, float y) const{
       return getXBin(x) + getYBin(y)*T::nColumns;
+    }
+
+    __host__ __device__
+    int getGlobalBinPhi(float phi, float y) const {
+      return getPhiBin(phi) + getYBin(y)*T::nColumnsPhi;
     }
 
     __host__ __device__
