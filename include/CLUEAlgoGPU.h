@@ -23,16 +23,16 @@ struct PointsPtr {
 };
 
 template<typename TILE_CONST>
-class CLUEAlgoGPUT : public CLUEAlgoT<TILE_CONST> {
+class CLUEAlgoGPU_T : public CLUEAlgo_T<TILE_CONST> {
   // inheriate from CLUEAlgo
 
   public:
     // constructor
-  CLUEAlgoGPUT(float dc, float rhoc, float outlierDeltaFactor, bool verbose) : CLUEAlgo(dc, rhoc, outlierDeltaFactor, verbose) {
+  CLUEAlgoGPU_T(float dc, float rhoc, float outlierDeltaFactor, bool verbose) : CLUEAlgo(dc, rhoc, outlierDeltaFactor, verbose) {
       init_device();
     }
     // destructor
-    ~CLUEAlgoGPUT(){
+    ~CLUEAlgoGPU_T(){
       free_device();
     }
 
@@ -48,7 +48,7 @@ class CLUEAlgoGPUT : public CLUEAlgoT<TILE_CONST> {
 
     // algorithm internal variables
     PointsPtr d_points;
-    LayerTilesGPUT<TILE_CONST> *d_hist;
+    LayerTilesGPU_T<TILE_CONST> *d_hist;
     GPU::VecArray<int,maxNSeeds> *d_seeds;
     GPU::VecArray<int,maxNFollowers> *d_followers;
 
@@ -67,7 +67,7 @@ class CLUEAlgoGPUT : public CLUEAlgoT<TILE_CONST> {
       cudaMalloc(&d_points.clusterIndex, sizeof(int)*reserve);
       cudaMalloc(&d_points.isSeed, sizeof(int)*reserve);
       // algorithm internal variables
-      cudaMalloc(&d_hist, sizeof(LayerTilesGPUT<TILE_CONST>) * TILE_CONST::nLayers);
+      cudaMalloc(&d_hist, sizeof(LayerTilesGPU_T<TILE_CONST>) * TILE_CONST::nLayers);
       cudaMalloc(&d_seeds, sizeof(GPU::VecArray<int,maxNSeeds>) );
       cudaMalloc(&d_followers, sizeof(GPU::VecArray<int,maxNFollowers>)*reserve);
     }
@@ -92,39 +92,39 @@ class CLUEAlgoGPUT : public CLUEAlgoT<TILE_CONST> {
 
     void copy_todevice(){
       // input variables
-      cudaMemcpy(d_points.x, CLUEAlgoT<TILE_CONST>::points_.x.data(), sizeof(float)*CLUEAlgoT<TILE_CONST>::points_.n, cudaMemcpyHostToDevice);
-      cudaMemcpy(d_points.y, CLUEAlgoT<TILE_CONST>::points_.y.data(), sizeof(float)*CLUEAlgoT<TILE_CONST>::points_.n, cudaMemcpyHostToDevice);
-      cudaMemcpy(d_points.layer, CLUEAlgoT<TILE_CONST>::points_.layer.data(), sizeof(int)*CLUEAlgoT<TILE_CONST>::points_.n, cudaMemcpyHostToDevice);
-      cudaMemcpy(d_points.weight, CLUEAlgoT<TILE_CONST>::points_.weight.data(), sizeof(float)*CLUEAlgoT<TILE_CONST>::points_.n, cudaMemcpyHostToDevice);
+      cudaMemcpy(d_points.x, CLUEAlgo_T<TILE_CONST>::points_.x.data(), sizeof(float)*CLUEAlgo_T<TILE_CONST>::points_.n, cudaMemcpyHostToDevice);
+      cudaMemcpy(d_points.y, CLUEAlgo_T<TILE_CONST>::points_.y.data(), sizeof(float)*CLUEAlgo_T<TILE_CONST>::points_.n, cudaMemcpyHostToDevice);
+      cudaMemcpy(d_points.layer, CLUEAlgo_T<TILE_CONST>::points_.layer.data(), sizeof(int)*CLUEAlgo_T<TILE_CONST>::points_.n, cudaMemcpyHostToDevice);
+      cudaMemcpy(d_points.weight, CLUEAlgo_T<TILE_CONST>::points_.weight.data(), sizeof(float)*CLUEAlgo_T<TILE_CONST>::points_.n, cudaMemcpyHostToDevice);
     }
 
     void clear_set(){
       // // result variables
-      cudaMemset(d_points.rho, 0x00, sizeof(float)*CLUEAlgoT<TILE_CONST>::points_.n);
-      cudaMemset(d_points.delta, 0x00, sizeof(float)*CLUEAlgoT<TILE_CONST>::points_.n);
-      cudaMemset(d_points.nearestHigher, 0x00, sizeof(int)*CLUEAlgoT<TILE_CONST>::points_.n);
-      cudaMemset(d_points.clusterIndex, 0x00, sizeof(int)*CLUEAlgoT<TILE_CONST>::points_.n);
-      cudaMemset(d_points.isSeed, 0x00, sizeof(int)*CLUEAlgoT<TILE_CONST>::points_.n);
+      cudaMemset(d_points.rho, 0x00, sizeof(float)*CLUEAlgo_T<TILE_CONST>::points_.n);
+      cudaMemset(d_points.delta, 0x00, sizeof(float)*CLUEAlgo_T<TILE_CONST>::points_.n);
+      cudaMemset(d_points.nearestHigher, 0x00, sizeof(int)*CLUEAlgo_T<TILE_CONST>::points_.n);
+      cudaMemset(d_points.clusterIndex, 0x00, sizeof(int)*CLUEAlgo_T<TILE_CONST>::points_.n);
+      cudaMemset(d_points.isSeed, 0x00, sizeof(int)*CLUEAlgo_T<TILE_CONST>::points_.n);
       // algorithm internal variables
-      cudaMemset(d_hist, 0x00, sizeof(LayerTilesGPUT<TILE_CONST>) * TILE_CONST::nLayers);
+      cudaMemset(d_hist, 0x00, sizeof(LayerTilesGPU_T<TILE_CONST>) * TILE_CONST::nLayers);
       cudaMemset(d_seeds, 0x00, sizeof(GPU::VecArray<int,maxNSeeds>));
-      cudaMemset(d_followers, 0x00, sizeof(GPU::VecArray<int,maxNFollowers>)*CLUEAlgoT<TILE_CONST>::points_.n);
+      cudaMemset(d_followers, 0x00, sizeof(GPU::VecArray<int,maxNFollowers>)*CLUEAlgo_T<TILE_CONST>::points_.n);
     }
 
     void copy_tohost(){
       // result variables
-      cudaMemcpy(CLUEAlgoT<TILE_CONST>::points_.clusterIndex.data(), d_points.clusterIndex, sizeof(int)*CLUEAlgoT<TILE_CONST>::points_.n, cudaMemcpyDeviceToHost);
-      if (CLUEAlgoT<TILE_CONST>::verbose_) {
+      cudaMemcpy(CLUEAlgo_T<TILE_CONST>::points_.clusterIndex.data(), d_points.clusterIndex, sizeof(int)*CLUEAlgo_T<TILE_CONST>::points_.n, cudaMemcpyDeviceToHost);
+      if (CLUEAlgo_T<TILE_CONST>::verbose_) {
         // other variables, copy only when verbose_==True
-        cudaMemcpy(CLUEAlgoT<TILE_CONST>::points_.rho.data(), d_points.rho, sizeof(float)*CLUEAlgoT<TILE_CONST>::points_.n, cudaMemcpyDeviceToHost);
-        cudaMemcpy(CLUEAlgoT<TILE_CONST>::points_.delta.data(), d_points.delta, sizeof(float)*CLUEAlgoT<TILE_CONST>::points_.n, cudaMemcpyDeviceToHost);
-        cudaMemcpy(CLUEAlgoT<TILE_CONST>::points_.nearestHigher.data(), d_points.nearestHigher, sizeof(int)*CLUEAlgoT<TILE_CONST>::points_.n, cudaMemcpyDeviceToHost);
-        cudaMemcpy(CLUEAlgoT<TILE_CONST>::points_.isSeed.data(), d_points.isSeed, sizeof(int)*CLUEAlgoT<TILE_CONST>::points_.n, cudaMemcpyDeviceToHost);
+        cudaMemcpy(CLUEAlgo_T<TILE_CONST>::points_.rho.data(), d_points.rho, sizeof(float)*CLUEAlgo_T<TILE_CONST>::points_.n, cudaMemcpyDeviceToHost);
+        cudaMemcpy(CLUEAlgo_T<TILE_CONST>::points_.delta.data(), d_points.delta, sizeof(float)*CLUEAlgo_T<TILE_CONST>::points_.n, cudaMemcpyDeviceToHost);
+        cudaMemcpy(CLUEAlgo_T<TILE_CONST>::points_.nearestHigher.data(), d_points.nearestHigher, sizeof(int)*CLUEAlgo_T<TILE_CONST>::points_.n, cudaMemcpyDeviceToHost);
+        cudaMemcpy(CLUEAlgo_T<TILE_CONST>::points_.isSeed.data(), d_points.isSeed, sizeof(int)*CLUEAlgo_T<TILE_CONST>::points_.n, cudaMemcpyDeviceToHost);
       }
     }
 
     // #endif // __CUDACC__
 };
 
-using CLUEAlgoGPU = CLUEAlgoGPUT<LayerTilesConstants>;
+using CLUEAlgoGPU = CLUEAlgoGPU_T<LayerTilesConstants>;
 #endif

@@ -114,7 +114,7 @@ void mainRun( std::vector<float>& x, std::vector<float>& y, std::vector<int>& la
 #endif
   } else {
     std::cout << "Using CLUEAlgo ... " << std::endl;
-    CLUEAlgoT<LayerTilesConstants> clueAlgo(dc, rhoc, outlierDeltaFactor, verbose);
+    CLUEAlgo_T<LayerTilesConstants> clueAlgo(dc, rhoc, outlierDeltaFactor, verbose);
     clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]);
     // measure excution time of makeClusters
     auto start = std::chrono::high_resolution_clock::now();

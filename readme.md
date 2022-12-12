@@ -101,7 +101,7 @@ CLUE parameters and input/output file name are contained in `clue_gaudi_wrapper.
 
 The output file `output.root` contains `CLUEClusters` (currently also transformed as CaloHits in `CLUEClustersAsHits`).
 
-A simple recipe to run k4CLUE as part of the CLIC reconstruction chain can be found [here](clic-recipe.md).
+A simple recipe to run k4CLUE as part of the CLIC reconstruction chain can be found [here](docs/clic-recipe.md).
 
 ## Package maintainer
 

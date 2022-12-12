@@ -14,10 +14,10 @@
 #include "CLDLayerTilesConstants.h"
 
 template <typename T>
-class LayerTilesT {
+class LayerTiles_T {
 
   public:
-    LayerTilesT(){
+    LayerTiles_T(){
       layerTiles_.resize(T::nColumns * T::nRows);
     }
 
@@ -119,9 +119,9 @@ class LayerTilesT {
 
 };
 
-using LayerTiles = LayerTilesT<LayerTilesConstants>;
-using CLICdetEndcapLayerTiles = LayerTilesT<CLICdetEndcapLayerTilesConstants>;
-using CLICdetBarrelLayerTiles = LayerTilesT<CLICdetBarrelLayerTilesConstants>;
-using CLDLayerTiles = LayerTilesT<CLDLayerTilesConstants>;
+using LayerTiles = LayerTiles_T<LayerTilesConstants>;
+using CLICdetEndcapLayerTiles = LayerTiles_T<CLICdetEndcapLayerTilesConstants>;
+using CLICdetBarrelLayerTiles = LayerTiles_T<CLICdetBarrelLayerTilesConstants>;
+using CLDLayerTiles = LayerTiles_T<CLDLayerTilesConstants>;
 
 #endif //LayerTiles_h
