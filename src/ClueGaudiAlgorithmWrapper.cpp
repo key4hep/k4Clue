@@ -67,14 +67,14 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<
   // Run CLUE
   debug() << "Using CLUEAlgo ... " << endmsg;
   if(isBarrel){
-    CLUEAlgoT<CLICdetBarrelLayerTilesConstants> clueAlgo(dc, rhoc, outlierDeltaFactor, false);
+    CLUEAlgo_T<CLICdetBarrelLayerTilesConstants> clueAlgo(dc, rhoc, outlierDeltaFactor, false);
     if(clueAlgo.setPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0], &phi[0]))
       throw std::runtime_error("Some problem happen in setting the clue points.");
     clueAlgo.makeClusters();
     clueClusters = clueAlgo.getClusters();
     cluePoints = clueAlgo.getPoints();
   } else {
-    CLUEAlgoT<CLICdetEndcapLayerTilesConstants> clueAlgo(dc, rhoc, outlierDeltaFactor, false);
+    CLUEAlgo_T<CLICdetEndcapLayerTilesConstants> clueAlgo(dc, rhoc, outlierDeltaFactor, false);
     if(clueAlgo.setPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0], &phi[0]))
       throw std::runtime_error("Some problem happen in setting the clue points.");
     clueAlgo.makeClusters();

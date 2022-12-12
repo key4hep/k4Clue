@@ -16,16 +16,16 @@
 #include "Points.h"
 
 template <typename TILE_CONST>
-class CLUEAlgoT {
+class CLUEAlgo_T {
 
 public:
-  CLUEAlgoT(float dc, float rhoc, float outlierDeltaFactor, bool verbose) {
+  CLUEAlgo_T(float dc, float rhoc, float outlierDeltaFactor, bool verbose) {
     dc_ = dc; 
     rhoc_ = rhoc;
     outlierDeltaFactor_ = outlierDeltaFactor;
     verbose_ = verbose;
   }
-  ~CLUEAlgoT(){} 
+  ~CLUEAlgo_T(){} 
     
   // public variables
   float dc_, rhoc_, outlierDeltaFactor_;
@@ -141,16 +141,16 @@ public:
         
 private:
   // private member methods
-  void prepareDataStructures(std::array<LayerTilesT<TILE_CONST>, TILE_CONST::nLayers> & );
-  void calculateLocalDensity(std::array<LayerTilesT<TILE_CONST>, TILE_CONST::nLayers> & );
-  void calculateDistanceToHigher(std::array<LayerTilesT<TILE_CONST>, TILE_CONST::nLayers> & );
+  void prepareDataStructures(std::array<LayerTiles_T<TILE_CONST>, TILE_CONST::nLayers> & );
+  void calculateLocalDensity(std::array<LayerTiles_T<TILE_CONST>, TILE_CONST::nLayers> & );
+  void calculateDistanceToHigher(std::array<LayerTiles_T<TILE_CONST>, TILE_CONST::nLayers> & );
   void findAndAssignClusters();
   inline float distance(int i, int j, bool isPhi = false, float r = 0.0) const ;
 };
 
-using CLUEAlgo = CLUEAlgoT<LayerTilesConstants>;
-using CLICdetendcapCLUEAlgo = CLUEAlgoT<CLICdetEndcapLayerTilesConstants>;
-using CLICdetBarrelCLUEAlgo = CLUEAlgoT<CLICdetBarrelLayerTilesConstants>;
-using CLDCLUEAlgo = CLUEAlgoT<CLDLayerTilesConstants>;
+using CLUEAlgo = CLUEAlgo_T<LayerTilesConstants>;
+using CLICdetendcapCLUEAlgo = CLUEAlgo_T<CLICdetEndcapLayerTilesConstants>;
+using CLICdetBarrelCLUEAlgo = CLUEAlgo_T<CLICdetBarrelLayerTilesConstants>;
+using CLDCLUEAlgo = CLUEAlgo_T<CLDLayerTilesConstants>;
 
 #endif

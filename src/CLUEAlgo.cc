@@ -1,8 +1,8 @@
 #include "CLUEAlgo.h"
 
 template <typename TILE_CONST>
-void CLUEAlgoT<TILE_CONST>::makeClusters(){
-  std::array<LayerTilesT<TILE_CONST>, TILE_CONST::nLayers> allLayerTiles;
+void CLUEAlgo_T<TILE_CONST>::makeClusters(){
+  std::array<LayerTiles_T<TILE_CONST>, TILE_CONST::nLayers> allLayerTiles;
 
   // start clustering
   auto start = std::chrono::high_resolution_clock::now();
@@ -28,7 +28,7 @@ void CLUEAlgoT<TILE_CONST>::makeClusters(){
 }
 
 template <typename TILE_CONST>
-std::map<int, std::vector<int> > CLUEAlgoT<TILE_CONST>::getClusters(){
+std::map<int, std::vector<int> > CLUEAlgo_T<TILE_CONST>::getClusters(){
   // cluster all points with same clusterId
   std::map<int, std::vector<int> > clusters; 
   for(unsigned i = 0; i < points_.n; i++) {
@@ -38,7 +38,7 @@ std::map<int, std::vector<int> > CLUEAlgoT<TILE_CONST>::getClusters(){
 }
 
 template <typename TILE_CONST>
-void CLUEAlgoT<TILE_CONST>::prepareDataStructures( std::array<LayerTilesT<TILE_CONST>, TILE_CONST::nLayers> & allLayerTiles ){
+void CLUEAlgo_T<TILE_CONST>::prepareDataStructures( std::array<LayerTiles_T<TILE_CONST>, TILE_CONST::nLayers> & allLayerTiles ){
   for (int i=0; i<points_.n; i++){
     // push index of points into tiles
     allLayerTiles[points_.layer[i]].fill( points_.x[i], points_.y[i], points_.phi[i], i);
@@ -46,13 +46,13 @@ void CLUEAlgoT<TILE_CONST>::prepareDataStructures( std::array<LayerTilesT<TILE_C
 }
 
 template <typename TILE_CONST>
-void CLUEAlgoT<TILE_CONST>::calculateLocalDensity( std::array<LayerTilesT<TILE_CONST>, TILE_CONST::nLayers> & allLayerTiles ){
+void CLUEAlgo_T<TILE_CONST>::calculateLocalDensity( std::array<LayerTiles_T<TILE_CONST>, TILE_CONST::nLayers> & allLayerTiles ){
 
   std::array<int,4> search_box = {0, 0, 0, 0};
 
   // loop over all points
   for(unsigned i = 0; i < points_.n; i++) {
-    LayerTilesT<TILE_CONST>& lt = allLayerTiles[points_.layer[i]];
+    LayerTiles_T<TILE_CONST>& lt = allLayerTiles[points_.layer[i]];
     float ri = points_.x[i]/points_.phi[i];
 
     // get search box
@@ -96,7 +96,7 @@ void CLUEAlgoT<TILE_CONST>::calculateLocalDensity( std::array<LayerTilesT<TILE_C
 
 
 template <typename TILE_CONST>
-void CLUEAlgoT<TILE_CONST>::calculateDistanceToHigher( std::array<LayerTilesT<TILE_CONST>, TILE_CONST::nLayers> & allLayerTiles ){
+void CLUEAlgo_T<TILE_CONST>::calculateDistanceToHigher( std::array<LayerTiles_T<TILE_CONST>, TILE_CONST::nLayers> & allLayerTiles ){
   // loop over all points
   float dm = outlierDeltaFactor_ * dc_;
   for(unsigned i = 0; i < points_.n; i++) {
@@ -109,7 +109,7 @@ void CLUEAlgoT<TILE_CONST>::calculateDistanceToHigher( std::array<LayerTilesT<TI
     float rho_i = points_.rho[i];
 
     //get search box
-    LayerTilesT<TILE_CONST>& lt = allLayerTiles[points_.layer[i]];
+    LayerTiles_T<TILE_CONST>& lt = allLayerTiles[points_.layer[i]];
     std::array<int,4> search_box = lt.searchBox(xi-dm, xi+dm, yi-dm, yi+dm);
     if(!TILE_CONST::endcap){
       float dm_phi = dm/ri;
@@ -158,7 +158,7 @@ void CLUEAlgoT<TILE_CONST>::calculateDistanceToHigher( std::array<LayerTilesT<TI
 }
 
 template <typename TILE_CONST>
-void CLUEAlgoT<TILE_CONST>::findAndAssignClusters(){
+void CLUEAlgo_T<TILE_CONST>::findAndAssignClusters(){
   auto start = std::chrono::high_resolution_clock::now();
 
   std::map<int,int> nClustersPerLayer;
@@ -220,7 +220,7 @@ void CLUEAlgoT<TILE_CONST>::findAndAssignClusters(){
 }
 
 template <typename TILE_CONST>
-inline float CLUEAlgoT<TILE_CONST>::distance(int i, int j, bool isPhi, float r ) const {
+inline float CLUEAlgo_T<TILE_CONST>::distance(int i, int j, bool isPhi, float r ) const {
 
   // 2-d distance on the layer
   if(points_.layer[i] == points_.layer[j] ) {
@@ -240,7 +240,7 @@ inline float CLUEAlgoT<TILE_CONST>::distance(int i, int j, bool isPhi, float r )
 }
 
 // explicit template instantiation
-template class CLUEAlgoT<LayerTilesConstants>;
-template class CLUEAlgoT<CLICdetEndcapLayerTilesConstants>;
-template class CLUEAlgoT<CLICdetBarrelLayerTilesConstants>;
-template class CLUEAlgoT<CLDLayerTilesConstants>;
+template class CLUEAlgo_T<LayerTilesConstants>;
+template class CLUEAlgo_T<CLICdetEndcapLayerTilesConstants>;
+template class CLUEAlgo_T<CLICdetBarrelLayerTilesConstants>;
+template class CLUEAlgo_T<CLDLayerTilesConstants>;

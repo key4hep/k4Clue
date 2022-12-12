@@ -13,12 +13,12 @@
 #include "LayerTilesConstants.h"
 
 template <typename T>
-class LayerTilesGPUT {
+class LayerTilesGPU_T {
 
   public:
 
     // constructor
-    LayerTilesGPUT(){};
+    LayerTilesGPU_T(){};
 
     __device__
     void fill(float x, float y, float phi, int i)
@@ -90,6 +90,6 @@ class LayerTilesGPUT {
     GPU::VecArray<GPU::VecArray<int, T::maxTileDepth>, T::nColumns * T::nRows > layerTiles_;
 };
 
-using LayerTilesGPU = LayerTilesGPUT<LayerTilesConstants>;
+using LayerTilesGPU = LayerTilesGPU_T<LayerTilesConstants>;
 
 #endif

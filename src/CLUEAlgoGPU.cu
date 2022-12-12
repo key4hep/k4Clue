@@ -13,7 +13,7 @@
 #include "CLUEAlgoGPU.h"
 
 template<typename TILE_CONST>
-__global__ void kernel_compute_histogram( LayerTilesGPUT<TILE_CONST> *d_hist, 
+__global__ void kernel_compute_histogram( LayerTilesGPU_T<TILE_CONST> *d_hist, 
                                           const PointsPtr d_points, 
                                           int numberOfPoints
                                           )
@@ -26,7 +26,7 @@ __global__ void kernel_compute_histogram( LayerTilesGPUT<TILE_CONST> *d_hist,
 } //kernel
 
 template<typename TILE_CONST>
-__global__ void kernel_calculate_density( LayerTilesGPUT<TILE_CONST> *d_hist, 
+__global__ void kernel_calculate_density( LayerTilesGPU_T<TILE_CONST> *d_hist, 
 					  PointsPtr d_points, 
 					  float dc,
 					  int numberOfPoints
@@ -70,7 +70,7 @@ __global__ void kernel_calculate_density( LayerTilesGPUT<TILE_CONST> *d_hist,
 } //kernel
 
 template<typename TILE_CONST>
-__global__ void kernel_calculate_distanceToHigher(LayerTilesGPUT<TILE_CONST>* d_hist, 
+__global__ void kernel_calculate_distanceToHigher(LayerTilesGPU_T<TILE_CONST>* d_hist, 
 						  PointsPtr d_points,
 						  float outlierDeltaFactor,
 						  float dc,
@@ -202,7 +202,7 @@ __global__ void kernel_assign_clusters( const GPU::VecArray<int,maxNSeeds>* d_se
 } //kernel
 
 template<typename TILE_CONST>
-void CLUEAlgoGPUT<TILE_CONST>::makeClusters( ) {
+void CLUEAlgoGPU_T<TILE_CONST>::makeClusters( ) {
 
   copy_todevice();
   clear_set();
@@ -212,25 +212,25 @@ void CLUEAlgoGPUT<TILE_CONST>::makeClusters( ) {
   // 1 point per thread
   ////////////////////////////////////////////
   const dim3 blockSize(1024,1,1);
-  const dim3 gridSize(ceil(CLUEAlgoT<TILE_CONST>::points_.n/static_cast<float>(blockSize.x)),1,1);
-  kernel_compute_histogram<<<gridSize,blockSize>>>(d_hist, d_points, CLUEAlgoT<TILE_CONST>::points_.n);
-  kernel_calculate_density<<<gridSize,blockSize>>>(d_hist, d_points, CLUEAlgoT<TILE_CONST>::dc_, CLUEAlgoT<TILE_CONST>::points_.n);
+  const dim3 gridSize(ceil(CLUEAlgo_T<TILE_CONST>::points_.n/static_cast<float>(blockSize.x)),1,1);
+  kernel_compute_histogram<<<gridSize,blockSize>>>(d_hist, d_points, CLUEAlgo_T<TILE_CONST>::points_.n);
+  kernel_calculate_density<<<gridSize,blockSize>>>(d_hist, d_points, CLUEAlgo_T<TILE_CONST>::dc_, CLUEAlgo_T<TILE_CONST>::points_.n);
   kernel_calculate_distanceToHigher<<<gridSize,blockSize>>>(d_hist, d_points,
-							    CLUEAlgoT<TILE_CONST>::outlierDeltaFactor_, CLUEAlgoT<TILE_CONST>::dc_,
-							    CLUEAlgoT<TILE_CONST>::points_.n);
+							    CLUEAlgo_T<TILE_CONST>::outlierDeltaFactor_, CLUEAlgo_T<TILE_CONST>::dc_,
+							    CLUEAlgo_T<TILE_CONST>::points_.n);
   kernel_find_clusters<<<gridSize,blockSize>>>(d_seeds, d_followers, d_points,
-					       CLUEAlgoT<TILE_CONST>::outlierDeltaFactor_, CLUEAlgoT<TILE_CONST>::dc_, CLUEAlgoT<TILE_CONST>::rhoc_,
-					       CLUEAlgoT<TILE_CONST>::points_.n);
+					       CLUEAlgo_T<TILE_CONST>::outlierDeltaFactor_, CLUEAlgo_T<TILE_CONST>::dc_, CLUEAlgo_T<TILE_CONST>::rhoc_,
+					       CLUEAlgo_T<TILE_CONST>::points_.n);
   
   ////////////////////////////////////////////
   // assign clusters
   // 1 point per seeds
   ////////////////////////////////////////////
   const dim3 gridSize_nseeds(ceil(maxNSeeds/1024.0),1,1);
-  kernel_assign_clusters<<<gridSize_nseeds,blockSize>>>(d_seeds, d_followers, d_points, CLUEAlgoT<TILE_CONST>::points_.n);
+  kernel_assign_clusters<<<gridSize_nseeds,blockSize>>>(d_seeds, d_followers, d_points, CLUEAlgo_T<TILE_CONST>::points_.n);
 
   copy_tohost();
 }
 
 // explicit template instantiation
-template class CLUEAlgoGPUT<LayerTilesConstants>;
+template class CLUEAlgoGPU_T<LayerTilesConstants>;
