@@ -2,14 +2,23 @@
 
 ![Logo](plots/k4Clue_logo.png)
 
-# k4CLUE on GPU and CPU
+# k4CLUE: The CLUE algorithm for future colliders (on CPU and GPU)
+
+## Table of contents
+* [General info](#general-info)
+* [Setup the environment](#setup-the-environment)
+* [Setup CLUE](#setup-clue)
+* [Examples of use](#examples-of-use)
+* [Package maintainer](#package-maintainer)
+
+## General info
 
 The CLUE algorithm ([here](https://gitlab.cern.ch/kalos/clue) the gitLab repo)
-was adapted to run in the Gaudi software framework and to support EDM4hep data format for inputs and outputs.
+was adapted to run in the Gaudi software framework and to support `EDM4hep` data format for inputs and outputs.
 
-## 1. Setup
+## Setup the environment
 
-### On a lxplus machine:
+The following setup is considering an lxplus machine.
 
 If CUDA/nvcc are found on the machine, the compilation is performed automatically also for the GPU case.
 The path to the nvcc compiler will be automatically taken from the machine. In this case, `>=cuda10` and `>=gcc11` are also required.
@@ -32,17 +41,34 @@ mkdir install
 cd build/ ; cmake .. -DCMAKE_INSTALL_PREFIX=../install; make install
 ```
 
-## 2. Run CLUE standalone
-CLUE needs three parameters: `dc`, `rhoc` and `outlierDeltaFactor` (in the past four parameters were needed: `dc`, `deltao`, `deltac` and `rhoc`):
+## Setup CLUE
+
+### Input parameters
+
+CLUE needs three parameters as input:
 
 * `dc` is the critical distance used to compute the local density;
 * `rhoc` is the minimum local density for a point to be promoted as a seed;
 * `outlierDeltaFactor` is  a multiplicative constant to be applied to `dc`.
 
-( _deltao_ is the maximum distance for a point to be linked to a nearest higher
+(
+In the past four parameters were needed (`dc`, `rhoc`, `deltao` and `deltac`):
+* `deltao` is the maximum distance for a point to be linked to a nearest higher
 point.
- _deltac_ is the minimum distance for a local high density point to be promoted
-as a Seed. )
+* `deltac` is the minimum distance for a local high density point to be promoted
+as a Seed. 
+)
+
+### Detector layer layout
+
+CLUE uses a spatial index to access and query spatial data points efficiently.
+Thus, a multi-layer tessellation is created which divides the 2D space into fixed rectangular bins.
+The limits and size of the tassellated space is defined by the user.
+
+An example can be found in [LayerTileConstant.h](include/LayerTileConstant.h).
+A step-by-step guide to introduce a new detector can be found in [another readme](include/readme.md).
+
+## Examples of use
 
 ### Standalone CLUE
 
@@ -75,46 +101,9 @@ CLUE parameters and input/output file name are contained in `clue_gaudi_wrapper.
 
 The output file `output.root` contains `CLUEClusters` (currently also transformed as CaloHits in `CLUEClustersAsHits`).
 
-## 3. Run CLUE during the CLIC reconstruction
+A simple recipe to run k4CLUE as part of the CLIC reconstruction chain can be found [here](clic-recipe.md).
 
-The CLIC electromagnetic calorimeter is foreseen to be a sampling calorimeter with high
-granularity and is thus particularly well-suited to test the CLUE algorithm. 
-
-A simple recipe follows to run k4CLUE as part of the CLIC reconstruction chain:
-```
-source /cvmfs/sw-nightlies.hsf.org/key4hep/setup.sh
-git clone --recurse-submodules https://github.com/key4hep/k4Clue.git
-
-git clone git@github.com:key4hep/k4MarlinWrapper.git
-git clone https://github.com/iLCSoft/CLICPerformance
-
-cd CLICPerformance/clicConfig
-ddsim --steeringFile clic_steer.py --compactFile $LCGEO/CLIC/compact/CLIC_o3_v14/CLIC_o3_v14.xml --enableGun --gun.distribution uniform --gun.particle gamma --gun.energy 10*GeV --outputFile gamma_10GeV_edm4hep.root --numberOfEvents 10
-
-cp ../../k4MarlinWrapper/test/gaudi_opts/clicRec_e4h_input.py .
-k4run clicRec_e4h_input.py --EventDataSvc.input gamma_10GeV_edm4hep.root
-
-#Run CLUE in CLIC reconstruction
-cp ../../k4Clue/gaudi_opts/clicRec_e4h_input_clue.py .
-k4run clicRec_e4h_input_clue.py --EventDataSvc.input gamma_10GeV_edm4hep.root
-
-#Run CLUE standalone
-cp ../../k4Clue/gaudi_opts/clue_gaudi_wrapper.py .
-k4run clue_gaudi_wrapper.py --EventDataSvc.input my_output.root
-```
-
-In case you have changed something from the original repo and you have rebuild the package, you should use `source build/clueenv.sh` to make `k4run` aware of your new changes.
-
-If you want to visualise the output as event display using CED:
-```
-cd ../..
-glced &
-k4run k4MarlinWrapper/k4MarlinWrapper/examples/event_display.py --EventDataSvc.input=CLICPerformance/clicConfig/gamma_10GeV_edm4hep.root
-```
-
-The recipe is taken from the [following webpage](https://key4hep.github.io/key4hep-doc/k4marlinwrapper/doc/starterkit/k4MarlinWrapperCLIC/CEDViaWrapper.html).
-
-## Package maintainer(s)
+## Package maintainer
 
 If you encounter any error when compiling or running this project, please contact:
 * Erica Brondolin, erica.brondolin@cern.ch
