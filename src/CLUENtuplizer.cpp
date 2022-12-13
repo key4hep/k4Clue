@@ -94,7 +94,7 @@ StatusCode CLUENtuplizer::execute() {
     EECaloCollectionName, Gaudi::DataHandle::Reader, this};
   EE_calo_coll = EE_calo_handle.get();
 
-  info() << "ECAL Calorimeter Hits Size = " << int( EB_calo_coll->size()+EE_calo_coll->size() ) << endmsg;
+  debug() << "ECAL Calorimeter Hits Size = " << int( EB_calo_coll->size()+EE_calo_coll->size() ) << endmsg;
 
   // Read cluster collection
   DataHandle<edm4hep::ClusterCollection> cluster_handle {  
@@ -181,7 +181,7 @@ StatusCode CLUENtuplizer::execute() {
   m_clusters_totSize->push_back (totSize);
   t_clusters->Fill ();
   t_clhits->Fill ();
-  debug() << ClusterCollectionName << " : Total number hits = " << totSize << " with total energy (cl) = " << totEnergy << "; (hits) = " << totEnergyHits << endmsg; 
+  info() << ClusterCollectionName << " : Total number hits = " << totSize << " with total energy (cl) = " << totEnergy << "; (hits) = " << totEnergyHits << endmsg; 
 
   std::uint64_t nSeeds = 0;
   std::uint64_t nFollowers = 0;
