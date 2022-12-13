@@ -39,15 +39,17 @@ MyClueGaudiAlgorithmWrapper.CriticalDistance = 15.00
 MyClueGaudiAlgorithmWrapper.MinLocalDensity = 0.02
 MyClueGaudiAlgorithmWrapper.OutlierDeltaFactor = 2.00
 
-from Configurables import CLUEHistograms
-MyCLUEHistograms = CLUEHistograms("CLUEAnalysis")
-MyCLUEHistograms.OutputLevel = WARNING
-MyCLUEHistograms.ClusterCollection = "CLUEClusters"
+from Configurables import CLUENtuplizer
+MyCLUENtuplizer = CLUENtuplizer("CLUEAnalysis")
+MyCLUENtuplizer.ClusterCollection = "CLUEClusters"
+MyCLUENtuplizer.BarrelCaloHitsCollection = "ECALBarrel"
+MyCLUENtuplizer.EndcapCaloHitsCollection = "ECALEndcap"
+MyCLUENtuplizer.OutputLevel = WARNING
 
-from Configurables import CLUEHistograms
-MyPandoraHistograms = CLUEHistograms("PandoraAnalysis")
-MyPandoraHistograms.OutputLevel = WARNING
-MyPandoraHistograms.ClusterCollection = "PandoraClusters"
+from Configurables import CLUENtuplizer
+MyPandoraNtuplizer = CLUENtuplizer("PandoraAnalysis")
+MyPandoraNtuplizer.ClusterCollection = "PandoraClusters"
+MyPandoraNtuplizer.OutputLevel = WARNING
 
 from Configurables import THistSvc
 THistSvc().Output = ["rec DATAFILE='output_k4clue_analysis.root' TYP='ROOT' OPT='RECREATE'"]
@@ -58,14 +60,16 @@ THistSvc().AutoFlush = True
 
 from Configurables import PodioOutput
 out = PodioOutput("out")
+MyClueGaudiAlgorithmWrapper.BarrelCaloHitsCollection = "ECALBarrel"
+MyClueGaudiAlgorithmWrapper.EndcapCaloHitsCollection = "ECALEndcap"
 out.filename = "my_output_clue_standalone.root"
 out.outputCommands = ["keep *"]
 
 algList.append(inp)
 algList.append(MyAIDAProcessor)
 algList.append(MyClueGaudiAlgorithmWrapper)
-algList.append(MyCLUEHistograms)
-algList.append(MyPandoraHistograms)
+algList.append(MyCLUENtuplizer)
+algList.append(MyPandoraNtuplizer)
 algList.append(out)
 
 from Configurables import ApplicationMgr

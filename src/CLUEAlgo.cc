@@ -243,4 +243,4 @@ inline float CLUEAlgo_T<TILE_CONST>::distance(int i, int j, bool isPhi, float r 
 template class CLUEAlgo_T<LayerTilesConstants>;
 template class CLUEAlgo_T<CLICdetEndcapLayerTilesConstants>;
 template class CLUEAlgo_T<CLICdetBarrelLayerTilesConstants>;
-template class CLUEAlgo_T<CLDLayerTilesConstants>;
+template class CLUEAlgo_T<CLDEndcapLayerTilesConstants>;

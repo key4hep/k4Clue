@@ -250,7 +250,6 @@ void ClueGaudiAlgorithmWrapper::transformClustersInCaloHits(edm4hep::ClusterColl
 }
 
 StatusCode ClueGaudiAlgorithmWrapper::execute() {
-  debug() << "ClueGaudiAlgorithmWrapper::execute()" << endmsg ;
 
   // Read EB collection
   DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {  

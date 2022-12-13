@@ -45,8 +45,12 @@ public:
 	if(phi != NULL){
           points_.phi.push_back(phi[i]);
         } else {
-          std::cout << "WARNING: phi info is not present, make sure you are using an endcap LayerTile " << std::endl;
-          points_.phi.push_back(0.0);
+          // If the layer tile is declared as endcap, the phi info is not used
+          if(TILE_CONST::endcap){
+            points_.phi.push_back(0.0);
+          } else {
+            std::cerr << "ERROR: phi info is not present but you are using a barrel LayerTile! " << std::endl;
+          }
         }
       }
 
@@ -65,7 +69,7 @@ public:
     // consistency checks
     auto maxLayer = *std::max_element(points_.layer.begin(), points_.layer.end()); 
     if(maxLayer > TILE_CONST::nLayers){
-      std::cout << "Max layer(" << maxLayer << ") is larger "
+      std::cerr << "Max layer(" << maxLayer << ") is larger "
                 << "than the number of layers(" << TILE_CONST::nLayers << ") defined for the current detector" << std::endl;
       return 1;
     }
@@ -149,8 +153,8 @@ private:
 };
 
 using CLUEAlgo = CLUEAlgo_T<LayerTilesConstants>;
-using CLICdetendcapCLUEAlgo = CLUEAlgo_T<CLICdetEndcapLayerTilesConstants>;
+using CLICdetEndcapCLUEAlgo = CLUEAlgo_T<CLICdetEndcapLayerTilesConstants>;
 using CLICdetBarrelCLUEAlgo = CLUEAlgo_T<CLICdetBarrelLayerTilesConstants>;
-using CLDCLUEAlgo = CLUEAlgo_T<CLDLayerTilesConstants>;
+using CLDEndcapCLUEAlgo = CLUEAlgo_T<CLDEndcapLayerTilesConstants>;
 
 #endif

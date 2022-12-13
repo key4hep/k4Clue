@@ -49,7 +49,7 @@ void read_from_csv(const std::string& inputFileName,
   // open csv file
   std::ifstream iFile(inputFileName);
   if( !iFile.is_open() ){
-    std::cerr << "Failed to open the file" << std::endl;
+    std::cerr << "ERROR: Failed to open the file" << std::endl;
     return;
   }
 

@@ -19,13 +19,13 @@ struct int4
 #endif
 
 template <typename Acc, typename T>
-class LayerTilesCuplaT {
+class LayerTilesCupla_T {
 
   public:
     using GPUVect = GPUCupla::VecArray<int, T::maxTileDepth>;
 
     // constructor
-    LayerTilesCuplaT(const Acc & acc){acc_=acc;};
+    LayerTilesCupla_T(const Acc & acc){acc_=acc;};
 
     ALPAKA_FN_ACC
     void fill(const std::vector<float>& x, const std::vector<float>& y) {

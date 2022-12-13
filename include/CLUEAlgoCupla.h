@@ -63,7 +63,7 @@ class CLUEAlgoCuplaT : public CLUEAlgo_T<TILE_CONST> {
   private:
 
     PointsPtr d_points;
-    LayerTilesCuplaT<Acc, TILE_CONST> *d_hist;
+    LayerTilesCupla_T<Acc, TILE_CONST> *d_hist;
     GPUCupla::VecArray<int,maxNSeedsCupla> *d_seeds;
     GPUCupla::VecArray<int,maxNFollowersCupla> *d_followers;
 
@@ -81,7 +81,7 @@ class CLUEAlgoCuplaT : public CLUEAlgo_T<TILE_CONST> {
       cudaMalloc((void**)&d_points.clusterIndex, sizeof(int)*reserve);
       cudaMalloc((void**)&d_points.isSeed, sizeof(int)*reserve);
       // algorithm internal variables
-      cudaMalloc((void**)&d_hist, sizeof(LayerTilesCuplaT<Acc, TILE_CONST>) * TILE_CONST::nLayers);
+      cudaMalloc((void**)&d_hist, sizeof(LayerTilesCupla_T<Acc, TILE_CONST>) * TILE_CONST::nLayers);
       cudaMalloc((void**)&d_seeds, sizeof(GPUCupla::VecArray<int,maxNSeedsCupla>) );
       cudaMalloc((void**)&d_followers, sizeof(GPUCupla::VecArray<int,maxNFollowersCupla>)*reserve);
     }
@@ -120,7 +120,7 @@ class CLUEAlgoCuplaT : public CLUEAlgo_T<TILE_CONST> {
       cudaMemset(d_points.clusterIndex, 0x00, sizeof(int)*CLUEAlgo_T<TILE_CONST>::points_.n);
       cudaMemset(d_points.isSeed, 0x00, sizeof(int)*CLUEAlgo_T<TILE_CONST>::points_.n);
       // algorithm internal variables
-      cudaMemset(d_hist, 0x00, sizeof(LayerTilesCuplaT<Acc, TILE_CONST>) * TILE_CONST::nLayers);
+      cudaMemset(d_hist, 0x00, sizeof(LayerTilesCupla_T<Acc, TILE_CONST>) * TILE_CONST::nLayers);
       cudaMemset(d_seeds, 0x00, sizeof(GPUCupla::VecArray<int,maxNSeedsCupla>));
       cudaMemset(d_followers, 0x00, sizeof(GPUCupla::VecArray<int,maxNFollowersCupla>)*CLUEAlgo_T<TILE_CONST>::points_.n);
     }
@@ -141,7 +141,7 @@ class CLUEAlgoCuplaT : public CLUEAlgo_T<TILE_CONST> {
 struct kernel_compute_histogram_opti {
   template <typename T_Acc, typename TILE_CONST>
   ALPAKA_FN_ACC
-  void operator()(T_Acc const &acc, LayerTilesCuplaT<T_Acc, TILE_CONST> *d_hist,
+  void operator()(T_Acc const &acc, LayerTilesCupla_T<T_Acc, TILE_CONST> *d_hist,
       PointsPtr d_points, int numberOfPoints) const {
 
     int32_t first = (threadIdx.x + blockIdx.x * blockDim.x) * elemDim.x;
@@ -157,7 +157,7 @@ struct kernel_compute_histogram_opti {
 struct kernel_compute_histogram {
   template <typename T_Acc, typename TILE_CONST>
   ALPAKA_FN_ACC
-  void operator()(T_Acc const &acc, LayerTilesCuplaT<T_Acc, TILE_CONST> *d_hist,
+  void operator()(T_Acc const &acc, LayerTilesCupla_T<T_Acc, TILE_CONST> *d_hist,
       PointsPtr d_points, int numberOfPoints) const {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < numberOfPoints) {
@@ -170,7 +170,7 @@ struct kernel_compute_histogram {
 struct kernel_compute_density {
   template <typename T_Acc, typename TILE_CONST>
     ALPAKA_FN_ACC
-    void operator()(T_Acc const &acc, LayerTilesCuplaT<T_Acc, TILE_CONST> *d_hist,
+    void operator()(T_Acc const &acc, LayerTilesCupla_T<T_Acc, TILE_CONST> *d_hist,
         PointsPtr d_points, float dc,
       int numberOfPoints) const {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -216,7 +216,7 @@ struct kernel_compute_density {
 struct kernel_compute_distanceToHigher {
   template <typename T_Acc, typename TILE_CONST>
   ALPAKA_FN_ACC
-  void operator()(T_Acc const &acc, LayerTilesCuplaT<T_Acc, TILE_CONST> *d_hist,
+  void operator()(T_Acc const &acc, LayerTilesCupla_T<T_Acc, TILE_CONST> *d_hist,
 		  PointsPtr d_points,
 		  float outlierDeltaFactor,
 		  float dc,
