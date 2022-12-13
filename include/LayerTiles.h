@@ -11,7 +11,7 @@
 #include "LayerTilesConstants.h"
 #include "CLICdetEndcapLayerTilesConstants.h"
 #include "CLICdetBarrelLayerTilesConstants.h"
-#include "CLDLayerTilesConstants.h"
+#include "CLDEndcapLayerTilesConstants.h"
 
 template <typename T>
 class LayerTiles_T {
@@ -122,6 +122,6 @@ class LayerTiles_T {
 using LayerTiles = LayerTiles_T<LayerTilesConstants>;
 using CLICdetEndcapLayerTiles = LayerTiles_T<CLICdetEndcapLayerTilesConstants>;
 using CLICdetBarrelLayerTiles = LayerTiles_T<CLICdetBarrelLayerTilesConstants>;
-using CLDLayerTiles = LayerTiles_T<CLDLayerTilesConstants>;
+using CLDEndcapLayerTiles = LayerTiles_T<CLDEndcapLayerTilesConstants>;
 
 #endif //LayerTiles_h

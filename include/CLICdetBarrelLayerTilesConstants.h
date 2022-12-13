@@ -6,7 +6,7 @@
 
 struct CLICdetBarrelLayerTilesConstants {
 
-  // Global r*phi
+  // Global r*phi coordinate
   static constexpr float minX =  -6000.f;
   static constexpr float maxX =   6000.f;
 

@@ -6,7 +6,7 @@ gaudi_add_module(ClueGaudiAlgorithmWrapper
   SOURCES
     ${PROJECT_SOURCE_DIR}/src/ClueGaudiAlgorithmWrapper.cpp
     ${PROJECT_SOURCE_DIR}/src/CLUECalorimeterHit.cpp
-    ${PROJECT_SOURCE_DIR}/src/CLUEHistograms.cpp
+    ${PROJECT_SOURCE_DIR}/src/CLUENtuplizer.cpp
   LINK
     Gaudi::GaudiAlgLib
     Gaudi::GaudiKernel

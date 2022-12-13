@@ -1,4 +1,4 @@
-#include "CLUEHistograms.h"
+#include "CLUENtuplizer.h"
 
 // podio specific includes
 #include "DDSegmentation/BitFieldCoder.h"
@@ -6,15 +6,16 @@
 using namespace dd4hep ;
 using namespace DDSegmentation ;
 
-DECLARE_COMPONENT(CLUEHistograms)
+DECLARE_COMPONENT(CLUENtuplizer)
 
-CLUEHistograms::CLUEHistograms(const std::string& name, ISvcLocator* svcLoc) : GaudiAlgorithm(name, svcLoc), m_eventDataSvc("EventDataSvc", "CLUEHistograms") {
+CLUENtuplizer::CLUENtuplizer(const std::string& name, ISvcLocator* svcLoc) : GaudiAlgorithm(name, svcLoc), m_eventDataSvc("EventDataSvc", "CLUENtuplizer") {
   declareProperty("ClusterCollection", ClusterCollectionName, "Collection of clusters in input");
+  declareProperty("BarrelCaloHitsCollection", EBCaloCollectionName, "Collection for Barrel Calo Hits used in input");
+  declareProperty("EndcapCaloHitsCollection", EECaloCollectionName, "Collection for Endcap Calo Hits used in input");
   StatusCode sc = m_eventDataSvc.retrieve();
 }
 
-StatusCode CLUEHistograms::initialize() {
-  info() << "CLUEHistograms::initialize()" << endmsg;
+StatusCode CLUENtuplizer::initialize() {
   if (GaudiAlgorithm::initialize().isFailure()) return StatusCode::FAILURE;
 
   m_podioDataSvc = dynamic_cast<PodioDataSvc*>(m_eventDataSvc.get());
@@ -48,14 +49,13 @@ StatusCode CLUEHistograms::initialize() {
   return StatusCode::SUCCESS;
 }
 
-StatusCode CLUEHistograms::execute() {
-  info() << "CLUEHistograms::execute()" << endmsg;
+StatusCode CLUENtuplizer::execute() {
 
   DataHandle<edm4hep::EventHeaderCollection> ev_handle {
     "EventHeader", Gaudi::DataHandle::Reader, this};
   auto evs = ev_handle.get();
   evNum = (*evs)[0].getEventNumber();
-  std::cout << "Event number = " << evNum << std::endl;
+  info() << "Event number = " << evNum << endmsg;
 
   DataHandle<edm4hep::MCParticleCollection> mcp_handle {
     "MCParticles", Gaudi::DataHandle::Reader, this};
@@ -69,16 +69,17 @@ StatusCode CLUEHistograms::execute() {
                     mcp_primary_energy = mcp.getEnergy();
                   }
                 });
-  std::cout << "MC Particles = " << mcps->size() << " (of which primaries = " << mcps_primary << ")" << std::endl;
+  info() << "MC Particles = " << mcps->size() << " (of which primaries = " << mcps_primary << ")" << endmsg;
   // If there is more than one primary, skip event
-  if(mcps_primary > 1)
+  if(mcps_primary > 1){
+    warning() << "This event is skipped because there are " << mcps_primary << " primary MC particles." << endmsg;
     return StatusCode::SUCCESS;
+  }
 
   DataObject* pStatus  = nullptr;
   StatusCode  scStatus = eventSvc()->retrieveObject("/Event/CLUECalorimeterHitCollection", pStatus);
   if (scStatus.isSuccess()) {
     clue_calo_coll = static_cast<clue::CLUECalorimeterHitCollection*>(pStatus);
-    info() << "CH SIZE : " << clue_calo_coll->vect.size() << endmsg;
   } else {
     throw std::runtime_error("CLUE hits collection not available");
   }
@@ -92,6 +93,8 @@ StatusCode CLUEHistograms::execute() {
   DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {
     EECaloCollectionName, Gaudi::DataHandle::Reader, this};
   EE_calo_coll = EE_calo_handle.get();
+
+  info() << "ECAL Calorimeter Hits Size = " << int( EB_calo_coll->size()+EE_calo_coll->size() ) << endmsg;
 
   // Read cluster collection
   DataHandle<edm4hep::ClusterCollection> cluster_handle {  
@@ -120,6 +123,9 @@ StatusCode CLUEHistograms::execute() {
     m_clusters_y->push_back (cl.getPosition().y);
     m_clusters_z->push_back (cl.getPosition().z);
 
+    // Sum up energy of cluster hits and save info
+    // Printout the hits that are in Ecal but not included in the clusters
+    int maxLayer = 0;
     for (const auto& hit : cl.getHits()) {
       foundInECAL = false;
       for (const auto& clEB : *EB_calo_coll) {
@@ -127,26 +133,28 @@ StatusCode CLUEHistograms::execute() {
             foundInECAL = true;
           }
         if(foundInECAL) {
-          info() << "  Found in EB ! " << endmsg;
+          // Found in EB, break the loop
           break;
         } 
       }
+      // Found in EB, break the loop
       if(!foundInECAL){
         for (const auto& clEE : *EE_calo_coll) {
           if( clEE.getCellID() == hit.getCellID()){
             foundInECAL = true;
           }
           if(foundInECAL) {
-            info() << "  Found in EE ! " << endmsg;
+            // Found in EE, break the loop
             break;
           }
         }
       }
       if(foundInECAL){
         ch_layer = bf.get( hit.getCellID(), "layer");
-        info() << "  ch cellID : " << hit.getCellID()
-               << ", layer : " << ch_layer   
-               << ", energy : " << hit.getEnergy() << endmsg; 
+        maxLayer = std::max(int(ch_layer), maxLayer);
+        //info() << "  ch cellID : " << hit.getCellID()
+        //       << ", layer : " << ch_layer   
+        //       << ", energy : " << hit.getEnergy() << endmsg; 
         m_clhits_event->push_back (evNum);
         m_clhits_layer->push_back (ch_layer);
         m_clhits_x->push_back (hit.getPosition().x);
@@ -156,13 +164,14 @@ StatusCode CLUEHistograms::execute() {
         totEnergyHits += hit.getEnergy();
         totSize += 1;
       } else {
-        info() << "  NOT found ch cellID : " << hit.getCellID()
+        debug() << "  This calo hit was NOT found among ECAL hits (cellID : " << hit.getCellID()
                << ", layer : " << ch_layer   
-               << ", energy : " << hit.getEnergy() << endmsg; 
+               << ", energy : " << hit.getEnergy() << " )" << endmsg; 
       }
     }
     nClusters++;
     totEnergy += cl.getEnergy();
+    m_clusters_maxLayer->push_back (maxLayer);
 
   }
   m_clusters->push_back (nClusters);
@@ -172,7 +181,7 @@ StatusCode CLUEHistograms::execute() {
   m_clusters_totSize->push_back (totSize);
   t_clusters->Fill ();
   t_clhits->Fill ();
-  info() << ClusterCollectionName << " :: Total number hits = " << totSize << " with total energy (cl) = " << totEnergy << "; (hits) = " << totEnergyHits << endmsg; 
+  debug() << ClusterCollectionName << " : Total number hits = " << totSize << " with total energy (cl) = " << totEnergy << "; (hits) = " << totEnergyHits << endmsg; 
 
   std::uint64_t nSeeds = 0;
   std::uint64_t nFollowers = 0;
@@ -211,15 +220,16 @@ StatusCode CLUEHistograms::execute() {
       nOutliers++;
     }
   }
-  info() << nSeeds << " seeds." << endmsg;
-  info() << nOutliers << " outliers." << endmsg;
-  info() << nFollowers << " followers." << endmsg;
-  info() << totEnergy << " total energy." << endmsg;
+  debug() << "CLUE Calorimeter Hits Size = " << clue_calo_coll->vect.size() << endmsg;
+  debug() << "Found: " << nSeeds << " seeds, "
+         << nOutliers << " outliers, "
+         << nFollowers << " followers." 
+         << " Total energy clusterized: " << totEnergy << " GeV" << endmsg;
   t_hits->Fill ();
   return StatusCode::SUCCESS;
 }
 
-void CLUEHistograms::initializeTrees() {
+void CLUENtuplizer::initializeTrees() {
 
   m_hits_event = new std::vector<int>();
   m_hits_region = new std::vector<int>();
@@ -247,10 +257,10 @@ void CLUEHistograms::initializeTrees() {
   t_hits->Branch ("delta", &m_hits_delta);
   t_hits->Branch ("energy", &m_hits_energy);
 
-  m_clusters       = new std::vector<int>();
-  m_clusters_event = new std::vector<int>();
-  m_clusters_layer = new std::vector<int>();
-  m_clusters_size  = new std::vector<int>();
+  m_clusters          = new std::vector<int>();
+  m_clusters_event    = new std::vector<int>();
+  m_clusters_maxLayer = new std::vector<int>();
+  m_clusters_size     = new std::vector<int>();
   m_clusters_totSize  = new std::vector<int>();
   m_clusters_x = new std::vector<float>();
   m_clusters_y = new std::vector<float>();
@@ -262,7 +272,7 @@ void CLUEHistograms::initializeTrees() {
 
   t_clusters->Branch ("clusters", &m_clusters);
   t_clusters->Branch ("event", &m_clusters_event);
-  t_clusters->Branch ("layer", &m_clusters_layer);
+  t_clusters->Branch ("maxLayer", &m_clusters_maxLayer);
   t_clusters->Branch ("size", &m_clusters_size);
   t_clusters->Branch ("totSize", &m_clusters_totSize);
   t_clusters->Branch ("x", &m_clusters_x);
@@ -290,7 +300,7 @@ void CLUEHistograms::initializeTrees() {
   return;
 }
 
-void CLUEHistograms::cleanTrees() {
+void CLUENtuplizer::cleanTrees() {
   m_hits_event->clear();
   m_hits_region->clear(); 
   m_hits_layer->clear();
@@ -306,7 +316,7 @@ void CLUEHistograms::cleanTrees() {
 
   m_clusters->clear();
   m_clusters_event->clear();
-  m_clusters_layer->clear();
+  m_clusters_maxLayer->clear();
   m_clusters_size->clear();
   m_clusters_totSize->clear();
   m_clusters_x->clear();
@@ -327,7 +337,7 @@ void CLUEHistograms::cleanTrees() {
   return;
 }
 
-StatusCode CLUEHistograms::finalize() {
+StatusCode CLUENtuplizer::finalize() {
   if (GaudiAlgorithm::finalize().isFailure()) return StatusCode::FAILURE;
 
   return StatusCode::SUCCESS;

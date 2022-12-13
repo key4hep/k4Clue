@@ -18,7 +18,11 @@ All variable listed in the [LayerTilesConstants.h](LayerTilesConstants.h) must b
 In the case of an endcap layer, only the variables `tileSize` and `nColumns` are used and the coordinates ( $\textnormal{x}, \textnormal{y}$ ) 
 corresponds to the transverse plane positions.
 
-In the case of a barrel layer, the coordinates ( $\textnormal{x}, \textnormal{y}$ ) correspond to ( $\textnormal{r} \cdot \phi, \textnormal{z}$ ), respectively.
+In the case of a barrel layer, only the variables `tileSizePhi` and `nColumnsPhi` are used and the nTiles must be defined as:
+```c++
+static constexpr int nTiles = nColumnsPhi * nRows;
+```
+The coordinates ( $\textnormal{x}, \textnormal{y}$ ) correspond to ( $\textnormal{r} \cdot \phi, \textnormal{z}$ ), respectively.
 
 For more details regarding the barrel extension, have a look at [these slides](https://indico.cern.ch/event/1207900/#3-k4clue-update)
 of Oct 2022.

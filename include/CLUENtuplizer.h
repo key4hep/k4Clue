@@ -14,13 +14,13 @@
 #include "TH1F.h"
 #include "TGraph.h"
 
-class CLUEHistograms : public GaudiAlgorithm {
+class CLUENtuplizer : public GaudiAlgorithm {
 
 public:
   /// Constructor.
-  CLUEHistograms(const std::string& name, ISvcLocator* svcLoc);
+  CLUENtuplizer(const std::string& name, ISvcLocator* svcLoc);
   /// Destructor.
-  ~CLUEHistograms() {
+  ~CLUENtuplizer() {
     delete m_hits_event;
     delete m_hits_region;
     delete m_hits_layer;
@@ -36,7 +36,7 @@ public:
 
     delete m_clusters;
     delete m_clusters_event;
-    delete m_clusters_layer;
+    delete m_clusters_maxLayer;
     delete m_clusters_size;
     delete m_clusters_totSize;
     delete m_clusters_x;
@@ -98,7 +98,7 @@ private:
   TTree* t_clusters{nullptr};
   std::vector<int> *m_clusters = nullptr;
   std::vector<int> *m_clusters_event = nullptr;
-  std::vector<int> *m_clusters_layer = nullptr;
+  std::vector<int> *m_clusters_maxLayer = nullptr;
   std::vector<int> *m_clusters_size = nullptr;
   std::vector<int> *m_clusters_totSize = nullptr;
   std::vector<float> *m_clusters_x = nullptr;
