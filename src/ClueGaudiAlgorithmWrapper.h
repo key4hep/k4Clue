@@ -18,10 +18,10 @@ public:
   virtual StatusCode finalize() override final;
   virtual StatusCode initialize() override final;
 
-  void fillCLUEinputs(std::vector<clue::CLUECalorimeterHit>& clue_hits);
+  void fillCLUEPoints(std::vector<clue::CLUECalorimeterHit>& clue_hits);
   std::map<int, std::vector<int> > runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, 
                                            bool isBarrel);
-  void cleanCLUEinputs();
+  void cleanCLUEPoints();
   void fillFinalClusters(std::vector<clue::CLUECalorimeterHit>& clue_hits,
                          const std::map<int, std::vector<int> > clusterMap, 
                          edm4hep::ClusterCollection* clusters);
@@ -39,7 +39,7 @@ public:
   float rhoc;
   float outlierDeltaFactor;
 
-  // CLUE inputs
+  // CLUE points
   clue::CLUECalorimeterHitCollection clue_hit_coll;
   std::vector<float> x;
   std::vector<float> y;

@@ -26,7 +26,6 @@ ClueGaudiAlgorithmWrapper::ClueGaudiAlgorithmWrapper(const std::string& name, IS
 }
 
 StatusCode ClueGaudiAlgorithmWrapper::initialize() {
-  debug() << "ClueGaudiAlgorithmWrapper::initialize()" << endmsg ;
 
   m_podioDataSvc = dynamic_cast<PodioDataSvc*>(m_eventDataSvc.get());
   if (m_podioDataSvc == nullptr) {
@@ -34,9 +33,10 @@ StatusCode ClueGaudiAlgorithmWrapper::initialize() {
   }
 
   return Algorithm::initialize();
+
 }
 
-void ClueGaudiAlgorithmWrapper::fillCLUEinputs(std::vector<clue::CLUECalorimeterHit>& clue_hits){
+void ClueGaudiAlgorithmWrapper::fillCLUEPoints(std::vector<clue::CLUECalorimeterHit>& clue_hits){
 
   for (const auto& ch : clue_hits) {
     if(ch.inBarrel()){
@@ -46,13 +46,14 @@ void ClueGaudiAlgorithmWrapper::fillCLUEinputs(std::vector<clue::CLUECalorimeter
     } else {
       x.push_back(ch.getPosition().x);
       y.push_back(ch.getPosition().y);
-      // For the endcap the phi info is filled but not used
+      // For the endcap the phi info is not mandatory because it is not used
       phi.push_back(ch.getPhi());
     }
     layer.push_back(ch.getLayer());
     weight.push_back(ch.getEnergy());
   }
   return;
+
 }
 
 std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, 
@@ -62,59 +63,59 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<
   Points cluePoints;
 
   // Fill CLUE inputs
-  fillCLUEinputs(clue_hits);
+  fillCLUEPoints(clue_hits);
 
   // Run CLUE
-  debug() << "Using CLUEAlgo ... " << endmsg;
+  info() << "Running CLUEAlgo ... " << endmsg;
   if(isBarrel){
-    CLUEAlgo_T<CLICdetBarrelLayerTilesConstants> clueAlgo(dc, rhoc, outlierDeltaFactor, false);
+    CLUEAlgo_T<CLICdetBarrelLayerTilesConstants> clueAlgo(dc, rhoc, outlierDeltaFactor, true);
     if(clueAlgo.setPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0], &phi[0]))
-      throw std::runtime_error("Some problem happen in setting the clue points.");
+      throw error() << "Error in setting the clue points for the barrel." << endmsg;
     clueAlgo.makeClusters();
     clueClusters = clueAlgo.getClusters();
     cluePoints = clueAlgo.getPoints();
   } else {
-    CLUEAlgo_T<CLICdetEndcapLayerTilesConstants> clueAlgo(dc, rhoc, outlierDeltaFactor, false);
+    CLUEAlgo_T<CLICdetEndcapLayerTilesConstants> clueAlgo(dc, rhoc, outlierDeltaFactor, true);
     if(clueAlgo.setPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0], &phi[0]))
-      throw std::runtime_error("Some problem happen in setting the clue points.");
+      throw error() << "Error in setting the clue points for the endcap." << endmsg;
     clueAlgo.makeClusters();
     clueClusters = clueAlgo.getClusters();
     cluePoints = clueAlgo.getPoints();
   }
 
-  debug() << "Finished running CLUE algorithm" << endmsg;
+  info() << "Finished running CLUE algorithm" << endmsg;
 
+  // Including CLUE info in cluePoints
   for(int i = 0; i < cluePoints.n; i++){
 
     clue_hits[i].setRho(cluePoints.rho[i]);
     clue_hits[i].setDelta(cluePoints.delta[i]);
     clue_hits[i].setClusterIndex(cluePoints.clusterIndex[i]);
-//    info() << "CLUE Points : (x,y,z) = " 
-//           << clue_hits[i].getPosition().x << ","
-//           << clue_hits[i].getPosition().y << ","
-//           << clue_hits[i].getPosition().z << endmsg;
+    debug() << "CLUE Point #" << i <<" : (x,y,z) = (" 
+           << clue_hits[i].getPosition().x << ","
+           << clue_hits[i].getPosition().y << ","
+           << clue_hits[i].getPosition().z << ")";
 
     if(cluePoints.isSeed[i] == 1){
-//      info() << "    is seed" << endmsg; 
+      debug() << " is seed" << endmsg; 
       clue_hits[i].setStatus(clue::CLUECalorimeterHit::Status::seed);
     } else if (cluePoints.clusterIndex[i] == -1) {
-//      info() << "    is outlier" << endmsg; 
+      debug() << " is outlier" << endmsg; 
       clue_hits[i].setStatus(clue::CLUECalorimeterHit::Status::outlier);
     } else {
-//      info() << "    is follower of cluster #" << cluePoints.clusterIndex[i] << endmsg; 
+      debug() << " is follower of cluster #" << cluePoints.clusterIndex[i] << endmsg; 
       clue_hits[i].setStatus(clue::CLUECalorimeterHit::Status::follower);
     }
 
   }
 
   // Clean CLUE inputs
-  cleanCLUEinputs();
+  cleanCLUEPoints();
 
   return clueClusters;
 }
 
-void ClueGaudiAlgorithmWrapper::cleanCLUEinputs(){
-  //Cleaning
+void ClueGaudiAlgorithmWrapper::cleanCLUEPoints(){
   x.clear();
   y.clear();
   phi.clear();
@@ -127,8 +128,6 @@ void ClueGaudiAlgorithmWrapper::fillFinalClusters(std::vector<clue::CLUECalorime
                                                   edm4hep::ClusterCollection* clusters){
 
   for(auto cl : clusterMap){
-
-    info() << cl.first << " with size " << cl.second.size() << endmsg;
 
     // Outliers should not create a cluster
     if(cl.first == -1){
@@ -146,9 +145,8 @@ void ClueGaudiAlgorithmWrapper::fillFinalClusters(std::vector<clue::CLUECalorime
       auto cluster = clusters->create();
       unsigned int maxEnergyIndex = 0;
       float maxEnergyValue = 0.f;
-      //info() << "  layer = " << clLay.first << endmsg;
+
       for(auto index : clLay.second){
-        //info() << "    " << index << endmsg;
 
         position.x += clue_hits[index].getPosition().x;
         position.y += clue_hits[index].getPosition().y;
@@ -183,7 +181,7 @@ void ClueGaudiAlgorithmWrapper::fillFinalClusters(std::vector<clue::CLUECalorime
     }
     clustersLayer.clear();
   }
-  info() << "Total num clusters = " << clusters->size() << endmsg;
+
   return;
 }
 
@@ -269,21 +267,19 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   // Output CLUE clusters
   edm4hep::ClusterCollection* finalClusters = clustersHandle.createAndPut();
 
+  // Output CLUE calo hits
   clue::CLUECalorimeterHitCollection clue_hit_coll_barrel;
   clue::CLUECalorimeterHitCollection clue_hit_coll_endcap;
 
   // Fill CLUECaloHits in the barrel
   if( EB_calo_coll->isValid() ) {
     for(const auto& calo_hit : (*EB_calo_coll) ){
-//      info() << "  calo cellID : " << calo_hit.getCellID()
-//             << ", layer : " << bf.get( calo_hit.getCellID(), "layer")  
-//             << ", energy : " << calo_hit.getEnergy() << endmsg; 
       clue_hit_coll_barrel.vect.push_back(clue::CLUECalorimeterHit(calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::barrel, bf.get( calo_hit.getCellID(), "layer")));
     }
   } else {
     throw std::runtime_error("Collection not found.");
   }
-  info() << EB_calo_coll->size() << " caloHits in " << EBCaloCollectionName << "." << endmsg;
+  debug() << EB_calo_coll->size() << " caloHits in " << EBCaloCollectionName << "." << endmsg;
 
   // Run CLUE in the barrel
   if(!clue_hit_coll_barrel.vect.empty()){
@@ -294,7 +290,7 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
     clue_hit_coll.vect.insert(clue_hit_coll.vect.end(), clue_hit_coll_barrel.vect.begin(), clue_hit_coll_barrel.vect.end());
 
     fillFinalClusters(clue_hit_coll_barrel.vect, clueClustersBarrel, finalClusters);
-    info() << "Saved " << finalClusters->size() << " clusters in " << EBCaloCollectionName << endmsg;
+    debug() << "Saved " << finalClusters->size() << " clusters using " << EBCaloCollectionName << endmsg;
 
   }
 
@@ -305,10 +301,6 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   // Fill CLUECaloHits in the endcap
   if( EE_calo_coll->isValid() ) {
     for(const auto& calo_hit : (*EE_calo_coll) ){
-//      info() << "  calo cellID : " << calo_hit.getCellID()
-//             << ", side : " << bf.get( calo_hit.getCellID(), "side")  
-//             << ", layer : " << bf.get( calo_hit.getCellID(), "layer")  
-//             << ", energy : " << calo_hit.getEnergy() << endmsg; 
       if(bf.get( calo_hit.getCellID(), "side") < 0){
         clue_hit_coll_endcap.vect.push_back(clue::CLUECalorimeterHit(calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::endcap, bf.get( calo_hit.getCellID(), "layer")));
       } else { 
@@ -318,7 +310,7 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   } else {
     throw std::runtime_error("Collection not found.");
   }
-  info() << EE_calo_coll->size() << " caloHits in " << EECaloCollectionName << "." << endmsg;
+  debug() << EE_calo_coll->size() << " caloHits in " << EECaloCollectionName << "." << endmsg;
 
   // Run CLUE in the endcap
   if(!clue_hit_coll_endcap.vect.empty()){
@@ -328,37 +320,34 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
     clue_hit_coll.vect.insert(clue_hit_coll.vect.end(), clue_hit_coll_endcap.vect.begin(), clue_hit_coll_endcap.vect.end());
 
     fillFinalClusters(clue_hit_coll_endcap.vect, clueClustersEndcap, finalClusters);
-//    info() << "Saved " << finalClusters->size() << " clusters in " << EECaloCollectionName << endmsg;
+    debug() << "Saved " << finalClusters->size() << " clusters using " << EECaloCollectionName << endmsg;
 
   }
 
-  debug() << clue_hit_coll.vect.size() << " caloHits in total. " << endmsg;
-  debug() << finalClusters->size() << " clusters in total." << endmsg;
-
-  auto pCHV = std::make_unique<clue::CLUECalorimeterHitCollection>(clue_hit_coll);
-  const StatusCode scStatusV = eventSvc()->registerObject("/Event/CLUECalorimeterHitCollection", pCHV.release());
-
-  // Add cellID to clusters
+  // Add cellID to CLUE clusters
   auto& clusters_md = m_podioDataSvc->getProvider().getCollectionMetaData(finalClusters->getID());
   clusters_md.setValue("CellIDEncodingString", cellIDstr);
+  info() << "Saved " << finalClusters->size() << " CLUE clusters in total." << endmsg;
 
-  // Save clusters as calo hits
+  // Save CLUE calo hits
+  auto pCHV = std::make_unique<clue::CLUECalorimeterHitCollection>(clue_hit_coll);
+  const StatusCode scStatusV = eventSvc()->registerObject("/Event/CLUECalorimeterHitCollection", pCHV.release());
+  info() << "Saved " << clue_hit_coll.vect.size() << " CLUE calo hits in total. " << endmsg;
+
+  // Save clusters as calo hits and add cellID to them
   edm4hep::CalorimeterHitCollection* finalCaloHits = caloHitsHandle.createAndPut();
   transformClustersInCaloHits(finalClusters, finalCaloHits);
-  debug() << "Saved " << finalCaloHits->size() << " clusters as calo hits" << endmsg;
-
-  // Add cellID to calohits
   auto& calohits_md = m_podioDataSvc->getProvider().getCollectionMetaData(finalCaloHits->getID());
   calohits_md.setValue("CellIDEncodingString", cellIDstr);
+  info() << "Saved " << finalCaloHits->size() << " clusters as calo hits" << endmsg;
 
-  //Cleaning
+  // Cleaning
   clue_hit_coll.vect.clear();
-  cleanCLUEinputs();
+  cleanCLUEPoints();
  
   return StatusCode::SUCCESS;
 }
 
 StatusCode ClueGaudiAlgorithmWrapper::finalize() {
-  debug() << "ClueGaudiAlgorithmWrapper::finalize()" << endmsg ;
   return Algorithm::finalize();
 }
