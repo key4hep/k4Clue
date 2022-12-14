@@ -7,9 +7,7 @@
 #include <cstdint>
 
 #include "GPUVecArrayCupla.h"
-#include "LayerTilesConstants.h"
-#include "CLICdetEndcapLayerTilesConstants.h"
-
+#include "LayerTiles.h"
 
 #if !defined(ALPAKA_ACC_GPU_CUDA_ENABLED) && !defined(ALPAKA_ACC_GPU_HIP_ENABLED)
 struct int4
@@ -18,11 +16,11 @@ struct int4
 };
 #endif
 
-template <typename Acc, typename T>
+template <typename Acc, typename TILES>
 class LayerTilesCupla_T {
 
   public:
-    using GPUVect = GPUCupla::VecArray<int, T::maxTileDepth>;
+    using GPUVect = GPUCupla::VecArray<int, TILES::constants_type_t::maxTileDepth>;
 
     // constructor
     LayerTilesCupla_T(const Acc & acc){acc_=acc;};
@@ -41,25 +39,25 @@ class LayerTilesCupla_T {
     }
 
     ALPAKA_FN_HOST_ACC int getXBin(float x) const {
-      int xBin = (x-T::minX)*T::rX;
-      xBin = (xBin<T::nColumns ? xBin:T::nColumns-1);
+      int xBin = (x-TILES::constants_type_t::minX)*TILES::constants_type_t::rX;
+      xBin = (xBin<TILES::constants_type_t::nColumns ? xBin:TILES::constants_type_t::nColumns-1);
       xBin = (xBin>0 ? xBin:0);
       return xBin;
     }
 
     ALPAKA_FN_HOST_ACC int  getYBin(float y) const {
-      int yBin = (y-T::minY)*T::rY;
-      yBin = (yBin<T::nRows ? yBin:T::nRows-1);
+      int yBin = (y-TILES::constants_type_t::minY)*TILES::constants_type_t::rY;
+      yBin = (yBin<TILES::constants_type_t::nRows ? yBin:TILES::constants_type_t::nRows-1);
       yBin = (yBin>0 ? yBin:0);;
       return yBin;
     }
 
     ALPAKA_FN_HOST_ACC int getGlobalBin(float x, float y) const{
-      return getXBin(x) + getYBin(y)*T::nColumns;
+      return getXBin(x) + getYBin(y)*TILES::constants_type_t::nColumns;
     }
 
     ALPAKA_FN_HOST_ACC int getGlobalBinByBin(int xBin, int yBin) const {
-      return xBin + yBin*T::nColumns;
+      return xBin + yBin*TILES::constants_type_t::nColumns;
     }
 
     ALPAKA_FN_HOST_ACC int4 searchBox(float xMin, float xMax, float yMin, float yMax){
@@ -75,7 +73,7 @@ class LayerTilesCupla_T {
     }
 
   private:
-    GPUCupla::VecArray<GPUCupla::VecArray<int, T::maxTileDepth>, T::nColumns * T::nRows > layerTiles_;
+    GPUCupla::VecArray<GPUCupla::VecArray<int, TILES::constants_type_t::maxTileDepth>, TILES::constants_type_t::nColumns * TILES::constants_type_t::nRows > layerTiles_;
     const Acc & acc_;
 };
 

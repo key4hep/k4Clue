@@ -17,6 +17,8 @@ template <typename T>
 class LayerTiles_T {
 
   public:
+    typedef T type;
+
     LayerTiles_T(){
       layerTiles_.resize(T::nColumns * T::nRows);
     }
@@ -119,9 +121,40 @@ class LayerTiles_T {
 
 };
 
-using LayerTiles = LayerTiles_T<LayerTilesConstants>;
-using CLICdetEndcapLayerTiles = LayerTiles_T<CLICdetEndcapLayerTilesConstants>;
-using CLICdetBarrelLayerTiles = LayerTiles_T<CLICdetBarrelLayerTilesConstants>;
-using CLDEndcapLayerTiles = LayerTiles_T<CLDEndcapLayerTilesConstants>;
+namespace clue {
+
+  using LayerTile = LayerTiles_T<LayerTilesConstants>;
+  using Tiles = std::array<LayerTile, LayerTilesConstants::nLayers>;
+
+  using CLICdetEndcapLayerTile = LayerTiles_T<CLICdetEndcapLayerTilesConstants>;
+  using CLICdetEndcapTiles = std::array<CLICdetEndcapLayerTile, CLICdetEndcapLayerTilesConstants::nLayers>;
+
+  using CLICdetBarrelLayerTile = LayerTiles_T<CLICdetBarrelLayerTilesConstants>;
+  using CLICdetBarrelTiles = std::array<CLICdetBarrelLayerTile, CLICdetBarrelLayerTilesConstants::nLayers>;
+
+  using CLDEndcapLayerTile = LayerTiles_T<CLDEndcapLayerTilesConstants>;
+  using CLDEndcapTiles = std::array<CLDEndcapLayerTile, CLDEndcapLayerTilesConstants::nLayers>;
+
+} // end clue namespace
+
+template <typename T>
+class GenericTile {
+  public:
+    // value_type_t is the type of the type of the array used by the incoming <T> type.
+    using constants_type_t = typename T::value_type::type;
+    // This class represents a generic collection of Tiles. The additional index
+    // numbering is not handled internally. It is the user's responsibility to
+    // properly use and consistently access it here.
+    const auto& operator[](int index) const { return tiles_[index]; }
+    void fill(int index, float x, float y, float phi, unsigned int objectId) { tiles_[index].fill(x, y, phi, objectId); }
+  
+  private:
+    T tiles_;
+};
+
+using LayerTiles = GenericTile<clue::Tiles>;
+using CLICdetEndcapLayerTiles = GenericTile<clue::CLICdetEndcapTiles>;
+using CLICdetBarrelLayerTiles = GenericTile<clue::CLICdetBarrelTiles>;
+using CLDEndcapLayerTiles = GenericTile<clue::CLDEndcapTiles>;
 
 #endif //LayerTiles_h

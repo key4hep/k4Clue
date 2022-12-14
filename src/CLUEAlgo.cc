@@ -1,8 +1,9 @@
 #include "CLUEAlgo.h"
 
-template <typename TILE_CONST>
-void CLUEAlgo_T<TILE_CONST>::makeClusters(){
-  std::array<LayerTiles_T<TILE_CONST>, TILE_CONST::nLayers> allLayerTiles;
+template <typename TILES>
+void CLUEAlgo_T<TILES>::makeClusters(){
+
+  TILES allLayerTiles;
 
   // start clustering
   auto start = std::chrono::high_resolution_clock::now();
@@ -28,10 +29,11 @@ void CLUEAlgo_T<TILE_CONST>::makeClusters(){
     std::cout << "--- calculateDistanceToHigher: " << elapsed.count() *1000 << " ms\n";
 
   findAndAssignClusters();  
+
 }
 
-template <typename TILE_CONST>
-std::map<int, std::vector<int> > CLUEAlgo_T<TILE_CONST>::getClusters(){
+template <typename TILES>
+std::map<int, std::vector<int> > CLUEAlgo_T<TILES>::getClusters(){
   // cluster all points with same clusterId
   std::map<int, std::vector<int> > clusters; 
   for(unsigned i = 0; i < points_.n; i++) {
@@ -40,28 +42,28 @@ std::map<int, std::vector<int> > CLUEAlgo_T<TILE_CONST>::getClusters(){
   return clusters;
 }
 
-template <typename TILE_CONST>
-void CLUEAlgo_T<TILE_CONST>::prepareDataStructures( std::array<LayerTiles_T<TILE_CONST>, TILE_CONST::nLayers> & allLayerTiles ){
+template <typename TILES>
+void CLUEAlgo_T<TILES>::prepareDataStructures( TILES & allLayerTiles ){
   for (int i=0; i<points_.n; i++){
     // push index of points into tiles
-    allLayerTiles[points_.layer[i]].fill( points_.x[i], points_.y[i], points_.phi[i], i);
+    allLayerTiles.fill( points_.layer[i], points_.x[i], points_.y[i], points_.phi[i], i );
   }
 }
 
-template <typename TILE_CONST>
-void CLUEAlgo_T<TILE_CONST>::calculateLocalDensity( std::array<LayerTiles_T<TILE_CONST>, TILE_CONST::nLayers> & allLayerTiles ){
+template <typename TILES>
+void CLUEAlgo_T<TILES>::calculateLocalDensity( TILES & allLayerTiles ){
 
   std::array<int,4> search_box = {0, 0, 0, 0};
 
   // loop over all points
   for(unsigned i = 0; i < points_.n; i++) {
-    LayerTiles_T<TILE_CONST>& lt = allLayerTiles[points_.layer[i]];
+    auto lt = allLayerTiles[points_.layer[i]];
     float ri = points_.x[i]/points_.phi[i];
 
     // get search box
     search_box = lt.searchBox(points_.x[i]-dc_, points_.x[i]+dc_, points_.y[i]-dc_, points_.y[i]+dc_);
 
-    if(!TILE_CONST::endcap){
+    if(!TILES::constants_type_t::endcap){
       float dc_phi = dc_/ri;
       search_box = lt.searchBoxPhiZ(points_.phi[i]-dc_phi, points_.phi[i]+dc_phi, points_.y[i]-dc_, points_.y[i]+dc_);
     }
@@ -72,8 +74,8 @@ void CLUEAlgo_T<TILE_CONST>::calculateLocalDensity( std::array<LayerTiles_T<TILE
   
         // get the id of this bin
         int binId = lt.getGlobalBinByBin(xBin,yBin);
-        if(!TILE_CONST::endcap){
-          int phi = (xBin % TILE_CONST::nColumnsPhi);
+        if(!TILES::constants_type_t::endcap){
+          int phi = (xBin % TILES::constants_type_t::nColumnsPhi);
           binId = lt.getGlobalBinByBinPhi(phi, yBin);
         }
         // get the size of this bin
@@ -84,7 +86,7 @@ void CLUEAlgo_T<TILE_CONST>::calculateLocalDensity( std::array<LayerTiles_T<TILE
           int j = lt[binId][binIter];
           // query N_{dc_}(i)
           float dist_ij = distance(i, j);
-          if(!TILE_CONST::endcap){
+          if(!TILES::constants_type_t::endcap){
             dist_ij = distance(i, j, true, ri);
           }
           if(dist_ij <= dc_) {
@@ -95,11 +97,13 @@ void CLUEAlgo_T<TILE_CONST>::calculateLocalDensity( std::array<LayerTiles_T<TILE
       } 
     } // end of loop over bins in search box
   } // end of loop over points
+
 }
 
 
-template <typename TILE_CONST>
-void CLUEAlgo_T<TILE_CONST>::calculateDistanceToHigher( std::array<LayerTiles_T<TILE_CONST>, TILE_CONST::nLayers> & allLayerTiles ){
+template <typename TILES>
+void CLUEAlgo_T<TILES>::calculateDistanceToHigher( TILES & allLayerTiles ){
+
   // loop over all points
   float dm = outlierDeltaFactor_ * dc_;
   for(unsigned i = 0; i < points_.n; i++) {
@@ -112,9 +116,9 @@ void CLUEAlgo_T<TILE_CONST>::calculateDistanceToHigher( std::array<LayerTiles_T<
     float rho_i = points_.rho[i];
 
     //get search box
-    LayerTiles_T<TILE_CONST>& lt = allLayerTiles[points_.layer[i]];
+    auto lt = allLayerTiles[points_.layer[i]];
     std::array<int,4> search_box = lt.searchBox(xi-dm, xi+dm, yi-dm, yi+dm);
-    if(!TILE_CONST::endcap){
+    if(!TILES::constants_type_t::endcap){
       float dm_phi = dm/ri;
       search_box = lt.searchBoxPhiZ(points_.phi[i]-dm_phi, points_.phi[i]+dm_phi, points_.y[i]-dm, points_.y[i]+dm);
     }
@@ -125,8 +129,8 @@ void CLUEAlgo_T<TILE_CONST>::calculateDistanceToHigher( std::array<LayerTiles_T<
 
         // get the id of this bin
         int binId = lt.getGlobalBinByBin(xBin,yBin);
-        if(!TILE_CONST::endcap){
-          int phi = (xBin % TILE_CONST::nColumnsPhi);
+        if(!TILES::constants_type_t::endcap){
+          int phi = (xBin % TILES::constants_type_t::nColumnsPhi);
           binId = lt.getGlobalBinByBinPhi(phi, yBin);
          }
         // get the size of this bin
@@ -140,7 +144,7 @@ void CLUEAlgo_T<TILE_CONST>::calculateDistanceToHigher( std::array<LayerTiles_T<
           // in the rare case where rho is the same, use detid
           foundHigher = foundHigher || ((points_.rho[j] == rho_i) && (j>i) );
           float dist_ij = distance(i, j);
-          if(!TILE_CONST::endcap){
+          if(!TILES::constants_type_t::endcap){
             dist_ij = distance(i, j, true, ri);
           }
           if(foundHigher && dist_ij <= dm) { // definition of N'_{dm}(i)
@@ -158,10 +162,12 @@ void CLUEAlgo_T<TILE_CONST>::calculateDistanceToHigher( std::array<LayerTiles_T<
     points_.delta[i] = delta_i;
     points_.nearestHigher[i] = nearestHigher_i;
   } // end of loop over points
+
 }
 
-template <typename TILE_CONST>
-void CLUEAlgo_T<TILE_CONST>::findAndAssignClusters(){
+template <typename TILES>
+void CLUEAlgo_T<TILES>::findAndAssignClusters(){
+
   auto start = std::chrono::high_resolution_clock::now();
 
   std::map<int,int> nClustersPerLayer;
@@ -224,8 +230,8 @@ void CLUEAlgo_T<TILE_CONST>::findAndAssignClusters(){
 
 }
 
-template <typename TILE_CONST>
-inline float CLUEAlgo_T<TILE_CONST>::distance(int i, int j, bool isPhi, float r ) const {
+template <typename TILES>
+inline float CLUEAlgo_T<TILES>::distance(int i, int j, bool isPhi, float r ) const {
 
   // 2-d distance on the layer
   if(points_.layer[i] == points_.layer[j] ) {
@@ -245,7 +251,7 @@ inline float CLUEAlgo_T<TILE_CONST>::distance(int i, int j, bool isPhi, float r 
 }
 
 // explicit template instantiation
-template class CLUEAlgo_T<LayerTilesConstants>;
-template class CLUEAlgo_T<CLICdetEndcapLayerTilesConstants>;
-template class CLUEAlgo_T<CLICdetBarrelLayerTilesConstants>;
-template class CLUEAlgo_T<CLDEndcapLayerTilesConstants>;
+template class CLUEAlgo_T<LayerTiles>;
+template class CLUEAlgo_T<CLICdetEndcapLayerTiles>;
+template class CLUEAlgo_T<CLICdetBarrelLayerTiles>;
+template class CLUEAlgo_T<CLDEndcapLayerTiles>;

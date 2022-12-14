@@ -17,6 +17,8 @@ class LayerTilesGPU_T {
 
   public:
 
+    typedef T type;
+
     // constructor
     LayerTilesGPU_T(){};
 
@@ -90,6 +92,23 @@ class LayerTilesGPU_T {
     GPU::VecArray<GPU::VecArray<int, T::maxTileDepth>, T::nColumns * T::nRows > layerTiles_;
 };
 
-using LayerTilesGPU = LayerTilesGPU_T<LayerTilesConstants>;
+namespace clue {
+
+  using LayerTileGPU = LayerTilesGPU_T<LayerTilesConstants>;
+  using TilesGPU = std::array<LayerTileGPU, LayerTilesConstants::nLayers>;
+
+} // end clue namespace
+
+template <typename T>
+class GenericTileGPU {
+  public:
+    // value_type_t is the type of the type of the array used by the incoming <T> type.
+    using constants_type_t = typename T::value_type::type;
+
+  private:
+    T tiles_;
+};
+
+using LayerTilesGPU = GenericTileGPU<clue::TilesGPU>;
 
 #endif

@@ -44,12 +44,12 @@ struct PointsPtr {
   int *isSeed;
 };
 
-template<typename Acc, typename TILE_CONST>
-class CLUEAlgoCuplaT : public CLUEAlgo_T<TILE_CONST> {
+template<typename Acc, typename TILE>
+class CLUEAlgoCuplaT : public CLUEAlgo_T<TILE> {
 
   public:
     CLUEAlgoCuplaT(float dc, float rhoc, float outlierDeltaFactor, bool verbose)
-      : CLUEAlgo_T<TILE_CONST>(dc, rhoc, outlierDeltaFactor, verbose)
+      : CLUEAlgo_T<TILE>(dc, rhoc, outlierDeltaFactor, verbose)
       {
       init_device();
     }
@@ -63,7 +63,7 @@ class CLUEAlgoCuplaT : public CLUEAlgo_T<TILE_CONST> {
   private:
 
     PointsPtr d_points;
-    LayerTilesCupla_T<Acc, TILE_CONST> *d_hist;
+    LayerTilesCupla_T<Acc, TILE> *d_hist;
     GPUCupla::VecArray<int,maxNSeedsCupla> *d_seeds;
     GPUCupla::VecArray<int,maxNFollowersCupla> *d_followers;
 
@@ -81,7 +81,7 @@ class CLUEAlgoCuplaT : public CLUEAlgo_T<TILE_CONST> {
       cudaMalloc((void**)&d_points.clusterIndex, sizeof(int)*reserve);
       cudaMalloc((void**)&d_points.isSeed, sizeof(int)*reserve);
       // algorithm internal variables
-      cudaMalloc((void**)&d_hist, sizeof(LayerTilesCupla_T<Acc, TILE_CONST>) * TILE_CONST::nLayers);
+      cudaMalloc((void**)&d_hist, sizeof(LayerTilesCupla_T<Acc, TILE>) * TILE::constants_type_t::nLayers);
       cudaMalloc((void**)&d_seeds, sizeof(GPUCupla::VecArray<int,maxNSeedsCupla>) );
       cudaMalloc((void**)&d_followers, sizeof(GPUCupla::VecArray<int,maxNFollowersCupla>)*reserve);
     }
@@ -106,42 +106,42 @@ class CLUEAlgoCuplaT : public CLUEAlgo_T<TILE_CONST> {
 
     void copy_todevice(){
       // input variables
-      cudaMemcpy(d_points.x, CLUEAlgo_T<TILE_CONST>::points_.x.data(), sizeof(float)*CLUEAlgo_T<TILE_CONST>::points_.n, cudaMemcpyHostToDevice);
-      cudaMemcpy(d_points.y, CLUEAlgo_T<TILE_CONST>::points_.y.data(), sizeof(float)*CLUEAlgo_T<TILE_CONST>::points_.n, cudaMemcpyHostToDevice);
-      cudaMemcpy(d_points.layer, CLUEAlgo_T<TILE_CONST>::points_.layer.data(), sizeof(int)*CLUEAlgo_T<TILE_CONST>::points_.n, cudaMemcpyHostToDevice);
-      cudaMemcpy(d_points.weight, CLUEAlgo_T<TILE_CONST>::points_.weight.data(), sizeof(float)*CLUEAlgo_T<TILE_CONST>::points_.n, cudaMemcpyHostToDevice);
+      cudaMemcpy(d_points.x, CLUEAlgo_T<TILE>::points_.x.data(), sizeof(float)*CLUEAlgo_T<TILE>::points_.n, cudaMemcpyHostToDevice);
+      cudaMemcpy(d_points.y, CLUEAlgo_T<TILE>::points_.y.data(), sizeof(float)*CLUEAlgo_T<TILE>::points_.n, cudaMemcpyHostToDevice);
+      cudaMemcpy(d_points.layer, CLUEAlgo_T<TILE>::points_.layer.data(), sizeof(int)*CLUEAlgo_T<TILE>::points_.n, cudaMemcpyHostToDevice);
+      cudaMemcpy(d_points.weight, CLUEAlgo_T<TILE>::points_.weight.data(), sizeof(float)*CLUEAlgo_T<TILE>::points_.n, cudaMemcpyHostToDevice);
     }
 
     void clear_set(){
       // result variables
-      cudaMemset(d_points.rho, 0x00, sizeof(float)*CLUEAlgo_T<TILE_CONST>::points_.n);
-      cudaMemset(d_points.delta, 0x00, sizeof(float)*CLUEAlgo_T<TILE_CONST>::points_.n);
-      cudaMemset(d_points.nearestHigher, 0x00, sizeof(int)*CLUEAlgo_T<TILE_CONST>::points_.n);
-      cudaMemset(d_points.clusterIndex, 0x00, sizeof(int)*CLUEAlgo_T<TILE_CONST>::points_.n);
-      cudaMemset(d_points.isSeed, 0x00, sizeof(int)*CLUEAlgo_T<TILE_CONST>::points_.n);
+      cudaMemset(d_points.rho, 0x00, sizeof(float)*CLUEAlgo_T<TILE>::points_.n);
+      cudaMemset(d_points.delta, 0x00, sizeof(float)*CLUEAlgo_T<TILE>::points_.n);
+      cudaMemset(d_points.nearestHigher, 0x00, sizeof(int)*CLUEAlgo_T<TILE>::points_.n);
+      cudaMemset(d_points.clusterIndex, 0x00, sizeof(int)*CLUEAlgo_T<TILE>::points_.n);
+      cudaMemset(d_points.isSeed, 0x00, sizeof(int)*CLUEAlgo_T<TILE>::points_.n);
       // algorithm internal variables
-      cudaMemset(d_hist, 0x00, sizeof(LayerTilesCupla_T<Acc, TILE_CONST>) * TILE_CONST::nLayers);
+      cudaMemset(d_hist, 0x00, sizeof(LayerTilesCupla_T<Acc, TILE>) * TILE::constants_type_t::nLayers);
       cudaMemset(d_seeds, 0x00, sizeof(GPUCupla::VecArray<int,maxNSeedsCupla>));
-      cudaMemset(d_followers, 0x00, sizeof(GPUCupla::VecArray<int,maxNFollowersCupla>)*CLUEAlgo_T<TILE_CONST>::points_.n);
+      cudaMemset(d_followers, 0x00, sizeof(GPUCupla::VecArray<int,maxNFollowersCupla>)*CLUEAlgo_T<TILE>::points_.n);
     }
 
     void copy_tohost(){
       // result variables
-      cudaMemcpy(CLUEAlgo_T<TILE_CONST>::points_.clusterIndex.data(), d_points.clusterIndex, sizeof(int)*CLUEAlgo_T<TILE_CONST>::points_.n, cudaMemcpyDeviceToHost);
-      if (CLUEAlgo_T<TILE_CONST>::verbose_) {
+      cudaMemcpy(CLUEAlgo_T<TILE>::points_.clusterIndex.data(), d_points.clusterIndex, sizeof(int)*CLUEAlgo_T<TILE>::points_.n, cudaMemcpyDeviceToHost);
+      if (CLUEAlgo_T<TILE>::verbose_) {
         // other variables, copy only when verbose_==True
-        cudaMemcpy(CLUEAlgo_T<TILE_CONST>::points_.rho.data(), d_points.rho, sizeof(float)*CLUEAlgo_T<TILE_CONST>::points_.n, cudaMemcpyDeviceToHost);
-        cudaMemcpy(CLUEAlgo_T<TILE_CONST>::points_.delta.data(), d_points.delta, sizeof(float)*CLUEAlgo_T<TILE_CONST>::points_.n, cudaMemcpyDeviceToHost);
-        cudaMemcpy(CLUEAlgo_T<TILE_CONST>::points_.nearestHigher.data(), d_points.nearestHigher, sizeof(int)*CLUEAlgo_T<TILE_CONST>::points_.n, cudaMemcpyDeviceToHost);
-        cudaMemcpy(CLUEAlgo_T<TILE_CONST>::points_.isSeed.data(), d_points.isSeed, sizeof(int)*CLUEAlgo_T<TILE_CONST>::points_.n, cudaMemcpyDeviceToHost);
+        cudaMemcpy(CLUEAlgo_T<TILE>::points_.rho.data(), d_points.rho, sizeof(float)*CLUEAlgo_T<TILE>::points_.n, cudaMemcpyDeviceToHost);
+        cudaMemcpy(CLUEAlgo_T<TILE>::points_.delta.data(), d_points.delta, sizeof(float)*CLUEAlgo_T<TILE>::points_.n, cudaMemcpyDeviceToHost);
+        cudaMemcpy(CLUEAlgo_T<TILE>::points_.nearestHigher.data(), d_points.nearestHigher, sizeof(int)*CLUEAlgo_T<TILE>::points_.n, cudaMemcpyDeviceToHost);
+        cudaMemcpy(CLUEAlgo_T<TILE>::points_.isSeed.data(), d_points.isSeed, sizeof(int)*CLUEAlgo_T<TILE>::points_.n, cudaMemcpyDeviceToHost);
       }
     }
 };
 
 struct kernel_compute_histogram_opti {
-  template <typename T_Acc, typename TILE_CONST>
+  template <typename T_Acc, typename TILE>
   ALPAKA_FN_ACC
-  void operator()(T_Acc const &acc, LayerTilesCupla_T<T_Acc, TILE_CONST> *d_hist,
+  void operator()(T_Acc const &acc, LayerTilesCupla_T<T_Acc, TILE> *d_hist,
       PointsPtr d_points, int numberOfPoints) const {
 
     int32_t first = (threadIdx.x + blockIdx.x * blockDim.x) * elemDim.x;
@@ -155,9 +155,9 @@ struct kernel_compute_histogram_opti {
 };
 
 struct kernel_compute_histogram {
-  template <typename T_Acc, typename TILE_CONST>
+  template <typename T_Acc, typename TILE>
   ALPAKA_FN_ACC
-  void operator()(T_Acc const &acc, LayerTilesCupla_T<T_Acc, TILE_CONST> *d_hist,
+  void operator()(T_Acc const &acc, LayerTilesCupla_T<T_Acc, TILE> *d_hist,
       PointsPtr d_points, int numberOfPoints) const {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < numberOfPoints) {
@@ -168,9 +168,9 @@ struct kernel_compute_histogram {
 };
 
 struct kernel_compute_density {
-  template <typename T_Acc, typename TILE_CONST>
+  template <typename T_Acc, typename TILE>
     ALPAKA_FN_ACC
-    void operator()(T_Acc const &acc, LayerTilesCupla_T<T_Acc, TILE_CONST> *d_hist,
+    void operator()(T_Acc const &acc, LayerTilesCupla_T<T_Acc, TILE> *d_hist,
         PointsPtr d_points, float dc,
       int numberOfPoints) const {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -214,9 +214,9 @@ struct kernel_compute_density {
 };
 
 struct kernel_compute_distanceToHigher {
-  template <typename T_Acc, typename TILE_CONST>
+  template <typename T_Acc, typename TILE>
   ALPAKA_FN_ACC
-  void operator()(T_Acc const &acc, LayerTilesCupla_T<T_Acc, TILE_CONST> *d_hist,
+  void operator()(T_Acc const &acc, LayerTilesCupla_T<T_Acc, TILE> *d_hist,
 		  PointsPtr d_points,
 		  float outlierDeltaFactor,
 		  float dc,
@@ -356,8 +356,8 @@ struct kernel_assign_clusters {
   }
 };
 
-template<typename Acc, typename TILE_CONST>
-void CLUEAlgoCuplaT<Acc, TILE_CONST>::makeClusters() {
+template<typename Acc, typename TILE>
+void CLUEAlgoCuplaT<Acc, TILE>::makeClusters() {
 
   copy_todevice();
   clear_set();
@@ -376,12 +376,12 @@ void CLUEAlgoCuplaT<Acc, TILE_CONST>::makeClusters() {
   const dim3 blockSize_opti(4096, 1, 1);
 #endif
 
-  const dim3 gridSize(ceil(CLUEAlgo_T<TILE_CONST>::points_.n/ (float)blockSize.x), 1, 1);
-  const dim3 gridSize_opti(ceil(CLUEAlgo_T<TILE_CONST>::points_.n/ (float)blockSize_opti.x), 1, 1);
+  const dim3 gridSize(ceil(CLUEAlgo_T<TILE>::points_.n/ (float)blockSize.x), 1, 1);
+  const dim3 gridSize_opti(ceil(CLUEAlgo_T<TILE>::points_.n/ (float)blockSize_opti.x), 1, 1);
 
 #ifdef FOR_CUDA
   auto start = std::chrono::high_resolution_clock::now();
-  CUPLA_KERNEL(kernel_compute_histogram)(gridSize, blockSize, 0, 0)(d_hist, d_points, CLUEAlgo_T<TILE_CONST>::points_.n);
+  CUPLA_KERNEL(kernel_compute_histogram)(gridSize, blockSize, 0, 0)(d_hist, d_points, CLUEAlgo_T<TILE>::points_.n);
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
   std::cout << "--- prepareDataStructures:     " << elapsed.count() *1000 << " ms\n";
@@ -389,7 +389,7 @@ void CLUEAlgoCuplaT<Acc, TILE_CONST>::makeClusters() {
 
 #ifdef FOR_TBB
   auto start = std::chrono::high_resolution_clock::now();
-  CUPLA_KERNEL_OPTI(kernel_compute_histogram_opti)(gridSize_opti, blockSize_opti, 0, 0)(d_hist, d_points, CLUEAlgo_T<TILE_CONST>::points_.n);
+  CUPLA_KERNEL_OPTI(kernel_compute_histogram_opti)(gridSize_opti, blockSize_opti, 0, 0)(d_hist, d_points, CLUEAlgo_T<TILE>::points_.n);
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
   std::cout << "--- prepareDataStructures_opti:     " << elapsed.count() *1000 << " ms\n";
@@ -397,20 +397,20 @@ void CLUEAlgoCuplaT<Acc, TILE_CONST>::makeClusters() {
 
 
   start = std::chrono::high_resolution_clock::now();
-  CUPLA_KERNEL(kernel_compute_density)(gridSize, blockSize, 0, 0)(d_hist, d_points, CLUEAlgo_T<TILE_CONST>::dc_, CLUEAlgo_T<TILE_CONST>::points_.n);
+  CUPLA_KERNEL(kernel_compute_density)(gridSize, blockSize, 0, 0)(d_hist, d_points, CLUEAlgo_T<TILE>::dc_, CLUEAlgo_T<TILE>::points_.n);
   finish = std::chrono::high_resolution_clock::now();
   elapsed = finish - start;
   std::cout << "--- calculateDistanceToHigher: " << elapsed.count() *1000 << " ms\n";
 
 
   start = std::chrono::high_resolution_clock::now();
-  CUPLA_KERNEL(kernel_compute_distanceToHigher)(gridSize, blockSize, 0, 0)(d_hist, d_points, CLUEAlgo_T<TILE_CONST>::outlierDeltaFactor_, CLUEAlgo_T<TILE_CONST>::dc_, CLUEAlgo_T<TILE_CONST>::points_.n);
+  CUPLA_KERNEL(kernel_compute_distanceToHigher)(gridSize, blockSize, 0, 0)(d_hist, d_points, CLUEAlgo_T<TILE>::outlierDeltaFactor_, CLUEAlgo_T<TILE>::dc_, CLUEAlgo_T<TILE>::points_.n);
   finish = std::chrono::high_resolution_clock::now();
   elapsed = finish - start;
   std::cout << "--- calculateLocalDensity:     " << elapsed.count() *1000 << " ms\n";
 
   start = std::chrono::high_resolution_clock::now();
-  CUPLA_KERNEL(kernel_find_clusters)(gridSize, blockSize, 0, 0)(d_seeds, d_followers, d_points, CLUEAlgo_T<TILE_CONST>::outlierDeltaFactor_, CLUEAlgo_T<TILE_CONST>::dc_, CLUEAlgo_T<TILE_CONST>::rhoc_, CLUEAlgo_T<TILE_CONST>::points_.n);
+  CUPLA_KERNEL(kernel_find_clusters)(gridSize, blockSize, 0, 0)(d_seeds, d_followers, d_points, CLUEAlgo_T<TILE>::outlierDeltaFactor_, CLUEAlgo_T<TILE>::dc_, CLUEAlgo_T<TILE>::rhoc_, CLUEAlgo_T<TILE>::points_.n);
   finish = std::chrono::high_resolution_clock::now();
   elapsed = finish - start;
   std::cout << "--- findSeedAndFollowers:      " << elapsed.count() *1000 << " ms\n";
