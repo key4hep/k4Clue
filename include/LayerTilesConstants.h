@@ -11,7 +11,7 @@ struct LayerTilesConstants {
   static constexpr float minY =  -250.f;
   static constexpr float maxY =   250.f;
   static constexpr float tileSize = 5.f;
-  static constexpr float tileSizePhi = 0.01f;
+  static constexpr float tileSizePhi = 0.15f;
   static constexpr int nColumns = reco::ceil((maxX-minX)/tileSize);
   static constexpr int nColumnsPhi = reco::ceil(2. * M_PI / tileSizePhi);
   static constexpr int nRows    = reco::ceil((maxY-minY)/tileSize);

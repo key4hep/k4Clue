@@ -15,7 +15,7 @@
 #include "LayerTiles.h"
 #include "Points.h"
 
-template <typename TILE_CONST>
+template <typename TILES>
 class CLUEAlgo_T {
 
 public:
@@ -46,7 +46,7 @@ public:
           points_.phi.push_back(phi[i]);
         } else {
           // If the layer tile is declared as endcap, the phi info is not used
-          if(TILE_CONST::endcap){
+          if(TILES::constants_type_t::endcap){
             points_.phi.push_back(0.0);
           } else {
             std::cerr << "ERROR: phi info is not present but you are using a barrel LayerTile! " << std::endl;
@@ -68,25 +68,25 @@ public:
 
     // consistency checks
     auto maxLayer = *std::max_element(points_.layer.begin(), points_.layer.end()); 
-    if(maxLayer > TILE_CONST::nLayers){
+    if(maxLayer > TILES::constants_type_t::nLayers){
       std::cerr << "Max layer(" << maxLayer << ") is larger "
-                << "than the number of layers(" << TILE_CONST::nLayers << ") defined for the current detector" << std::endl;
+                << "than the number of layers(" << TILES::constants_type_t::nLayers << ") defined for the current detector" << std::endl;
       return 1;
     }
 
     auto minX = *std::min_element(points_.x.begin(), points_.x.end()); 
     auto maxX = *std::max_element(points_.x.begin(), points_.x.end()); 
-    if(maxX > TILE_CONST::maxX || minX < TILE_CONST::minX){
+    if(maxX > TILES::constants_type_t::maxX || minX < TILES::constants_type_t::minX){
       std::cout << "Min and/or max x element (" << minX << "," << maxX << ")"
-                << " are outside the boundaries defined for the current detector (" << TILE_CONST::minX << "," << TILE_CONST::maxX << ")" << std::endl;
+                << " are outside the boundaries defined for the current detector (" << TILES::constants_type_t::minX << "," << TILES::constants_type_t::maxX << ")" << std::endl;
       return 0;
     }
 
     auto minY = *std::min_element(points_.y.begin(), points_.y.end()); 
     auto maxY = *std::max_element(points_.y.begin(), points_.y.end()); 
-    if(maxY > TILE_CONST::maxY || minY < TILE_CONST::minY){
+    if(maxY > TILES::constants_type_t::maxY || minY < TILES::constants_type_t::minY){
       std::cout << "Min and/or max x element (" << minY << "," << maxY << ")"
-                << " are outside the boundaries defined for the current detector (" << TILE_CONST::minY << "," << TILE_CONST::maxY << ")" << std::endl;
+                << " are outside the boundaries defined for the current detector (" << TILES::constants_type_t::minY << "," << TILES::constants_type_t::maxY << ")" << std::endl;
       return 0;
     }
 
@@ -145,16 +145,16 @@ public:
         
 private:
   // private member methods
-  void prepareDataStructures(std::array<LayerTiles_T<TILE_CONST>, TILE_CONST::nLayers> & );
-  void calculateLocalDensity(std::array<LayerTiles_T<TILE_CONST>, TILE_CONST::nLayers> & );
-  void calculateDistanceToHigher(std::array<LayerTiles_T<TILE_CONST>, TILE_CONST::nLayers> & );
+  void prepareDataStructures(TILES & );
+  void calculateLocalDensity(TILES & );
+  void calculateDistanceToHigher(TILES & );
   void findAndAssignClusters();
   inline float distance(int i, int j, bool isPhi = false, float r = 0.0) const ;
 };
 
-using CLUEAlgo = CLUEAlgo_T<LayerTilesConstants>;
-using CLICdetEndcapCLUEAlgo = CLUEAlgo_T<CLICdetEndcapLayerTilesConstants>;
-using CLICdetBarrelCLUEAlgo = CLUEAlgo_T<CLICdetBarrelLayerTilesConstants>;
-using CLDEndcapCLUEAlgo = CLUEAlgo_T<CLDEndcapLayerTilesConstants>;
+using CLUEAlgo = CLUEAlgo_T<LayerTiles>;
+using CLICdetEndcapCLUEAlgo = CLUEAlgo_T<CLICdetEndcapLayerTiles>;
+using CLICdetBarrelCLUEAlgo = CLUEAlgo_T<CLICdetBarrelLayerTiles>;
+using CLDEndcapCLUEAlgo = CLUEAlgo_T<CLDEndcapLayerTiles>;
 
 #endif

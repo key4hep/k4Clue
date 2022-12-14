@@ -68,14 +68,14 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<
   // Run CLUE
   info() << "Running CLUEAlgo ... " << endmsg;
   if(isBarrel){
-    CLUEAlgo_T<CLICdetBarrelLayerTilesConstants> clueAlgo(dc, rhoc, outlierDeltaFactor, true);
+    CLICdetBarrelCLUEAlgo clueAlgo(dc, rhoc, outlierDeltaFactor, true);
     if(clueAlgo.setPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0], &phi[0]))
       throw error() << "Error in setting the clue points for the barrel." << endmsg;
     clueAlgo.makeClusters();
     clueClusters = clueAlgo.getClusters();
     cluePoints = clueAlgo.getPoints();
   } else {
-    CLUEAlgo_T<CLICdetEndcapLayerTilesConstants> clueAlgo(dc, rhoc, outlierDeltaFactor, true);
+    CLICdetEndcapCLUEAlgo clueAlgo(dc, rhoc, outlierDeltaFactor, true);
     if(clueAlgo.setPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0], &phi[0]))
       throw error() << "Error in setting the clue points for the endcap." << endmsg;
     clueAlgo.makeClusters();
