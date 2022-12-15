@@ -36,15 +36,30 @@ Include the new header in [LayerTiles.h](LayerTiles.h):
 ```c++
 #include "MyDetLayerTilesConstants.h"
 ```
+and create the layer tiles with the new constants at the end of the file:
+```c++
+namespace clue {
+
+  ...
+
+  using MyDetLayerTile = LayerTiles_T<MyDetLayerTilesConstants>;
+  using MyDetTiles = std::array<MyDetLayerTile, MyDetLayerTilesConstants::nLayers>;
+
+} // end clue namespace
+
+...
+
+using MyDetLayerTiles = GenericTile<clue::MyDetTiles>;
+```
 
 Include almost at the end of [CLUEAlgo.h](CLUEAlgo.h) the following line:
 ```c++
-using MyDetCLUEAlgo = CLUEAlgo_T<MyDetLayerTilesConstants>;
+using MyDetCLUEAlgo = CLUEAlgo_T<MyDetLayerTiles>;
 ```
 
 Explicit template instantiation at the end of [CLUEAlgo.cc](../src/CLUEAlgo.cc):
 ```c++
-template class CLUEAlgo_T<MyDetLayerTilesConstants>;
+template class CLUEAlgo_T<MyDetLayerTiles>;
 ```
 
 If you want to test it also on the GPU verison of CLUE, 
