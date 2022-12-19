@@ -26,7 +26,7 @@ __global__ void kernel_compute_histogram( TILES &d_hist,
 } //kernel
 
 template<typename TILES>
-__global__ void kernel_calculate_density( TILES *d_hist, 
+__global__ void kernel_calculate_density( TILES &d_hist, 
 					  PointsPtr d_points, 
 					  float dc,
 					  int numberOfPoints
@@ -40,20 +40,21 @@ __global__ void kernel_calculate_density( TILES *d_hist,
     float yi = d_points.y[i];
 
     // get search box 
-    int4 search_box = d_hist[layeri].searchBox(xi-dc, xi+dc, yi-dc, yi+dc);
+    auto lt = d_hist[layeri];
+    int4 search_box = lt.searchBox(xi-dc, xi+dc, yi-dc, yi+dc);
 
     // loop over bins in the search box
     for(int xBin = search_box.x; xBin < search_box.y+1; ++xBin) {
       for(int yBin = search_box.z; yBin < search_box.w+1; ++yBin) {
 
         // get the id of this bin
-        int binId = d_hist[layeri].getGlobalBinByBin(xBin,yBin);
+        int binId = lt.getGlobalBinByBin(xBin,yBin);
         // get the size of this bin
-        int binSize  = d_hist[layeri][binId].size();
+        int binSize  = lt[binId].size();
 
         // interate inside this bin
         for (int binIter = 0; binIter < binSize; binIter++) {
-          int j = d_hist[layeri][binId][binIter];
+          int j = lt[binId][binIter];
           // query N_{dc_}(i)
           float xj = d_points.x[j];
           float yj = d_points.y[j];
@@ -70,7 +71,7 @@ __global__ void kernel_calculate_density( TILES *d_hist,
 } //kernel
 
 template<typename TILES>
-__global__ void kernel_calculate_distanceToHigher(TILES* d_hist, 
+__global__ void kernel_calculate_distanceToHigher(TILES& d_hist, 
 						  PointsPtr d_points,
 						  float outlierDeltaFactor,
 						  float dc,
@@ -91,19 +92,20 @@ __global__ void kernel_calculate_distanceToHigher(TILES* d_hist,
     float rhoi = d_points.rho[i];
 
     // get search box 
-    int4 search_box = d_hist[layeri].searchBox(xi-dm, xi+dm, yi-dm, yi+dm);
+    auto lt = d_hist[layeri];
+    int4 search_box = lt.searchBox(xi-dm, xi+dm, yi-dm, yi+dm);
 
     // loop over all bins in the search box
     for(int xBin = search_box.x; xBin < search_box.y+1; ++xBin) {
       for(int yBin = search_box.z; yBin < search_box.w+1; ++yBin) {
         // get the id of this bin
-        int binId = d_hist[layeri].getGlobalBinByBin(xBin,yBin);
+        int binId = lt.getGlobalBinByBin(xBin,yBin);
         // get the size of this bin
-        int binSize  = d_hist[layeri][binId].size();
+        int binSize  = lt[binId].size();
 
         // interate inside this bin
         for (int binIter = 0; binIter < binSize; binIter++) {
-          int j = d_hist[layeri][binId][binIter];
+          int j = lt[binId][binIter];
           // query N'_{dm}(i)
           float xj = d_points.x[j];
           float yj = d_points.y[j];
@@ -214,8 +216,8 @@ void CLUEAlgoGPU_T<TILES>::makeClusters( ) {
   const dim3 blockSize(1024,1,1);
   const dim3 gridSize(ceil(CLUEAlgo_T<TILES>::points_.n/static_cast<float>(blockSize.x)),1,1);
   kernel_compute_histogram<<<gridSize,blockSize>>>(*d_hist, d_points, CLUEAlgo_T<TILES>::points_.n);
-  kernel_calculate_density<<<gridSize,blockSize>>>(d_hist, d_points, CLUEAlgo_T<TILES>::dc_, CLUEAlgo_T<TILES>::points_.n);
-  kernel_calculate_distanceToHigher<<<gridSize,blockSize>>>(d_hist, d_points,
+  kernel_calculate_density<<<gridSize,blockSize>>>(*d_hist, d_points, CLUEAlgo_T<TILES>::dc_, CLUEAlgo_T<TILES>::points_.n);
+  kernel_calculate_distanceToHigher<<<gridSize,blockSize>>>(*d_hist, d_points,
 							    CLUEAlgo_T<TILES>::outlierDeltaFactor_, CLUEAlgo_T<TILES>::dc_,
 							    CLUEAlgo_T<TILES>::points_.n);
   kernel_find_clusters<<<gridSize,blockSize>>>(d_seeds, d_followers, d_points,
