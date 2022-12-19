@@ -99,7 +99,7 @@ void mainRun( std::vector<float>& x, std::vector<float>& y, std::vector<int>& la
       clueAlgo.verboseResults(outputFileName, -1);
 #else
     std::cout << "Using CLUEAlgoCupla ... " << std::endl;
-    CLUEAlgoCuplaT<cupla::Acc, LayerTiles> clueAlgo(dc, rhoc, outlierDeltaFactor,
+    CLUEAlgoCupla_T<cupla::Acc, LayerTiles> clueAlgo(dc, rhoc, outlierDeltaFactor,
 				       verbose);
     clueAlgo.setPoints(x.size(), &x[0],&y[0],&layer[0],&weight[0]);
     // measure excution time of makeClusters
