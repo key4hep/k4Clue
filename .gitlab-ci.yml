@@ -13,7 +13,7 @@ compile_and_test:
           - merge_requests
           - schedules
     script:
-        - source /cvmfs/sw.hsf.org/key4hep/setup.sh
+        - source /cvmfs/sw-nightlies.hsf.org/key4hep/setup.sh
         - source /cvmfs/sft.cern.ch/lcg/contrib/cuda/11.4/x86_64-centos8/setup.sh
         - git submodule init; git submodule update
         - mkdir build; cd build
