@@ -45,15 +45,15 @@ struct PointsPtr {
 };
 
 template<typename Acc, typename TILE>
-class CLUEAlgoCuplaT : public CLUEAlgo_T<TILE> {
+class CLUEAlgoCupla_T : public CLUEAlgo_T<TILE> {
 
   public:
-    CLUEAlgoCuplaT(float dc, float rhoc, float outlierDeltaFactor, bool verbose)
+    CLUEAlgoCupla_T(float dc, float rhoc, float outlierDeltaFactor, bool verbose)
       : CLUEAlgo_T<TILE>(dc, rhoc, outlierDeltaFactor, verbose)
       {
       init_device();
     }
-    ~CLUEAlgoCuplaT(){
+    ~CLUEAlgoCupla_T(){
       free_device();
     }
 
@@ -357,7 +357,7 @@ struct kernel_assign_clusters {
 };
 
 template<typename Acc, typename TILE>
-void CLUEAlgoCuplaT<Acc, TILE>::makeClusters() {
+void CLUEAlgoCupla_T<Acc, TILE>::makeClusters() {
 
   copy_todevice();
   clear_set();

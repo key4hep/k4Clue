@@ -104,6 +104,11 @@ class GenericTileGPU {
   public:
     // value_type_t is the type of the type of the array used by the incoming <T> type.
     using constants_type_t = typename T::value_type::type;
+    // This class represents a generic collection of Tiles. The additional index
+    // numbering is not handled internally. It is the user's responsibility to
+    // properly use and consistently access it here.
+    const auto& operator[](int index) const { return tiles_[index]; }
+    void fill(int index, float x, float y, float phi, unsigned int objectId) { tiles_[index].fill(x, y, phi, objectId); }
 
   private:
     T tiles_;
