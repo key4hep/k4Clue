@@ -28,6 +28,19 @@ k4run clue_gaudi_wrapper.py --EventDataSvc.input my_output.root
 
 In case you have changed something from the original repo and you have rebuild the package, you should use `source build/clueenv.sh` to make `k4run` aware of your new changes.
 
+## Simulation from the detector surface
+
+The `--enableGun` option in the `ddsim` command generates particle from the interaction vertex.
+
+To generate particle from the suface of the CLICdet ECAL, substitute the generation command with the following
+```bash
+ddsim --steeringFile clic_steer.py --compactFile $LCGEO/CLIC/compact/CLIC_o3_v14/CLIC_o3_v14.xml --enableG4GPS --runType "run" --macroFile  myGPS.mac --outputFile gps_gamma_10GeV_edm4hep.root
+```
+where `myGPS.mac` can be found in this folder.
+
+
+## Visualization
+
 If you want to visualise the output as event display using CED:
 ```bash
 cd ../..

@@ -1,0 +1,14 @@
+# Macro to generate particles right outside the CLICdet calorimeter
+/gps/particle gamma
+/gps/pos/type Surface
+/gps/pos/shape Cylinder
+/gps/pos/radius 1500 mm
+/gps/pos/halfz 2305 mm
+/gps/ang/surfnorm true
+/gps/ang/type user
+/gps/hist/type theta
+/gps/hist/point 0.0 0
+/gps/hist/point 3.13 0
+/gps/hist/point 3.14 1
+/gps/ene/mono 10 GeV
+/run/beamOn 10
