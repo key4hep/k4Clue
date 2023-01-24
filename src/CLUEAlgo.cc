@@ -117,22 +117,21 @@ void CLUEAlgo_T<TILES>::calculateDistanceToHigher( TILES & allLayerTiles ){
 
     //get search box
     auto lt = allLayerTiles[points_.layer[i]];
-    std::array<int,4> search_box = lt.searchBox(xi-dm, xi+dm, yi-dm, yi+dm);
-    if(!TILES::constants_type_t::endcap){
-      float dm_phi = dm/ri;
-      search_box = lt.searchBoxPhiZ(points_.phi[i]-dm_phi, points_.phi[i]+dm_phi, points_.y[i]-dm, points_.y[i]+dm);
-    }
- 
+    float dm_phi = dm/ri;
+    std::array<int,4> search_box = TILES::constants_type_t::endcap ? 
+     lt.searchBox(xi-dm, xi+dm, yi-dm, yi+dm):
+     lt.searchBoxPhiZ(points_.phi[i]-dm_phi, points_.phi[i]+dm_phi, points_.y[i]-dm, points_.y[i]+dm);
+
     // loop over all bins in the search box
     for(int xBin = search_box[0]; xBin < search_box[1]+1; ++xBin) {
       for(int yBin = search_box[2]; yBin < search_box[3]+1; ++yBin) {
 
         // get the id of this bin
-        int binId = lt.getGlobalBinByBin(xBin,yBin);
-        if(!TILES::constants_type_t::endcap){
-          int phi = (xBin % TILES::constants_type_t::nColumnsPhi);
-          binId = lt.getGlobalBinByBinPhi(phi, yBin);
-         }
+        int phi = (xBin % TILES::constants_type_t::nColumnsPhi);
+        int binId = TILES::constants_type_t::endcap ?
+         lt.getGlobalBinByBin(xBin,yBin):
+         lt.getGlobalBinByBinPhi(phi, yBin);
+
         // get the size of this bin
         int binSize = lt[binId].size();
 
@@ -143,10 +142,9 @@ void CLUEAlgo_T<TILES>::calculateDistanceToHigher( TILES & allLayerTiles ){
           bool foundHigher = (points_.rho[j] > rho_i);
           // in the rare case where rho is the same, use detid
           foundHigher = foundHigher || ((points_.rho[j] == rho_i) && (j>i) );
-          float dist_ij = distance(i, j);
-          if(!TILES::constants_type_t::endcap){
-            dist_ij = distance(i, j, true, ri);
-          }
+          float dist_ij = TILES::constants_type_t::endcap ?
+           dist_ij = distance(i, j):
+           dist_ij = distance(i, j, true, ri);;
           if(foundHigher && dist_ij <= dm) { // definition of N'_{dm}(i)
             // find the nearest point within N'_{dm}(i)
             if (dist_ij < delta_i) {
@@ -255,3 +253,4 @@ template class CLUEAlgo_T<LayerTiles>;
 template class CLUEAlgo_T<CLICdetEndcapLayerTiles>;
 template class CLUEAlgo_T<CLICdetBarrelLayerTiles>;
 template class CLUEAlgo_T<CLDEndcapLayerTiles>;
+template class CLUEAlgo_T<CLDBarrelLayerTiles>;

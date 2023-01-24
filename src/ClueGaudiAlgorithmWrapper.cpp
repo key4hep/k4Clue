@@ -2,7 +2,6 @@
 
 #include "IO_helper.h"
 #include "CLUEAlgo.h"
-#include "CLICdetBarrelLayerTilesConstants.h"
 
 // podio specific includes
 #include "DDSegmentation/BitFieldCoder.h"
@@ -68,14 +67,14 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<
   // Run CLUE
   info() << "Running CLUEAlgo ... " << endmsg;
   if(isBarrel){
-    CLICdetBarrelCLUEAlgo clueAlgo(dc, rhoc, outlierDeltaFactor, true);
+    CLDBarrelCLUEAlgo clueAlgo(dc, rhoc, outlierDeltaFactor, true);
     if(clueAlgo.setPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0], &phi[0]))
       throw error() << "Error in setting the clue points for the barrel." << endmsg;
     clueAlgo.makeClusters();
     clueClusters = clueAlgo.getClusters();
     cluePoints = clueAlgo.getPoints();
   } else {
-    CLICdetEndcapCLUEAlgo clueAlgo(dc, rhoc, outlierDeltaFactor, true);
+    CLDEndcapCLUEAlgo clueAlgo(dc, rhoc, outlierDeltaFactor, true);
     if(clueAlgo.setPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0], &phi[0]))
       throw error() << "Error in setting the clue points for the endcap." << endmsg;
     clueAlgo.makeClusters();
@@ -140,7 +139,6 @@ void ClueGaudiAlgorithmWrapper::fillFinalClusters(std::vector<clue::CLUECalorime
     }
 
     for(auto clLay : clustersLayer){
-      auto position = edm4hep::Vector3f({0,0,0});
 
       auto cluster = clusters->create();
       unsigned int maxEnergyIndex = 0;
@@ -148,9 +146,6 @@ void ClueGaudiAlgorithmWrapper::fillFinalClusters(std::vector<clue::CLUECalorime
 
       for(auto index : clLay.second){
 
-        position.x += clue_hits[index].getPosition().x;
-        position.y += clue_hits[index].getPosition().y;
-        position.z += clue_hits[index].getPosition().z;
         if(clue_hits[index].inBarrel()){
           cluster.addToHits(EB_calo_coll->at(index));
         }
@@ -295,13 +290,13 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   }
 
   // Total amount of EE+ and EE- layers (80)
-  // already described in `include/CLICdetEndcapLayerTilesConstants.h` 
+  // already described in `include/CLDEndcapLayerTilesConstants.h` 
   int maxLayerPerSide = 40;
 
   // Fill CLUECaloHits in the endcap
   if( EE_calo_coll->isValid() ) {
     for(const auto& calo_hit : (*EE_calo_coll) ){
-      if(bf.get( calo_hit.getCellID(), "side") < 0){
+      if(bf.get( calo_hit.getCellID(), "side") < 0 || bf.get( calo_hit.getCellID(), "side") > 1){
         clue_hit_coll_endcap.vect.push_back(clue::CLUECalorimeterHit(calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::endcap, bf.get( calo_hit.getCellID(), "layer")));
       } else { 
         clue_hit_coll_endcap.vect.push_back(clue::CLUECalorimeterHit(calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::endcap, bf.get( calo_hit.getCellID(), "layer") + maxLayerPerSide));

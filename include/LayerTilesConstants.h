@@ -1,3 +1,6 @@
+// Variables meaning is specified in
+// include/readyme.md
+
 #ifndef LayerTilesConstants_h
 #define LayerTilesConstants_h
 
