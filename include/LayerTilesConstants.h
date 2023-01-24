@@ -1,5 +1,7 @@
-// Variables meaning is specified in
-// include/readyme.md
+/**
+ * Variables meaning is specified in
+ * include/readme.md
+*/
 
 #ifndef LayerTilesConstants_h
 #define LayerTilesConstants_h

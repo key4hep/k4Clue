@@ -88,16 +88,16 @@ class LayerTiles_T {
       return std::array<int, 4>({{ xBinMin,xBinMax,yBinMin,yBinMax }});
     }
 
+    /**
+     * If the search window cross the phi-bin boundary, add T::nPhiBins to the
+     * max value. This guarantees that the caller can perform a valid double
+     * loop on eta and phi. It is the caller responsibility to perform a modulo
+     * operation on the phiBin values returned by this function, to explore the
+     * correct bins.
+     */
     std::array<int, 4> searchBoxPhiZ(float phiMin, float phiMax, float zMin, float zMax) const {
       int phiBinMin = getPhiBin(phiMin);
       int phiBinMax = getPhiBin(phiMax);
-      /**
-       * If the search window cross the phi-bin boundary, add T::nPhiBins to the
-       * max value. This guarantees that the caller can perform a valid double
-       * loop on eta and phi. It is the caller responsibility to perform a modulo
-       * operation on the phiBin values returned by this function, to explore the
-       * correct bins.
-       */
       if (phiBinMax < phiBinMin) {
         phiBinMax += T::nColumnsPhi;
       }
