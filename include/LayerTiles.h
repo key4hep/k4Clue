@@ -12,6 +12,7 @@
 #include "CLICdetEndcapLayerTilesConstants.h"
 #include "CLICdetBarrelLayerTilesConstants.h"
 #include "CLDEndcapLayerTilesConstants.h"
+#include "CLDBarrelLayerTilesConstants.h"
 
 template <typename T>
 class LayerTiles_T {
@@ -90,11 +91,13 @@ class LayerTiles_T {
     std::array<int, 4> searchBoxPhiZ(float phiMin, float phiMax, float zMin, float zMax) const {
       int phiBinMin = getPhiBin(phiMin);
       int phiBinMax = getPhiBin(phiMax);
-      // If the search window cross the phi-bin boundary, add T::nPhiBins to the
-      // MAx value. This guarantees that the caller can perform a valid doule
-      // loop on eta and phi. It is the caller responsibility to perform a module
-      // operation on the phiBin values returned by this function, to explore the
-      // correct bins.
+      /**
+       * If the search window cross the phi-bin boundary, add T::nPhiBins to the
+       * max value. This guarantees that the caller can perform a valid double
+       * loop on eta and phi. It is the caller responsibility to perform a modulo
+       * operation on the phiBin values returned by this function, to explore the
+       * correct bins.
+       */
       if (phiBinMax < phiBinMin) {
         phiBinMax += T::nColumnsPhi;
       }
@@ -135,6 +138,9 @@ namespace clue {
   using CLDEndcapLayerTile = LayerTiles_T<CLDEndcapLayerTilesConstants>;
   using CLDEndcapTiles = std::array<CLDEndcapLayerTile, CLDEndcapLayerTilesConstants::nLayers>;
 
+  using CLDBarrelLayerTile = LayerTiles_T<CLDBarrelLayerTilesConstants>;
+  using CLDBarrelTiles = std::array<CLDBarrelLayerTile, CLDBarrelLayerTilesConstants::nLayers>;
+
 } // end clue namespace
 
 template <typename T>
@@ -156,5 +162,6 @@ using LayerTiles = GenericTile<clue::Tiles>;
 using CLICdetEndcapLayerTiles = GenericTile<clue::CLICdetEndcapTiles>;
 using CLICdetBarrelLayerTiles = GenericTile<clue::CLICdetBarrelTiles>;
 using CLDEndcapLayerTiles = GenericTile<clue::CLDEndcapTiles>;
+using CLDBarrelLayerTiles = GenericTile<clue::CLDBarrelTiles>;
 
 #endif //LayerTiles_h

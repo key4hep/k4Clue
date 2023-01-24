@@ -31,17 +31,20 @@ StatusCode CLUENtuplizer::initialize() {
   t_hits = new TTree ("CLUEHits", "CLUE calo hits ntuple");
   if (m_ths->regTree("/rec/NtuplesHits", t_hits).isFailure()) {
     error() << "Couldn't register hits tree" << endmsg;
+    return StatusCode::FAILURE;
   }
 
   t_clusters = new TTree (TString(ClusterCollectionName), "Clusters ntuple");
   if (m_ths->regTree("/rec/"+ClusterCollectionName, t_clusters).isFailure()) {
     error() << "Couldn't register clusters tree" << endmsg;
+    return StatusCode::FAILURE;
   }
 
   std::string ClusterHitsCollectionName = ClusterCollectionName + "Hits";
   t_clhits = new TTree (TString(ClusterHitsCollectionName), "Clusters ntuple");
   if (m_ths->regTree("/rec/"+ClusterHitsCollectionName, t_clhits).isFailure()) {
     error() << "Couldn't register cluster hits tree" << endmsg;
+    return StatusCode::FAILURE;
   }
 
   initializeTrees();
@@ -55,7 +58,7 @@ StatusCode CLUENtuplizer::execute() {
     "EventHeader", Gaudi::DataHandle::Reader, this};
   auto evs = ev_handle.get();
   evNum = (*evs)[0].getEventNumber();
-  info() << "Event number = " << evNum << endmsg;
+  info() << "Event number = " << evNum << std::endl;
 
   DataHandle<edm4hep::MCParticleCollection> mcp_handle {
     "MCParticles", Gaudi::DataHandle::Reader, this};
@@ -129,19 +132,21 @@ StatusCode CLUENtuplizer::execute() {
     for (const auto& hit : cl.getHits()) {
       foundInECAL = false;
       for (const auto& clEB : *EB_calo_coll) {
-          if( clEB.getCellID() == hit.getCellID()){
-            foundInECAL = true;
-          }
+        if( clEB.getCellID() == hit.getCellID()){
+          foundInECAL = true;
+          break;  // Found in EB, break the loop
+        }
         if(foundInECAL) {
           // Found in EB, break the loop
           break;
         } 
       }
-      // Found in EB, break the loop
+
       if(!foundInECAL){
         for (const auto& clEE : *EE_calo_coll) {
           if( clEE.getCellID() == hit.getCellID()){
             foundInECAL = true;
+            break;  // Found in EE, break the loop
           }
           if(foundInECAL) {
             // Found in EE, break the loop

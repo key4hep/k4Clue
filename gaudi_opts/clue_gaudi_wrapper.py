@@ -6,7 +6,7 @@ algList = []
 
 from Configurables import PodioInput
 evtsvc = k4DataSvc('EventDataSvc')
-evtsvc.input = 'https://key4hep.web.cern.ch/testFiles/k4clue/inputData/clic/20220706_gamma_10GeV_uniform_500events_edm4hep.root'
+evtsvc.input = 'https://key4hep.web.cern.ch/testFiles/k4clue/inputData/cld/20230109_gammaFromSurface_10GeV_uniform_500events_edm4hep.root'
 
 inp = PodioInput('InputReader')
 inp.collections = [
@@ -52,7 +52,7 @@ MyPandoraNtuplizer.ClusterCollection = "PandoraClusters"
 MyPandoraNtuplizer.OutputLevel = WARNING
 
 from Configurables import THistSvc
-THistSvc().Output = ["rec DATAFILE='output_k4clue_analysis.root' TYP='ROOT' OPT='RECREATE'"]
+THistSvc().Output = ["rec DATAFILE='k4clue_analysis_output.root' TYP='ROOT' OPT='RECREATE'"]
 THistSvc().OutputLevel = WARNING
 THistSvc().PrintAll = False
 THistSvc().AutoSave = True
