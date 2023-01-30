@@ -12,6 +12,7 @@ CLUENtuplizer::CLUENtuplizer(const std::string& name, ISvcLocator* svcLoc) : Gau
   declareProperty("ClusterCollection", ClusterCollectionName, "Collection of clusters in input");
   declareProperty("BarrelCaloHitsCollection", EBCaloCollectionName, "Collection for Barrel Calo Hits used in input");
   declareProperty("EndcapCaloHitsCollection", EECaloCollectionName, "Collection for Endcap Calo Hits used in input");
+  declareProperty("SingleMCParticle", singleMCParticle, "If this is True, the analysis is run only if one MCParticle is present in the event");
   StatusCode sc = m_eventDataSvc.retrieve();
 }
 
@@ -74,7 +75,7 @@ StatusCode CLUENtuplizer::execute() {
                 });
   info() << "MC Particles = " << mcps->size() << " (of which primaries = " << mcps_primary << ")" << endmsg;
   // If there is more than one primary, skip event
-  if(mcps_primary > 1){
+  if(singleMCParticle && mcps_primary > 1){
     warning() << "This event is skipped because there are " << mcps_primary << " primary MC particles." << endmsg;
     return StatusCode::SUCCESS;
   }
