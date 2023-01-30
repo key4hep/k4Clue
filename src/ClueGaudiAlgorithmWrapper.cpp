@@ -41,12 +41,12 @@ void ClueGaudiAlgorithmWrapper::fillCLUEPoints(std::vector<clue::CLUECalorimeter
     if(ch.inBarrel()){
       x.push_back(ch.getPhi()*ch.getR());
       y.push_back(ch.getPosition().z);
-      phi.push_back(ch.getPhi());
+      r.push_back(ch.getR());
     } else {
       x.push_back(ch.getPosition().x);
       y.push_back(ch.getPosition().y);
-      // For the endcap the phi info is not mandatory because it is not used
-      phi.push_back(ch.getPhi());
+      // For the endcap the r info is not mandatory because it is not used
+      r.push_back(ch.getR());
     }
     layer.push_back(ch.getLayer());
     weight.push_back(ch.getEnergy());
@@ -67,15 +67,17 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<
   // Run CLUE
   info() << "Running CLUEAlgo ... " << endmsg;
   if(isBarrel){
+    info() << "... in the barrel" << endmsg;
     CLDBarrelCLUEAlgo clueAlgo(dc, rhoc, outlierDeltaFactor, true);
-    if(clueAlgo.setPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0], &phi[0]))
+    if(clueAlgo.setPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0], &r[0]))
       throw error() << "Error in setting the clue points for the barrel." << endmsg;
     clueAlgo.makeClusters();
     clueClusters = clueAlgo.getClusters();
     cluePoints = clueAlgo.getPoints();
   } else {
+    info() << "... in the endcap" << endmsg;
     CLDEndcapCLUEAlgo clueAlgo(dc, rhoc, outlierDeltaFactor, true);
-    if(clueAlgo.setPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0], &phi[0]))
+    if(clueAlgo.setPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0], &r[0]))
       throw error() << "Error in setting the clue points for the endcap." << endmsg;
     clueAlgo.makeClusters();
     clueClusters = clueAlgo.getClusters();
@@ -117,7 +119,7 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<
 void ClueGaudiAlgorithmWrapper::cleanCLUEPoints(){
   x.clear();
   y.clear();
-  phi.clear();
+  r.clear();
   layer.clear();
   weight.clear();
 }

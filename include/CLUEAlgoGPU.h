@@ -10,12 +10,12 @@ static const int localStackSizePerSeed = 20;
 
 struct PointsPtr {
   float *x; 
-  float *y ;
-  float *phi ;
-  int *layer ;
-  float *weight ;
+  float *y;
+  float *r;
+  int *layer;
+  float *weight;
 
-  float *rho ; 
+  float *rho; 
   float *delta; 
   int *nearestHigher;
   int *clusterIndex; 
