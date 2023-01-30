@@ -1,6 +1,6 @@
 from Gaudi.Configuration import *
 
-from Configurables import LcioEvent, k4DataSvc
+from Configurables import LcioEvent, k4DataSvc, MarlinProcessorWrapper
 from k4MarlinWrapper.parseConstants import *
 algList = []
 
@@ -17,8 +17,6 @@ inp.collections = [
   'PandoraClusters'
 ]
 inp.OutputLevel = DEBUG
-
-from Configurables import MarlinProcessorWrapper
 
 MyAIDAProcessor = MarlinProcessorWrapper("MyAIDAProcessor")
 MyAIDAProcessor.OutputLevel = WARNING
@@ -37,18 +35,20 @@ MyClueGaudiAlgorithmWrapper.BarrelCaloHitsCollection = "ECALBarrel"
 MyClueGaudiAlgorithmWrapper.EndcapCaloHitsCollection = "ECALEndcap"
 MyClueGaudiAlgorithmWrapper.CriticalDistance = 15.00
 MyClueGaudiAlgorithmWrapper.MinLocalDensity = 0.02
-MyClueGaudiAlgorithmWrapper.OutlierDeltaFactor = 2.00
+MyClueGaudiAlgorithmWrapper.OutlierDeltaFactor = 3.00
 
 from Configurables import CLUENtuplizer
 MyCLUENtuplizer = CLUENtuplizer("CLUEAnalysis")
 MyCLUENtuplizer.ClusterCollection = "CLUEClusters"
 MyCLUENtuplizer.BarrelCaloHitsCollection = "ECALBarrel"
 MyCLUENtuplizer.EndcapCaloHitsCollection = "ECALEndcap"
+MyCLUENtuplizer.SingleMCParticle = True
 MyCLUENtuplizer.OutputLevel = WARNING
 
 from Configurables import CLUENtuplizer
 MyPandoraNtuplizer = CLUENtuplizer("PandoraAnalysis")
 MyPandoraNtuplizer.ClusterCollection = "PandoraClusters"
+MyPandoraNtuplizer.SingleMCParticle = True
 MyPandoraNtuplizer.OutputLevel = WARNING
 
 from Configurables import THistSvc

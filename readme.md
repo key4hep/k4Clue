@@ -63,7 +63,7 @@ as a Seed.
 
 CLUE uses a spatial index to access and query spatial data points efficiently.
 Thus, a multi-layer tessellation is created which divides the 2D space into fixed rectangular bins.
-The limits and size of the tassellated space is defined by the user.
+The limits and size of the tessellated space is defined by the user.
 
 An example can be found in [LayerTilesConstants.h](include/LayerTilesConstants.h).
 A step-by-step guide to introduce a new detector can be found in [another readme](include/readme.md).

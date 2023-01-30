@@ -75,6 +75,8 @@ private:
   const edm4hep::CalorimeterHitCollection* EB_calo_coll;
   const edm4hep::CalorimeterHitCollection* EE_calo_coll;
 
+  bool singleMCParticle = false;
+
   // PODIO data service
   ServiceHandle<IDataProviderSvc> m_eventDataSvc;
   PodioDataSvc* m_podioDataSvc;
