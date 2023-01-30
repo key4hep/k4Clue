@@ -21,7 +21,7 @@ __global__ void kernel_compute_histogram( TILES &d_hist,
   int i = blockIdx.x * blockDim.x + threadIdx.x;
   if(i < numberOfPoints) {
     // push index of points into tiles
-    d_hist.fill(d_points.layer[i], d_points.x[i], d_points.y[i], d_points.phi[i], i);
+    d_hist.fill(d_points.layer[i], d_points.x[i], d_points.y[i], d_points.x[i]/(1.*d_points.r[i]), i);
   }
 } //kernel
 

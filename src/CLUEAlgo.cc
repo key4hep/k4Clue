@@ -46,7 +46,7 @@ template <typename TILES>
 void CLUEAlgo_T<TILES>::prepareDataStructures( TILES & allLayerTiles ){
   for (int i=0; i<points_.n; i++){
     // push index of points into tiles
-    allLayerTiles.fill( points_.layer[i], points_.x[i], points_.y[i], points_.phi[i], i );
+    allLayerTiles.fill( points_.layer[i], points_.x[i], points_.y[i], points_.x[i]/(1.*points_.r[i]), i );
   }
 }
 
@@ -58,14 +58,15 @@ void CLUEAlgo_T<TILES>::calculateLocalDensity( TILES & allLayerTiles ){
   // loop over all points
   for(unsigned i = 0; i < points_.n; i++) {
     auto lt = allLayerTiles[points_.layer[i]];
-    float ri = points_.x[i]/points_.phi[i];
+    float ri = points_.r[i];
+    float phi_i = points_.x[i]/(1.*ri);
 
     // get search box
     search_box = lt.searchBox(points_.x[i]-dc_, points_.x[i]+dc_, points_.y[i]-dc_, points_.y[i]+dc_);
 
     if(!TILES::constants_type_t::endcap){
       float dc_phi = dc_/ri;
-      search_box = lt.searchBoxPhiZ(points_.phi[i]-dc_phi, points_.phi[i]+dc_phi, points_.y[i]-dc_, points_.y[i]+dc_);
+      search_box = lt.searchBoxPhiZ(phi_i-dc_phi, phi_i+dc_phi, points_.y[i]-dc_, points_.y[i]+dc_);
     }
 
     // loop over bins in the search box
@@ -85,10 +86,8 @@ void CLUEAlgo_T<TILES>::calculateLocalDensity( TILES & allLayerTiles ){
         for (unsigned int binIter = 0; binIter < binSize; binIter++) {
           int j = lt[binId][binIter];
           // query N_{dc_}(i)
-          float dist_ij = distance(i, j);
-          if(!TILES::constants_type_t::endcap){
-            dist_ij = distance(i, j, true, ri);
-          }
+          float dist_ij = TILES::constants_type_t::endcap ?
+           distance(i, j) : distance(i, j, true, ri);
           if(dist_ij <= dc_) {
             // sum weights within N_{dc_}(i)
             points_.rho[i] += (i == j ? 1.f : 0.5f) * points_.weight[j];
@@ -103,7 +102,6 @@ void CLUEAlgo_T<TILES>::calculateLocalDensity( TILES & allLayerTiles ){
 
 template <typename TILES>
 void CLUEAlgo_T<TILES>::calculateDistanceToHigher( TILES & allLayerTiles ){
-
   // loop over all points
   float dm = outlierDeltaFactor_ * dc_;
   for(unsigned i = 0; i < points_.n; i++) {
@@ -112,7 +110,8 @@ void CLUEAlgo_T<TILES>::calculateDistanceToHigher( TILES & allLayerTiles ){
     int nearestHigher_i = -1;
     float xi = points_.x[i];
     float yi = points_.y[i];
-    float ri = points_.x[i]/points_.phi[i];
+    float ri = points_.r[i];
+    float phi_i = points_.x[i]/(1.*ri);
     float rho_i = points_.rho[i];
 
     //get search box
@@ -120,7 +119,7 @@ void CLUEAlgo_T<TILES>::calculateDistanceToHigher( TILES & allLayerTiles ){
     float dm_phi = dm/ri;
     std::array<int,4> search_box = TILES::constants_type_t::endcap ? 
      lt.searchBox(xi-dm, xi+dm, yi-dm, yi+dm):
-     lt.searchBoxPhiZ(points_.phi[i]-dm_phi, points_.phi[i]+dm_phi, points_.y[i]-dm, points_.y[i]+dm);
+     lt.searchBoxPhiZ(phi_i-dm_phi, phi_i+dm_phi, points_.y[i]-dm, points_.y[i]+dm);
 
     // loop over all bins in the search box
     for(int xBin = search_box[0]; xBin < search_box[1]+1; ++xBin) {
@@ -143,8 +142,7 @@ void CLUEAlgo_T<TILES>::calculateDistanceToHigher( TILES & allLayerTiles ){
           // in the rare case where rho is the same, use detid
           foundHigher = foundHigher || ((points_.rho[j] == rho_i) && (j>i) );
           float dist_ij = TILES::constants_type_t::endcap ?
-           dist_ij = distance(i, j):
-           dist_ij = distance(i, j, true, ri);;
+           distance(i, j) : distance(i, j, true, ri);
           if(foundHigher && dist_ij <= dm) { // definition of N'_{dm}(i)
             // find the nearest point within N'_{dm}(i)
             if (dist_ij < delta_i) {
@@ -234,7 +232,9 @@ inline float CLUEAlgo_T<TILES>::distance(int i, int j, bool isPhi, float r ) con
   // 2-d distance on the layer
   if(points_.layer[i] == points_.layer[j] ) {
     if (isPhi) {
-      const float drphi = r * reco::deltaPhi(points_.phi[i], points_.phi[j]);
+      const float phi_i = points_.x[i]/(1.*points_.r[i]);
+      const float phi_j = points_.x[j]/(1.*points_.r[j]);
+      const float drphi = r * reco::deltaPhi(phi_i, phi_j);
       const float dy = points_.y[i] - points_.y[j];
       return std::sqrt(dy * dy + drphi * drphi);
     } else {

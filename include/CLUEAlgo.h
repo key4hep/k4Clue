@@ -33,7 +33,7 @@ public:
     
   Points points_;
   
-  bool setPoints(int n, float* x, float* y, int* layer, float* weight, float* phi = NULL) {
+  bool setPoints(int n, float* x, float* y, int* layer, float* weight, float* r = NULL) {
     points_.clear();
     // input variables
     for(int i=0; i<n; ++i)
@@ -42,14 +42,14 @@ public:
 	points_.y.push_back(y[i]);
 	points_.layer.push_back(layer[i]);
 	points_.weight.push_back(weight[i]);
-	if(phi != NULL){
-          points_.phi.push_back(phi[i]);
+	if(r != NULL){
+          points_.r.push_back(r[i]);
         } else {
-          // If the layer tile is declared as endcap, the phi info is not used
+          // If the layer tile is declared as endcap, the r info is not used
           if(TILES::constants_type_t::endcap){
-            points_.phi.push_back(0.0);
+            points_.r.push_back(0.0);
           } else {
-            std::cerr << "ERROR: phi info is not present but you are using a barrel LayerTile! " << std::endl;
+            std::cerr << "ERROR: r info is not present but you are using a barrel LayerTile! " << std::endl;
           }
         }
       }
