@@ -41,7 +41,7 @@ where `myGPS.mac` can be found in this folder.
 
 ## Visualization
 
-If you want to visualise the output as event display using CED:
+If you want to visualise the output with the CED event display:
 ```bash
 cd ../..
 glced &
