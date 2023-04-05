@@ -49,7 +49,7 @@ CLUE needs three parameters as input:
 * `outlierDeltaFactor` is  a multiplicative constant to be applied to `dc`.
 
 (
-In the past four parameters were needed (`dc`, `rhoc`, `deltao` and `deltac`):
+In the original article and implementation, four parameters were needed (`dc`, `rhoc`, `deltao` and `deltac`):
 * `deltao` is the maximum distance for a point to be linked to a nearest higher
 point.
 * `deltac` is the minimum distance for a local high density point to be promoted
@@ -75,9 +75,8 @@ cd build/
 ./run gaudirun.py ../gaudi_opts/clue_gaudi_wrapper.py
 ```
 
-The input files are `data/input/*.root` with data in the EDM4HEP format 
-* `ECALBarrel` and `ECALEndcap` CalorimeterHit collections are required
-CLUE parameters and input/output file name are contained in `clue_gaudi_wrapper.py`.
+CLUE parameters and input/output file name are contained in `gaudi_opts/clue_gaudi_wrapper.py`.
+The input files are using the EDM4HEP data format and the `ECALBarrel` and `ECALEndcap` CalorimeterHit collections are required.
 
 The output file `output.root` contains `CLUEClusters` (currently also transformed as CaloHits in `CLUEClustersAsHits`).
 
