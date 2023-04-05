@@ -22,8 +22,8 @@ target_include_directories(ClueGaudiAlgorithmWrapper PUBLIC
 
 add_test(NAME gaudiWrapper 
          WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-         COMMAND bash -c "source clueenv.sh; \
-                 k4run ${PROJECT_SOURCE_DIR}/gaudi_opts/clue_gaudi_wrapper.py --ClueGaudiAlgorithmWrapperName.OutputLevel 2 --CLUEAnalysis.OutputLevel 2 --PandoraAnalysis.OutputLevel 2")
+         COMMAND bash -c "source k4clueenv.sh; \
+                 k4run ${PROJECT_SOURCE_DIR}/gaudi_opts/clue_gaudi_wrapper.py --ClueGaudiAlgorithmWrapperName.OutputLevel 2 --CLUEAnalysis.OutputLevel 2")
 
 set_tests_properties(gaudiWrapper PROPERTIES
                      FAIL_REGULAR_EXPRESSION "ERROR;Failed")
