@@ -14,8 +14,8 @@ struct CLICdetBarrelLayerTilesConstants {
   static constexpr float minY =  -2210.f;
   static constexpr float maxY =   2210.f;
 
-  static constexpr float tileSize = 15.f;
-  static constexpr float tileSizePhi = 0.01f;
+  static constexpr float tileSize = 30.f;
+  static constexpr float tileSizePhi = 0.10f;
   static constexpr int nColumns = reco::ceil((maxX-minX)/tileSize);
   static constexpr int nColumnsPhi = reco::ceil(2. * M_PI / tileSizePhi);
   static constexpr int nRows    = reco::ceil((maxY-minY)/tileSize);
