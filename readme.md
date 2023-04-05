@@ -16,19 +16,16 @@
 The CLUE algorithm ([here](https://gitlab.cern.ch/kalos/clue) the gitLab repo)
 was adapted to run in the Gaudi software framework and to support `EDM4hep` data format for inputs and outputs.
 
+Currently only the version of the algorithm in C++ is available, the GPU version will added soon
+directly from the original standalone repository.
+
 ## Setup the environment
 
 The following setup is considering an lxplus machine.
 
-If CUDA/nvcc are found on the machine, the compilation is performed automatically also for the GPU case.
-The path to the nvcc compiler will be automatically taken from the machine. In this case, `>=cuda10` and `>=gcc11` are also required.
-
 ```bash
 # source key4hep environment
 source /cvmfs/sw.hsf.org/key4hep/setup.sh
-
-# get nvcc 11.4, if needed
-source /cvmfs/sft.cern.ch/lcg/contrib/cuda/11.4/x86_64-centos8/setup.sh
 
 # then setup this project
 git clone --recurse-submodules https://github.com/key4hep/k4Clue.git
@@ -69,23 +66,6 @@ An example can be found in [LayerTilesConstants.h](include/LayerTilesConstants.h
 A step-by-step guide to introduce a new detector can be found in [another readme](include/readme.md).
 
 ## Examples of use
-
-### Standalone CLUE
-
-If the projects compiles without errors, you can go run the CLUE algorithm by
-```bash
-# ./build/src/clue/main [fileName] [dc] [rhoc] [outlierDeltaFactor] [useParallel] [verbose] [NumTBBThreads]
-./build/src/clue/main data/input/aniso_1000.csv 20 25 2 0 1 1
-
-#in case of only CPU
-#./build/src/clue_tbb_cupla/mainCuplaCPUTBB data/input/aniso_1000.csv 20 25 2 0 1 1
-```
-
-The input files are `data/input/*.csv` with columns 
-* x, y, layer, weight
-
-The output files are `data/output/*.csv` with columns
-* x, y, layer, weight, rho, delta, nh, isSeed, clusterId
 
 ### CLUE as Gaudi algorithm
 
