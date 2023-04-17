@@ -26,7 +26,7 @@ cp ../../k4Clue/gaudi_opts/clue_gaudi_wrapper.py .
 k4run clue_gaudi_wrapper.py --EventDataSvc.input my_output.root
 ```
 
-In case you have changed something from the original repo and you have rebuild the package, you should use `source build/clueenv.sh` to make `k4run` aware of your new changes.
+In case you have changed something from the original repo and you have rebuild the package, you should use `source build/k4clueenv.sh` to make `k4run` aware of your new changes.
 
 ## Simulation from the detector surface
 
