@@ -14,7 +14,6 @@ inp.collections = [
   'MCParticles',
   'ECALBarrel',
   'ECALEndcap',
-  'PandoraClusters'
 ]
 inp.OutputLevel = DEBUG
 
@@ -45,12 +44,6 @@ MyCLUENtuplizer.EndcapCaloHitsCollection = "ECALEndcap"
 MyCLUENtuplizer.SingleMCParticle = True
 MyCLUENtuplizer.OutputLevel = WARNING
 
-from Configurables import CLUENtuplizer
-MyPandoraNtuplizer = CLUENtuplizer("PandoraAnalysis")
-MyPandoraNtuplizer.ClusterCollection = "PandoraClusters"
-MyPandoraNtuplizer.SingleMCParticle = True
-MyPandoraNtuplizer.OutputLevel = WARNING
-
 from Configurables import THistSvc
 THistSvc().Output = ["rec DATAFILE='k4clue_analysis_output.root' TYP='ROOT' OPT='RECREATE'"]
 THistSvc().OutputLevel = WARNING
@@ -69,7 +62,6 @@ algList.append(inp)
 algList.append(MyAIDAProcessor)
 algList.append(MyClueGaudiAlgorithmWrapper)
 algList.append(MyCLUENtuplizer)
-algList.append(MyPandoraNtuplizer)
 algList.append(out)
 
 from Configurables import ApplicationMgr
