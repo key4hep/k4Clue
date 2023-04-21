@@ -1,0 +1,53 @@
+{
+    "contributors": [
+        {
+            "affiliation": "CERN", 
+            "type": "Other", 
+            "name": "Volkl, Valentin"
+        }, 
+        {
+            "affiliation": "CERN", 
+            "type": "Other", 
+            "name": "Fernandez Declara, Placido"
+        },
+        {
+            "affiliation": "CERN", 
+            "type": "Other", 
+            "name": "Sailer, Andre"
+        }, 
+        {
+            "affiliation": "CERN", 
+            "type": "Other", 
+            "name": "Carceller, Juan Miguel"
+        }, 
+         
+        {
+            "affiliation": "École Polytechnique", 
+            "type": "Other", 
+            "name": "Alves, Bruno"
+        }
+    ], 
+    "language": "eng", 
+    "upload_type": "software", 
+    "keywords": [
+        "Clustering, Algorithm", "Heterogenous Computing", "Particle Shower Reconstruction"
+    ],
+    "creators": [
+        {
+            "affiliation": "CERN", 
+            "name": "Brondolin, Erica",
+            "orcid": "0000-0001-5420-586X"
+        }, 
+        {
+            "affiliation": "CERN", 
+            "name": "Rovere, Marco",
+            "orcid": "0000-0001-8048-1622"
+        }, 
+        {
+            "affiliation": "CERN", 
+            "name": "Pantaleo, Felice",
+            "orcid": "0000-0003-3266-4357"
+        }
+    ], 
+    "access_right": "open"
+}
