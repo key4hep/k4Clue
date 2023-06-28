@@ -79,7 +79,7 @@ private:
 
   // PODIO data service
   ServiceHandle<IDataProviderSvc> m_eventDataSvc;
-  PodioDataSvc* m_podioDataSvc;
+  PodioLegacyDataSvc* m_podioDataSvc;
 
   ITHistSvc* m_ths{nullptr};  ///< THistogram service
 

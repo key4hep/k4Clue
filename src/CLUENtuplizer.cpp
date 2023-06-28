@@ -19,7 +19,7 @@ CLUENtuplizer::CLUENtuplizer(const std::string& name, ISvcLocator* svcLoc) : Gau
 StatusCode CLUENtuplizer::initialize() {
   if (GaudiAlgorithm::initialize().isFailure()) return StatusCode::FAILURE;
 
-  m_podioDataSvc = dynamic_cast<PodioDataSvc*>(m_eventDataSvc.get());
+  m_podioDataSvc = dynamic_cast<PodioLegacyDataSvc*>(m_eventDataSvc.get());
   if (m_podioDataSvc == nullptr) {
     return StatusCode::FAILURE;
   }
