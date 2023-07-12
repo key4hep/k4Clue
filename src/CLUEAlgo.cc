@@ -57,7 +57,7 @@ void CLUEAlgo_T<TILES>::calculateLocalDensity( TILES & allLayerTiles ){
 
   // loop over all points
   for(unsigned i = 0; i < points_.n; i++) {
-    auto lt = allLayerTiles[points_.layer[i]];
+    auto& lt = allLayerTiles[points_.layer[i]];
     float ri = points_.r[i];
     float phi_i = points_.x[i]/(1.*ri);
 
@@ -70,8 +70,8 @@ void CLUEAlgo_T<TILES>::calculateLocalDensity( TILES & allLayerTiles ){
     }
 
     // loop over bins in the search box
-    for(int xBin = search_box[0]; xBin < search_box[1]+1; ++xBin) {
-      for(int yBin = search_box[2]; yBin < search_box[3]+1; ++yBin) {
+    for(int xBin = search_box[0]; xBin <= search_box[1]; ++xBin) {
+      for(int yBin = search_box[2]; yBin <= search_box[3]; ++yBin) {
   
         // get the id of this bin
         int binId = lt.getGlobalBinByBin(xBin,yBin);
@@ -111,19 +111,19 @@ void CLUEAlgo_T<TILES>::calculateDistanceToHigher( TILES & allLayerTiles ){
     float xi = points_.x[i];
     float yi = points_.y[i];
     float ri = points_.r[i];
-    float phi_i = points_.x[i]/(1.*ri);
+    float phi_i = points_.x[i]/ri;
     float rho_i = points_.rho[i];
 
     //get search box
-    auto lt = allLayerTiles[points_.layer[i]];
+    auto& lt = allLayerTiles[points_.layer[i]];
     float dm_phi = dm/ri;
     std::array<int,4> search_box = TILES::constants_type_t::endcap ? 
      lt.searchBox(xi-dm, xi+dm, yi-dm, yi+dm):
      lt.searchBoxPhiZ(phi_i-dm_phi, phi_i+dm_phi, points_.y[i]-dm, points_.y[i]+dm);
 
     // loop over all bins in the search box
-    for(int xBin = search_box[0]; xBin < search_box[1]+1; ++xBin) {
-      for(int yBin = search_box[2]; yBin < search_box[3]+1; ++yBin) {
+    for(int xBin = search_box[0]; xBin <= search_box[1]; ++xBin) {
+      for(int yBin = search_box[2]; yBin <= search_box[3]; ++yBin) {
 
         // get the id of this bin
         int phi = (xBin % TILES::constants_type_t::nColumnsPhi);
@@ -170,6 +170,7 @@ void CLUEAlgo_T<TILES>::findAndAssignClusters(){
 
   // find cluster seeds and outlier
   std::vector<int> localStack;
+  localStack.reserve(10);
   // loop over all points
   for(unsigned i = 0; i < points_.n; i++) {
     // initialize clusterIndex
