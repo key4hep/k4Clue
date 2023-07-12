@@ -57,7 +57,7 @@ void CLUEAlgo_T<TILES>::calculateLocalDensity( TILES & allLayerTiles ){
 
   // loop over all points
   for(unsigned i = 0; i < points_.n; i++) {
-    auto& lt = allLayerTiles[points_.layer[i]];
+    const auto& lt = allLayerTiles[points_.layer[i]];
     float ri = points_.r[i];
     float phi_i = points_.x[i]/(1.*ri);
 
@@ -115,7 +115,7 @@ void CLUEAlgo_T<TILES>::calculateDistanceToHigher( TILES & allLayerTiles ){
     float rho_i = points_.rho[i];
 
     //get search box
-    auto& lt = allLayerTiles[points_.layer[i]];
+    const auto& lt = allLayerTiles[points_.layer[i]];
     float dm_phi = dm/ri;
     std::array<int,4> search_box = TILES::constants_type_t::endcap ? 
      lt.searchBox(xi-dm, xi+dm, yi-dm, yi+dm):

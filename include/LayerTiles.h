@@ -80,7 +80,7 @@ class LayerTiles_T {
       return phiBin + yBin*T::nColumnsPhi;
     }
 
-    std::array<int,4> searchBox(float xMin, float xMax, float yMin, float yMax){
+    std::array<int,4> searchBox(float xMin, float xMax, float yMin, float yMax) const {
       int xBinMin = getXBin(xMin);
       int xBinMax = getXBin(xMax);
       int yBinMin = getYBin(yMin);
