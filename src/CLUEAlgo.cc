@@ -192,6 +192,7 @@ void CLUEAlgo_T<TILES>::findAndAssignClusters(){
 
   // find cluster seeds and outlier
   std::vector<int> localStack;
+  localStack.reserve(10);
   // loop over all points
   for(unsigned i = 0; i < points_.n; i++) {
     // initialize clusterIndex
