@@ -167,7 +167,7 @@ void CLUEAlgo_T<TILES>::findAndAssignClusters(){
 
   auto start = std::chrono::high_resolution_clock::now();
 
-  std::array<int,TILES::constants_type_t::nLayers> nClustersPerLayer;
+  std::array<int,TILES::constants_type_t::nLayers> nClustersPerLayer{};
 
   // find cluster seeds and outlier
   std::vector<int> localStack;
