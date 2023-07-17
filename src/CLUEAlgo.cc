@@ -1,4 +1,5 @@
 #include "CLUEAlgo.h"
+#include <array>
 
 template <typename TILES>
 void CLUEAlgo_T<TILES>::makeClusters(){
@@ -166,7 +167,7 @@ void CLUEAlgo_T<TILES>::findAndAssignClusters(){
 
   auto start = std::chrono::high_resolution_clock::now();
 
-  std::map<int,int> nClustersPerLayer;
+  std::array<int,TILES::constants_type_t::nLayers> nClustersPerLayer;
 
   // find cluster seeds and outlier
   std::vector<int> localStack;
