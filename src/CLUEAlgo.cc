@@ -55,18 +55,20 @@ template <typename TILES>
 void CLUEAlgo_T<TILES>::calculateLocalDensity( TILES & allLayerTiles ){
 
   std::array<int,4> search_box = {0, 0, 0, 0};
+  auto dc2 = dc_*dc_;
 
   // loop over all points
   for(unsigned i = 0; i < points_.n; i++) {
     const auto& lt = allLayerTiles[points_.layer[i]];
     float ri = points_.r[i];
-    float phi_i = points_.x[i]/(1.*ri);
+    float inv_ri = 1.f/ri;
+    float phi_i = points_.x[i]*inv_ri;
 
     // get search box
     search_box = lt.searchBox(points_.x[i]-dc_, points_.x[i]+dc_, points_.y[i]-dc_, points_.y[i]+dc_);
 
     if(!TILES::constants_type_t::endcap){
-      float dc_phi = dc_/ri;
+      float dc_phi = dc_*inv_ri;
       search_box = lt.searchBoxPhiZ(phi_i-dc_phi, phi_i+dc_phi, points_.y[i]-dc_, points_.y[i]+dc_);
     }
 
@@ -87,9 +89,9 @@ void CLUEAlgo_T<TILES>::calculateLocalDensity( TILES & allLayerTiles ){
         for (unsigned int binIter = 0; binIter < binSize; binIter++) {
           int j = lt[binId][binIter];
           // query N_{dc_}(i)
-          float dist_ij = TILES::constants_type_t::endcap ?
-           distance(i, j) : distance(i, j, true, ri);
-          if(dist_ij <= dc_) {
+          float dist2_ij = TILES::constants_type_t::endcap ?
+           distance2(i, j) : distance2(i, j, true, ri);
+          if(dist2_ij <= dc2) {
             // sum weights within N_{dc_}(i)
             points_.rho[i] += (i == j ? 1.f : 0.5f) * points_.weight[j];
           }
@@ -112,12 +114,13 @@ void CLUEAlgo_T<TILES>::calculateDistanceToHigher( TILES & allLayerTiles ){
     float xi = points_.x[i];
     float yi = points_.y[i];
     float ri = points_.r[i];
-    float phi_i = points_.x[i]/ri;
+    float inv_ri = 1.f/ri;
+    float phi_i = points_.x[i]*inv_ri;
     float rho_i = points_.rho[i];
 
     //get search box
     const auto& lt = allLayerTiles[points_.layer[i]];
-    float dm_phi = dm/ri;
+    float dm_phi = dm*inv_ri;
     std::array<int,4> search_box = TILES::constants_type_t::endcap ? 
      lt.searchBox(xi-dm, xi+dm, yi-dm, yi+dm):
      lt.searchBoxPhiZ(phi_i-dm_phi, phi_i+dm_phi, points_.y[i]-dm, points_.y[i]+dm);
@@ -228,21 +231,33 @@ void CLUEAlgo_T<TILES>::findAndAssignClusters(){
 }
 
 template <typename TILES>
-inline float CLUEAlgo_T<TILES>::distance(int i, int j, bool isPhi, float r ) const {
+inline float CLUEAlgo_T<TILES>::distance2(int i, int j, bool isPhi, float r ) const {
 
   // 2-d distance on the layer
   if(points_.layer[i] == points_.layer[j] ) {
     if (isPhi) {
-      const float phi_i = points_.x[i]/(1.*points_.r[i]);
-      const float phi_j = points_.x[j]/(1.*points_.r[j]);
+      const float phi_i = points_.x[i]/(points_.r[i]);
+      const float phi_j = points_.x[j]/(points_.r[j]);
       const float drphi = r * reco::deltaPhi(phi_i, phi_j);
       const float dy = points_.y[i] - points_.y[j];
-      return std::sqrt(dy * dy + drphi * drphi);
+      return dy * dy + drphi * drphi;
     } else {
       const float dx = points_.x[i] - points_.x[j];
       const float dy = points_.y[i] - points_.y[j];
-      return std::sqrt(dx * dx + dy * dy);
+      return dx * dx + dy * dy;
     }
+  } else {
+    return std::numeric_limits<float>::max();
+  }
+
+}
+
+template <typename TILES>
+inline float CLUEAlgo_T<TILES>::distance(int i, int j, bool isPhi, float r ) const {
+
+  // 2-d distance on the layer
+  if(points_.layer[i] == points_.layer[j] ) {
+    return std::sqrt(distance2(i, j, isPhi, r));
   } else {
     return std::numeric_limits<float>::max();
   }
