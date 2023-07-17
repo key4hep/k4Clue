@@ -26,7 +26,7 @@ ClueGaudiAlgorithmWrapper::ClueGaudiAlgorithmWrapper(const std::string& name, IS
 
 StatusCode ClueGaudiAlgorithmWrapper::initialize() {
 
-  m_podioDataSvc = dynamic_cast<PodioDataSvc*>(m_eventDataSvc.get());
+  m_podioDataSvc = dynamic_cast<PodioLegacyDataSvc*>(m_eventDataSvc.get());
   if (m_podioDataSvc == nullptr) {
     return StatusCode::FAILURE;
   }
