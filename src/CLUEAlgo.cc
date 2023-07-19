@@ -77,7 +77,7 @@ void CLUEAlgo_T<TILES>::prepareDataStructures(){
 
 template <typename TILES>
 void CLUEAlgo_T<TILES>::calculateLocalDensity(){
-
+//  std::cout << "calculateLocalDensity for " << points_.n << " points." << std::endl;
   std::array<int,4> search_box = {0, 0, 0, 0};
   auto dc2 = dc_*dc_;
 
@@ -96,6 +96,8 @@ void CLUEAlgo_T<TILES>::calculateLocalDensity(){
       search_box = lt.searchBoxPhiZ(phi_i-dc_phi, phi_i+dc_phi, points_.y[i]-dc_, points_.y[i]+dc_);
     }
 
+//    std::cout << "searchbox xBins: " << search_box[0] << "," << search_box[1] << std::endl;
+//    std::cout << "          yBins: " << search_box[2] << "," << search_box[3] << std::endl;
     // loop over bins in the search box
     for(int xBin = search_box[0]; xBin <= search_box[1]; ++xBin) {
       for(int yBin = search_box[2]; yBin <= search_box[3]; ++yBin) {
@@ -108,6 +110,7 @@ void CLUEAlgo_T<TILES>::calculateLocalDensity(){
         }
         // get the size of this bin
         int binSize = lt[binId].size();
+//        std::cout << "binSize = " << binSize << " for [xBin,yBin] = [" << xBin << "," << yBin << "]" << std::endl;
 
         // iterate inside this bin
         for (unsigned int binIter = 0; binIter < binSize; binIter++) {
@@ -198,6 +201,7 @@ void CLUEAlgo_T<TILES>::findAndAssignClusters(){
 
   // find cluster seeds and outlier
   std::vector<int> localStack;
+  localStack.reserve(10);
   // loop over all points
   for(unsigned i = 0; i < points_.n; i++) {
     // initialize clusterIndex
@@ -230,7 +234,7 @@ void CLUEAlgo_T<TILES>::findAndAssignClusters(){
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
   if(verbose_)
-    std::cout << "ClueGaudiAlgorithmWrapper:  findSeedAndFollowers:      " << elapsed.count() *1000 << " ms\n";
+    std::cout << "ClueGaudiAlgorithmWrapper: findSeedAndFollowers:      " << elapsed.count() *1000 << " ms\n";
 
   start = std::chrono::high_resolution_clock::now();
   // expend clusters from seeds
@@ -250,7 +254,7 @@ void CLUEAlgo_T<TILES>::findAndAssignClusters(){
   finish = std::chrono::high_resolution_clock::now();
   elapsed = finish - start;
   if(verbose_)
-    std::cout << "ClueGaudiAlgorithmWrapper:  assignClusters:            " << elapsed.count() *1000 << " ms\n";
+    std::cout << "ClueGaudiAlgorithmWrapper: assignClusters:            " << elapsed.count() *1000 << " ms\n";
 
 }
 

@@ -39,6 +39,12 @@ public:
   virtual StatusCode finalize() override final;
   virtual StatusCode initialize() override final;
 
+  // Timing analysis
+  void exclude_stats_outliers(std::vector<float> &v);
+  std::pair<float, float> stats(const std::vector<float> &v) ;
+  void printTimingReport(std::vector<float> &vals, int repeats,
+                       const std::string label) ;
+
   void fillCLUEPoints(std::vector<clue::CLUECalorimeterHit>& clue_hits);
   std::map<int, std::vector<int> > runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, 
                                            bool isBarrel);
@@ -72,7 +78,7 @@ public:
   MetaDataHandle<std::string> cellIDHandle {EB_calo_handle, edm4hep::CellIDEncoding, Gaudi::DataHandle::Reader};
 
   // CLUE Algo
-  CLICdetBarrelCLUEAlgo clueAlgoBarrel_;
+  LArBarrelCLUEAlgo clueAlgoBarrel_;
   CLICdetEndcapCLUEAlgo clueAlgoEndcap_;
 
   // Collections in output
