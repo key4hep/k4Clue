@@ -12,7 +12,7 @@ using namespace DDSegmentation ;
 DECLARE_COMPONENT(ClueGaudiAlgorithmWrapper)
 
 ClueGaudiAlgorithmWrapper::ClueGaudiAlgorithmWrapper(const std::string& name, ISvcLocator* pSL) :
-  GaudiAlgorithm(name, pSL), m_eventDataSvc("EventDataSvc", "ClueGaudiAlgorithmWrapper") {
+  GaudiAlgorithm(name, pSL) { 
   declareProperty("BarrelCaloHitsCollection", EBCaloCollectionName, "Collection for Barrel Calo Hits used in input");
   declareProperty("EndcapCaloHitsCollection", EECaloCollectionName, "Collection for Endcap Calo Hits used in input");
   declareProperty("CriticalDistance", dc, "Used to compute the local density");
@@ -20,16 +20,9 @@ ClueGaudiAlgorithmWrapper::ClueGaudiAlgorithmWrapper(const std::string& name, IS
   declareProperty("OutlierDeltaFactor", outlierDeltaFactor, "Multiplicative constant to be applied to CriticalDistance");
   declareProperty("OutClusters", clustersHandle, "Clusters collection (output)");
   declareProperty("OutCaloHits", caloHitsHandle, "Calo hits collection created from Clusters (output)");
-
-  StatusCode sc = m_eventDataSvc.retrieve();
 }
 
 StatusCode ClueGaudiAlgorithmWrapper::initialize() {
-
-  m_podioDataSvc = dynamic_cast<PodioLegacyDataSvc*>(m_eventDataSvc.get());
-  if (m_podioDataSvc == nullptr) {
-    return StatusCode::FAILURE;
-  }
 
   return Algorithm::initialize();
 
@@ -246,19 +239,20 @@ void ClueGaudiAlgorithmWrapper::transformClustersInCaloHits(edm4hep::ClusterColl
 
 StatusCode ClueGaudiAlgorithmWrapper::execute() {
 
-  // Read EB collection
-  DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {  
-    EBCaloCollectionName, Gaudi::DataHandle::Reader, this};
+  // Read EB and EE collection
   EB_calo_coll = EB_calo_handle.get();
-
-  // Read EE collection
-  DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {  
-    EECaloCollectionName, Gaudi::DataHandle::Reader, this};
   EE_calo_coll = EE_calo_handle.get();
 
   // Get collection metadata cellID which is valid for both EB and EE
   auto collID = EB_calo_coll->getID();
-  const auto cellIDstr = EB_calo_handle.getCollMetadataCellID(collID);
+  const auto cellIDstr = cellIDHandle.get();
+  //TO BE TESTED!
+  //const std::string cellIDtest = "M:3,S-1:3,I:9,J:9,K-1:6";
+  //std::cout << "cellIDstr: " << cellIDstr << std::endl;
+  //if (cellIDstr != cellIDtest) {
+  //  error() << "ERROR cellID is: " << cellIDstr << endmsg;
+  //  return StatusCode::FAILURE;
+  //}
   const BitFieldCoder bf(cellIDstr);
 
   // Output CLUE clusters
@@ -322,8 +316,9 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   }
 
   // Add cellID to CLUE clusters
-  auto& clusters_md = m_podioDataSvc->getProvider().getCollectionMetaData(finalClusters->getID());
-  clusters_md.setValue("CellIDEncodingString", cellIDstr);
+  // STILL TO BE FIXED:
+  //auto& clusters_md = m_podioDataSvc->getProvider().getCollectionMetaData(finalClusters->getID());
+  //clusters_md.setValue("CellIDEncodingString", cellIDstr);
   info() << "Saved " << finalClusters->size() << " CLUE clusters in total." << endmsg;
 
   // Save CLUE calo hits
@@ -334,8 +329,9 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   // Save clusters as calo hits and add cellID to them
   edm4hep::CalorimeterHitCollection* finalCaloHits = caloHitsHandle.createAndPut();
   transformClustersInCaloHits(finalClusters, finalCaloHits);
-  auto& calohits_md = m_podioDataSvc->getProvider().getCollectionMetaData(finalCaloHits->getID());
-  calohits_md.setValue("CellIDEncodingString", cellIDstr);
+  // STILL TO BE FIXED:
+  //auto& calohits_md = m_podioDataSvc->getProvider().getCollectionMetaData(finalCaloHits->getID());
+  //calohits_md.setValue("CellIDEncodingString", cellIDstr);
   info() << "Saved " << finalCaloHits->size() << " clusters as calo hits" << endmsg;
 
   // Cleaning

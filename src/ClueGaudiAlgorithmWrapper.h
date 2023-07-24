@@ -4,7 +4,8 @@
 #include <GaudiAlg/GaudiAlgorithm.h>
 
 // FWCore
-#include <k4FWCore/DataHandle.h>
+#include "k4FWCore/DataHandle.h"
+#include "k4FWCore/MetaDataHandle.h"
 
 #include <edm4hep/CalorimeterHitCollection.h>
 #include <edm4hep/ClusterCollection.h>
@@ -47,9 +48,10 @@ public:
   std::vector<int> layer;
   std::vector<float> weight;
 
-  // PODIO data service
-  ServiceHandle<IDataProviderSvc> m_eventDataSvc;
-  PodioLegacyDataSvc* m_podioDataSvc;
+  // Handle to read the calo cells and their cellID 
+  DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {EBCaloCollectionName, Gaudi::DataHandle::Reader, this};
+  DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {EECaloCollectionName, Gaudi::DataHandle::Reader, this};
+  MetaDataHandle<std::string> cellIDHandle {EB_calo_handle, "CellIDEncodingString", Gaudi::DataHandle::Reader};
 
   // Collections in output
   DataHandle<edm4hep::CalorimeterHitCollection> caloHitsHandle{"CLUEClustersAsHits", Gaudi::DataHandle::Writer, this};
