@@ -1,14 +1,14 @@
 from Gaudi.Configuration import *
 
-from Configurables import LcioEvent, k4DataSvc, MarlinProcessorWrapper
+from Configurables import LcioEvent, k4LegacyDataSvc, MarlinProcessorWrapper
 from k4MarlinWrapper.parseConstants import *
 algList = []
 
-from Configurables import PodioInput
-evtsvc = k4DataSvc('EventDataSvc')
+from Configurables import PodioLegacyInput
+evtsvc = k4LegacyDataSvc('EventDataSvc')
 evtsvc.input = 'https://key4hep.web.cern.ch/testFiles/k4clue/inputData/cld/20230724_gammaFromSurface_10GeV_uniform_500events_edm4hep.root'
 
-inp = PodioInput('InputReader')
+inp = PodioLegacyInput('InputReader')
 inp.collections = [
   'EventHeader',
   'MCParticles',
