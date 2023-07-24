@@ -327,6 +327,10 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
 
   }
 
+  // Add cellID to CLUE clusters
+  // STILL TO BE FIXED:
+  //auto& clusters_md = m_podioDataSvc->getProvider().getCollectionMetaData(finalClusters->getID());
+  //clusters_md.setValue("CellIDEncodingString", cellIDstr);
   info() << "Saved " << finalClusters->size() << " CLUE clusters in total." << endmsg;
 
   // Save CLUE calo hits
@@ -337,6 +341,9 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   // Save clusters as calo hits and add cellID to them
   auto finalCaloHits = std::make_unique<edm4hep::CalorimeterHitCollection>();
   transformClustersInCaloHits(finalClusters.get(), finalCaloHits.get());
+  // STILL TO BE FIXED:
+  //auto& calohits_md = m_podioDataSvc->getProvider().getCollectionMetaData(finalCaloHits->getID());
+  //calohits_md.setValue("CellIDEncodingString", cellIDstr);
   info() << "Saved " << finalCaloHits->size() << " clusters as calo hits" << endmsg;
 
   // Only now can we put the collections into the event store, as nothing needs
