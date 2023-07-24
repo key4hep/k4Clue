@@ -26,21 +26,15 @@ using namespace DDSegmentation ;
 
 DECLARE_COMPONENT(CLUENtuplizer)
 
-CLUENtuplizer::CLUENtuplizer(const std::string& name, ISvcLocator* svcLoc) : GaudiAlgorithm(name, svcLoc), m_eventDataSvc("EventDataSvc", "CLUENtuplizer") {
+CLUENtuplizer::CLUENtuplizer(const std::string& name, ISvcLocator* svcLoc) : GaudiAlgorithm(name, svcLoc) {
   declareProperty("ClusterCollection", ClusterCollectionName, "Collection of clusters in input");
   declareProperty("BarrelCaloHitsCollection", EBCaloCollectionName, "Collection for Barrel Calo Hits used in input");
   declareProperty("EndcapCaloHitsCollection", EECaloCollectionName, "Collection for Endcap Calo Hits used in input");
   declareProperty("SingleMCParticle", singleMCParticle, "If this is True, the analysis is run only if one MCParticle is present in the event");
-  StatusCode sc = m_eventDataSvc.retrieve();
 }
 
 StatusCode CLUENtuplizer::initialize() {
   if (GaudiAlgorithm::initialize().isFailure()) return StatusCode::FAILURE;
-
-  m_podioDataSvc = dynamic_cast<PodioLegacyDataSvc*>(m_eventDataSvc.get());
-  if (m_podioDataSvc == nullptr) {
-    return StatusCode::FAILURE;
-  }
 
   if (service("THistSvc", m_ths).isFailure()) {
     error() << "Couldn't get THistSvc" << endmsg;
