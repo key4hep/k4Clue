@@ -77,10 +77,6 @@ private:
 
   bool singleMCParticle = false;
 
-  // PODIO data service
-  ServiceHandle<IDataProviderSvc> m_eventDataSvc;
-  PodioLegacyDataSvc* m_podioDataSvc;
-
   ITHistSvc* m_ths{nullptr};  ///< THistogram service
 
   TTree* t_hits{nullptr};
