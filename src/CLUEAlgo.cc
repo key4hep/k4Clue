@@ -21,34 +21,52 @@
 
 template <typename TILES>
 void CLUEAlgo_T<TILES>::makeClusters(){
+  if(verbose_){
+    std::cout << "ClueGaudiAlgorithmWrapper: tiles size (cols,rows):     " << TILES::constants_type_t::nTiles ;
+    if(!TILES::constants_type_t::endcap){
+      std::cout << " (" << TILES::constants_type_t::nColumnsPhi << "," << TILES::constants_type_t::nRows << " )\n";
+    } else {
+      std::cout << " (" << TILES::constants_type_t::nColumns << "," << TILES::constants_type_t::nRows << " )\n";
+    }
+  }
 
-  TILES allLayerTiles;
+  auto startTOT = std::chrono::high_resolution_clock::now();
 
-  // start clustering
+  // set up LayerTiles
   auto start = std::chrono::high_resolution_clock::now();
-
-  prepareDataStructures(allLayerTiles);
+  TILES allLayerTiles;
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
   if(verbose_)
-    std::cout << "--- prepareDataStructures:     " << elapsed.count() *1000 << " ms\n";
+    std::cout << "ClueGaudiAlgorithmWrapper: allLayerTiles:     " << elapsed.count() *1000 << " ms\n";
+
+  // start clustering
+  start = std::chrono::high_resolution_clock::now();
+  prepareDataStructures(allLayerTiles);
+  finish = std::chrono::high_resolution_clock::now();
+  elapsed = finish - start;
+  if(verbose_)
+    std::cout << "ClueGaudiAlgorithmWrapper: prepareDataStructures:     " << elapsed.count() *1000 << " ms\n";
 
   start = std::chrono::high_resolution_clock::now();
   calculateLocalDensity(allLayerTiles);
   finish = std::chrono::high_resolution_clock::now();
   elapsed = finish - start;
   if(verbose_)
-    std::cout << "--- calculateLocalDensity:     " << elapsed.count() *1000 << " ms\n";
+    std::cout << "ClueGaudiAlgorithmWrapper: calculateLocalDensity:     " << elapsed.count() *1000 << " ms\n";
 
   start = std::chrono::high_resolution_clock::now();
   calculateDistanceToHigher(allLayerTiles);
   finish = std::chrono::high_resolution_clock::now();
   elapsed = finish - start;
   if(verbose_)
-    std::cout << "--- calculateDistanceToHigher: " << elapsed.count() *1000 << " ms\n";
+    std::cout << "ClueGaudiAlgorithmWrapper: calculateDistanceToHigher: " << elapsed.count() *1000 << " ms\n";
 
   findAndAssignClusters();  
 
+  auto finishTOT = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> elapsedTOT = finishTOT - startTOT;
+  std::cout << "ClueGaudiAlgorithmWrapper: TOT: " << elapsedTOT.count() *1000 << " ms\n";
 }
 
 template <typename TILES>
@@ -224,7 +242,7 @@ void CLUEAlgo_T<TILES>::findAndAssignClusters(){
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
   if(verbose_)
-    std::cout << "--- findSeedAndFollowers:      " << elapsed.count() *1000 << " ms\n";
+    std::cout << "ClueGaudiAlgorithmWrapper:  findSeedAndFollowers:      " << elapsed.count() *1000 << " ms\n";
 
   start = std::chrono::high_resolution_clock::now();
   // expend clusters from seeds
@@ -244,7 +262,7 @@ void CLUEAlgo_T<TILES>::findAndAssignClusters(){
   finish = std::chrono::high_resolution_clock::now();
   elapsed = finish - start;
   if(verbose_)
-    std::cout << "--- assignClusters:            " << elapsed.count() *1000 << " ms\n";
+    std::cout << "ClueGaudiAlgorithmWrapper:  assignClusters:            " << elapsed.count() *1000 << " ms\n";
 
 }
 
