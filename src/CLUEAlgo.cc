@@ -30,6 +30,11 @@ void CLUEAlgo_T<TILES>::makeClusters(){
     }
   }
 
+  if( dc_ == 0.0 && rhoc_ == 0.0 && outlierDeltaFactor_ == 0.0){
+    std::cerr << "Input variables for CLUE are not set." << std::endl;
+    return;
+  }
+
   auto startTOT = std::chrono::high_resolution_clock::now();
 
   // start clustering

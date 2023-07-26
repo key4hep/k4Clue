@@ -37,6 +37,12 @@ template <typename TILES>
 class CLUEAlgo_T {
 
 public:
+  CLUEAlgo_T() {
+    dc_ = 0.0;
+    rhoc_ = 0.0;
+    outlierDeltaFactor_ = 0.0;
+    verbose_ = false;
+  }
   CLUEAlgo_T(float dc, float rhoc, float outlierDeltaFactor, bool verbose) {
     dc_ = dc; 
     rhoc_ = rhoc;
