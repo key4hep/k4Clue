@@ -32,31 +32,23 @@ void CLUEAlgo_T<TILES>::makeClusters(){
 
   auto startTOT = std::chrono::high_resolution_clock::now();
 
-  // set up LayerTiles
+  // start clustering
   auto start = std::chrono::high_resolution_clock::now();
-  TILES allLayerTiles;
+  prepareDataStructures(allLayerTiles_);
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
-  if(verbose_)
-    std::cout << "ClueGaudiAlgorithmWrapper: allLayerTiles:     " << elapsed.count() *1000 << " ms\n";
-
-  // start clustering
-  start = std::chrono::high_resolution_clock::now();
-  prepareDataStructures(allLayerTiles);
-  finish = std::chrono::high_resolution_clock::now();
-  elapsed = finish - start;
   if(verbose_)
     std::cout << "ClueGaudiAlgorithmWrapper: prepareDataStructures:     " << elapsed.count() *1000 << " ms\n";
 
   start = std::chrono::high_resolution_clock::now();
-  calculateLocalDensity(allLayerTiles);
+  calculateLocalDensity(allLayerTiles_);
   finish = std::chrono::high_resolution_clock::now();
   elapsed = finish - start;
   if(verbose_)
     std::cout << "ClueGaudiAlgorithmWrapper: calculateLocalDensity:     " << elapsed.count() *1000 << " ms\n";
 
   start = std::chrono::high_resolution_clock::now();
-  calculateDistanceToHigher(allLayerTiles);
+  calculateDistanceToHigher(allLayerTiles_);
   finish = std::chrono::high_resolution_clock::now();
   elapsed = finish - start;
   if(verbose_)
