@@ -44,10 +44,15 @@ StatusCode ClueGaudiAlgorithmWrapper::initialize() {
 
   auto start = std::chrono::high_resolution_clock::now();
   clueAlgoBarrel_ = LArBarrelCLUEAlgo(dc, rhoc, outlierDeltaFactor, true);
-  clueAlgoEndcap_ = CLICdetEndcapCLUEAlgo(dc, rhoc, outlierDeltaFactor, true);
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
-  std::cout << "ClueGaudiAlgorithmWrapper: Set up time (both Barrel & Endcap): " << elapsed.count() * 1000 << " ms\n";
+  std::cout << "ClueGaudiAlgorithmWrapper: Set up time (Endcap): " << elapsed.count() * 1000 << " ms\n";
+
+  start = std::chrono::high_resolution_clock::now();
+  clueAlgoEndcap_ = CLICdetEndcapCLUEAlgo(dc, rhoc, outlierDeltaFactor, true);
+  finish = std::chrono::high_resolution_clock::now();
+  elapsed = finish - start;
+  std::cout << "ClueGaudiAlgorithmWrapper: Set up time (Endcap): " << elapsed.count() * 1000 << " ms\n";
 
   return Algorithm::initialize();
 
