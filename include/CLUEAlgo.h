@@ -57,7 +57,7 @@ public:
     
   Points points_;
   
-  bool setPoints(int n, float* x, float* y, int* layer, float* weight, float* r = NULL) {
+  bool clearAndSetPoints(int n, float* x, float* y, int* layer, float* weight, float* r = NULL) {
     points_.clear();
     // input variables
     for(int i=0; i<n; ++i)

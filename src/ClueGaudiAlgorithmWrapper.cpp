@@ -86,7 +86,7 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<
   if(isBarrel){
     std::cout << "... in the barrel" << std::endl;
 
-    if(clueAlgoBarrel_.setPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0], &r[0]))
+    if(clueAlgoBarrel_.clearAndSetPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0], &r[0]))
       throw error() << "Error in setting the clue points for the barrel." << endmsg;
 
     // measure excution time of makeClusters
@@ -101,7 +101,7 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<
   } else {
     std::cout << "... in the endcap" << std::endl;
 
-    if(clueAlgoEndcap_.setPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0], &r[0]))
+    if(clueAlgoEndcap_.clearAndSetPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0], &r[0]))
       throw error() << "Error in setting the clue points for the endcap." << endmsg;
 
     auto start = std::chrono::high_resolution_clock::now();
