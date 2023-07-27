@@ -21,15 +21,6 @@
 
 template <typename TILES>
 void CLUEAlgo_T<TILES>::makeClusters(){
-  if(verbose_){
-    std::cout << "ClueGaudiAlgorithmWrapper: tiles size (cols,rows):     " << TILES::constants_type_t::nTiles ;
-    if(!TILES::constants_type_t::endcap){
-      std::cout << " (" << TILES::constants_type_t::nColumnsPhi << "," << TILES::constants_type_t::nRows << " )\n";
-    } else {
-      std::cout << " (" << TILES::constants_type_t::nColumns << "," << TILES::constants_type_t::nRows << " )\n";
-    }
-  }
-
   if( dc_ == 0.0 && rhoc_ == 0.0 && outlierDeltaFactor_ == 0.0){
     std::cerr << "Input variables for CLUE are not set." << std::endl;
     return;
@@ -39,21 +30,21 @@ void CLUEAlgo_T<TILES>::makeClusters(){
 
   // start clustering
   auto start = std::chrono::high_resolution_clock::now();
-  prepareDataStructures(allLayerTiles_);
+  prepareDataStructures();
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
   if(verbose_)
     std::cout << "ClueGaudiAlgorithmWrapper: prepareDataStructures:     " << elapsed.count() *1000 << " ms\n";
 
   start = std::chrono::high_resolution_clock::now();
-  calculateLocalDensity(allLayerTiles_);
+  calculateLocalDensity();
   finish = std::chrono::high_resolution_clock::now();
   elapsed = finish - start;
   if(verbose_)
     std::cout << "ClueGaudiAlgorithmWrapper: calculateLocalDensity:     " << elapsed.count() *1000 << " ms\n";
 
   start = std::chrono::high_resolution_clock::now();
-  calculateDistanceToHigher(allLayerTiles_);
+  calculateDistanceToHigher();
   finish = std::chrono::high_resolution_clock::now();
   elapsed = finish - start;
   if(verbose_)
@@ -77,22 +68,22 @@ std::map<int, std::vector<int> > CLUEAlgo_T<TILES>::getClusters(){
 }
 
 template <typename TILES>
-void CLUEAlgo_T<TILES>::prepareDataStructures( TILES & allLayerTiles ){
+void CLUEAlgo_T<TILES>::prepareDataStructures(){
   for (int i=0; i<points_.n; i++){
     // push index of points into tiles
-    allLayerTiles.fill( points_.layer[i], points_.x[i], points_.y[i], points_.x[i]/(1.*points_.r[i]), i );
+    allLayerTiles_.fill( points_.layer[i], points_.x[i], points_.y[i], points_.x[i]/(1.*points_.r[i]), i );
   }
 }
 
 template <typename TILES>
-void CLUEAlgo_T<TILES>::calculateLocalDensity( TILES & allLayerTiles ){
+void CLUEAlgo_T<TILES>::calculateLocalDensity(){
 
   std::array<int,4> search_box = {0, 0, 0, 0};
   auto dc2 = dc_*dc_;
 
   // loop over all points
   for(unsigned i = 0; i < points_.n; i++) {
-    const auto& lt = allLayerTiles[points_.layer[i]];
+    const auto& lt = allLayerTiles_[points_.layer[i]];
     float ri = points_.r[i];
     float inv_ri = 1.f/ri;
     float phi_i = points_.x[i]*inv_ri;
@@ -137,7 +128,7 @@ void CLUEAlgo_T<TILES>::calculateLocalDensity( TILES & allLayerTiles ){
 
 
 template <typename TILES>
-void CLUEAlgo_T<TILES>::calculateDistanceToHigher( TILES & allLayerTiles ){
+void CLUEAlgo_T<TILES>::calculateDistanceToHigher(){
   // loop over all points
   float dm = outlierDeltaFactor_ * dc_;
   for(unsigned i = 0; i < points_.n; i++) {
@@ -152,7 +143,7 @@ void CLUEAlgo_T<TILES>::calculateDistanceToHigher( TILES & allLayerTiles ){
     float rho_i = points_.rho[i];
 
     //get search box
-    const auto& lt = allLayerTiles[points_.layer[i]];
+    const auto& lt = allLayerTiles_[points_.layer[i]];
     float dm_phi = dm*inv_ri;
     std::array<int,4> search_box = TILES::constants_type_t::endcap ? 
      lt.searchBox(xi-dm, xi+dm, yi-dm, yi+dm):

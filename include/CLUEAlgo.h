@@ -48,6 +48,11 @@ public:
     rhoc_ = rhoc;
     outlierDeltaFactor_ = outlierDeltaFactor;
     verbose_ = verbose;
+    if(verbose_){
+      std::cout << "ClueGaudiAlgorithmWrapper: nTiles (cols,rows):     " << TILES::constants_type_t::nTiles ;
+      std::cout << " (" << (TILES::constants_type_t::endcap ? TILES::constants_type_t::nColumns : TILES::constants_type_t::nColumnsPhi);
+      std::cout << "," << TILES::constants_type_t::nRows << " )\n";
+    }
   }
   ~CLUEAlgo_T(){} 
     
@@ -169,9 +174,9 @@ public:
         
 private:
   // private member methods
-  void prepareDataStructures(TILES & );
-  void calculateLocalDensity(TILES & );
-  void calculateDistanceToHigher(TILES & );
+  void prepareDataStructures();
+  void calculateLocalDensity();
+  void calculateDistanceToHigher();
   void findAndAssignClusters();
   inline float distance(int i, int j, bool isPhi = false, float r = 0.0) const ;
   inline float distance2(int i, int j, bool isPhi = false, float r = 0.0) const ;
