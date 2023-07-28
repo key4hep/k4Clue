@@ -123,7 +123,12 @@ public:
   }
 
   void clearPoints(){ points_.clear(); }
-
+  void clearLayerTiles(){
+    for(unsigned i = 0; i < TILES::constants_type_t::nLayers; i++) {
+      auto lt = allLayerTiles_[i];
+      lt.clear();
+    }
+  }
   void makeClusters();
   std::map<int, std::vector<int> > getClusters();
   Points const getPoints() const { return points_; };

@@ -40,7 +40,7 @@ class LayerTiles_T {
     typedef T type;
 
     LayerTiles_T(){
-      layerTiles_.resize(T::nColumns * T::nRows);
+      layerTiles_.resize(T::nTiles);
     }
 
     void fill(const std::vector<float>& x, const std::vector<float>& y, const std::vector<float>& phi) {
