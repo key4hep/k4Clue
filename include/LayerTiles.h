@@ -177,6 +177,7 @@ class GenericTile {
     // numbering is not handled internally. It is the user's responsibility to
     // properly use and consistently access it here.
     const auto& operator[](int index) const { return tiles_[index]; }
+    auto& operator[](int index) { return tiles_[index]; }
     void fill(int index, float x, float y, float phi, unsigned int objectId) { tiles_[index].fill(x, y, phi, objectId); }
   
   private:

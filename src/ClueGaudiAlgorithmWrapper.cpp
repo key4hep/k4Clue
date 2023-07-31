@@ -138,19 +138,19 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<
   if(isBarrel){
     info() << "... in the barrel" << std::endl;
 
-    if(clueAlgoBarrel.clearAndSetPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0], &r[0]))
+    if(clueAlgoBarrel_.clearAndSetPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0], &r[0]))
       throw error() << "Error in setting the clue points for the barrel." << endmsg;
 
     // measure excution time of makeClusters
     auto start = std::chrono::high_resolution_clock::now();
-    clueAlgoBarrel.makeClusters();
+    clueAlgoBarrel_.makeClusters();
     auto finish = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = finish - start;
     std::cout << "ClueGaudiAlgorithmWrapper: Elapsed time: " << elapsed.count() * 1000 << " ms\n";
 
-    clueClusters = clueAlgoBarrel.getClusters();
-    cluePoints = clueAlgoBarrel.getPoints();
-    clueAlgoBarrel.clearLayerTiles();
+    clueClusters = clueAlgoBarrel_.getClusters();
+    cluePoints = clueAlgoBarrel_.getPoints();
+    clueAlgoBarrel_.clearLayerTiles();
 
   } else {
     std::cout << "... in the endcap" << std::endl;
@@ -167,6 +167,7 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<
 
     clueClusters = clueAlgoEndcap_.getClusters();
     cluePoints = clueAlgoEndcap_.getPoints();
+    clueAlgoEndcap_.clearLayerTiles();
   }
 
   info() << "Finished running CLUE algorithm" << endmsg;
