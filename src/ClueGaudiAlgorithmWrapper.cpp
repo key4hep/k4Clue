@@ -129,8 +129,6 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<
   std::map<int, std::vector<int> > clueClusters;
   Points cluePoints;
 
-  vals.clear();
-
   // Fill CLUE inputs
   fillCLUEPoints(clue_hits);
 
@@ -140,26 +138,19 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<
   if(isBarrel){
     info() << "... in the barrel" << std::endl;
 
-    for (unsigned rep = 0; rep < repeats; rep++) {
-      if(clueAlgoBarrel_.clearAndSetPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0], &r[0]))
-        throw error() << "Error in setting the clue points for the barrel." << endmsg;
-  
-      // measure excution time of makeClusters
-      auto start = std::chrono::high_resolution_clock::now();
-      clueAlgoBarrel_.makeClusters();
-      auto finish = std::chrono::high_resolution_clock::now();
-      std::chrono::duration<double> elapsed = finish - start;
-      //std::cout << "Iteration " << rep;
-      std::cout << "ClueGaudiAlgorithmWrapper: Elapsed time: " << elapsed.count() * 1000 << " ms\n";
-      if (rep != 0 or repeats == 1) {
-        vals.push_back(elapsed.count() * 1000);
-      }
-  
-      clueClusters = clueAlgoBarrel_.getClusters();
-      cluePoints = clueAlgoBarrel_.getPoints();
-    }
+    if(clueAlgoBarrel.clearAndSetPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0], &r[0]))
+      throw error() << "Error in setting the clue points for the barrel." << endmsg;
 
-//    printTimingReport(vals, repeats, "SUMMARY: ");
+    // measure excution time of makeClusters
+    auto start = std::chrono::high_resolution_clock::now();
+    clueAlgoBarrel.makeClusters();
+    auto finish = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = finish - start;
+    std::cout << "ClueGaudiAlgorithmWrapper: Elapsed time: " << elapsed.count() * 1000 << " ms\n";
+
+    clueClusters = clueAlgoBarrel.getClusters();
+    cluePoints = clueAlgoBarrel.getPoints();
+    clueAlgoBarrel.clearLayerTiles();
 
   } else {
     std::cout << "... in the endcap" << std::endl;
