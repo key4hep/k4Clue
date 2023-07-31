@@ -125,8 +125,7 @@ public:
   void clearPoints(){ points_.clear(); }
   void clearLayerTiles(){
     for(unsigned i = 0; i < TILES::constants_type_t::nLayers; i++) {
-      auto lt = allLayerTiles_[i];
-      lt.clear();
+      allLayerTiles_[i].clear();
     }
   }
   void makeClusters();
