@@ -50,8 +50,8 @@ public:
 
   private:
   // Parameters in input
-  std::string EBCaloCollectionName;
-  std::string EECaloCollectionName;
+  // std::string EBCaloCollectionName;
+  // std::string EECaloCollectionName;
   const edm4hep::CalorimeterHitCollection* EB_calo_coll; 
   const edm4hep::CalorimeterHitCollection* EE_calo_coll;
   float dc;
@@ -67,9 +67,9 @@ public:
   std::vector<float> weight;
 
   // Handle to read the calo cells and their cellID 
-  DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {EBCaloCollectionName, Gaudi::DataHandle::Reader, this};
-  DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {EECaloCollectionName, Gaudi::DataHandle::Reader, this};
-  MetaDataHandle<std::string> cellIDHandle {EB_calo_handle, "CellIDEncodingString", Gaudi::DataHandle::Reader};
+  DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {"BarrelInputHits", Gaudi::DataHandle::Reader, this};
+  DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {"EndcapInputHits", Gaudi::DataHandle::Reader, this};
+  MetaDataHandle<std::string> cellIDHandle {EB_calo_handle, "CellIDEncoding", Gaudi::DataHandle::Reader};
 
   // Collections in output
   DataHandle<edm4hep::CalorimeterHitCollection> caloHitsHandle{"CLUEClustersAsHits", Gaudi::DataHandle::Writer, this};

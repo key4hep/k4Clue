@@ -31,8 +31,8 @@ DECLARE_COMPONENT(ClueGaudiAlgorithmWrapper)
 
 ClueGaudiAlgorithmWrapper::ClueGaudiAlgorithmWrapper(const std::string& name, ISvcLocator* pSL) :
   GaudiAlgorithm(name, pSL) { 
-  declareProperty("BarrelCaloHitsCollection", EBCaloCollectionName, "Collection for Barrel Calo Hits used in input");
-  declareProperty("EndcapCaloHitsCollection", EECaloCollectionName, "Collection for Endcap Calo Hits used in input");
+  declareProperty("BarrelCaloHitsCollection", EB_calo_handle, "Collection for Barrel Calo Hits used in input");
+  declareProperty("EndcapCaloHitsCollection", EE_calo_handle, "Collection for Endcap Calo Hits used in input");
   declareProperty("CriticalDistance", dc, "Used to compute the local density");
   declareProperty("MinLocalDensity", rhoc, "Minimum local density for a point to be promoted as a Seed");
   declareProperty("OutlierDeltaFactor", outlierDeltaFactor, "Multiplicative constant to be applied to CriticalDistance");
@@ -274,7 +274,8 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   const BitFieldCoder bf(cellIDstr);
 
   // Output CLUE clusters
-  edm4hep::ClusterCollection* finalClusters = clustersHandle.createAndPut();
+  // edm4hep::ClusterCollection* finalClusters = clustersHandle.createAndPut();
+  auto finalClusters = std::make_unique<edm4hep::ClusterCollection>();
 
   // Output CLUE calo hits
   clue::CLUECalorimeterHitCollection clue_hit_coll_barrel;
@@ -288,18 +289,19 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   } else {
     throw std::runtime_error("Collection not found.");
   }
-  debug() << EB_calo_coll->size() << " caloHits in " << EBCaloCollectionName << "." << endmsg;
+  // debug() << EB_calo_coll->size() << " caloHits in " << EBCaloCollectionName << "." << endmsg;
 
   // Run CLUE in the barrel
   if(!clue_hit_coll_barrel.vect.empty()){
 
     std::map<int, std::vector<int> > clueClustersBarrel = runAlgo(clue_hit_coll_barrel.vect, true);
-    debug() << "Produced " << clueClustersBarrel.size() << " clusters in " << EBCaloCollectionName << endmsg;
+    // debug() << "Produced " << clueClustersBarrel.size() << " clusters in " << EBCaloCollectionName << endmsg;
   
     clue_hit_coll.vect.insert(clue_hit_coll.vect.end(), clue_hit_coll_barrel.vect.begin(), clue_hit_coll_barrel.vect.end());
 
-    fillFinalClusters(clue_hit_coll_barrel.vect, clueClustersBarrel, finalClusters);
-    debug() << "Saved " << finalClusters->size() << " clusters using " << EBCaloCollectionName << endmsg;
+    fillFinalClusters(clue_hit_coll_barrel.vect, clueClustersBarrel, finalClusters.get());
+    // debug() << "Saved " << finalClusters->size() << " clusters using " << EBCaloCollectionName << endmsg;
+
 
   }
 
@@ -319,17 +321,17 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   } else {
     throw std::runtime_error("Collection not found.");
   }
-  debug() << EE_calo_coll->size() << " caloHits in " << EECaloCollectionName << "." << endmsg;
+  // debug() << EE_calo_coll->size() << " caloHits in " << EECaloCollectionName << "." << endmsg;
 
   // Run CLUE in the endcap
   if(!clue_hit_coll_endcap.vect.empty()){
     std::map<int, std::vector<int> > clueClustersEndcap = runAlgo(clue_hit_coll_endcap.vect, false);
-    debug() << "Produced " << clueClustersEndcap.size() << " clusters in " << EECaloCollectionName << endmsg;
+    // debug() << "Produced " << clueClustersEndcap.size() << " clusters in " << EECaloCollectionName << endmsg;
   
     clue_hit_coll.vect.insert(clue_hit_coll.vect.end(), clue_hit_coll_endcap.vect.begin(), clue_hit_coll_endcap.vect.end());
 
-    fillFinalClusters(clue_hit_coll_endcap.vect, clueClustersEndcap, finalClusters);
-    debug() << "Saved " << finalClusters->size() << " clusters using " << EECaloCollectionName << endmsg;
+    fillFinalClusters(clue_hit_coll_endcap.vect, clueClustersEndcap, finalClusters.get());
+    // debug() << "Saved " << finalClusters->size() << " clusters using " << EECaloCollectionName << endmsg;
 
   }
 
@@ -345,12 +347,19 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   info() << "Saved " << clue_hit_coll.vect.size() << " CLUE calo hits in total. " << endmsg;
 
   // Save clusters as calo hits and add cellID to them
-  edm4hep::CalorimeterHitCollection* finalCaloHits = caloHitsHandle.createAndPut();
-  transformClustersInCaloHits(finalClusters, finalCaloHits);
+  // edm4hep::CalorimeterHitCollection* finalCaloHits = caloHitsHandle.createAndPut();
+  auto finalCaloHits = std::make_unique<edm4hep::CalorimeterHitCollection>();
+  transformClustersInCaloHits(finalClusters.get(), finalCaloHits.get());
+  info() << "Saved " << finalCaloHits->size() << " clusters as calo hits" << endmsg;
+
+  // Only now can we put the collections into the event store, as nothing needs
+  // them any longer
+  caloHitsHandle.put(std::move(finalCaloHits));
+  clustersHandle.put(std::move(finalClusters));
+
   // STILL TO BE FIXED:
   //auto& calohits_md = m_podioDataSvc->getProvider().getCollectionMetaData(finalCaloHits->getID());
   //calohits_md.setValue("CellIDEncodingString", cellIDstr);
-  info() << "Saved " << finalCaloHits->size() << " clusters as calo hits" << endmsg;
 
   // Cleaning
   clue_hit_coll.vect.clear();
