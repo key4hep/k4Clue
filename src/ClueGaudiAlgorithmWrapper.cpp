@@ -239,20 +239,14 @@ void ClueGaudiAlgorithmWrapper::transformClustersInCaloHits(edm4hep::ClusterColl
 
 StatusCode ClueGaudiAlgorithmWrapper::execute() {
 
+  std::cout << "ClueGaudiAlgorithmWrapper::execute START" << std::endl;
+
   // Read EB and EE collection
   EB_calo_coll = EB_calo_handle.get();
   EE_calo_coll = EE_calo_handle.get();
 
   // Get collection metadata cellID which is valid for both EB and EE
-  auto collID = EB_calo_coll->getID();
   const auto cellIDstr = cellIDHandle.get();
-  //TO BE TESTED!
-  //const std::string cellIDtest = "M:3,S-1:3,I:9,J:9,K-1:6";
-  //std::cout << "cellIDstr: " << cellIDstr << std::endl;
-  //if (cellIDstr != cellIDtest) {
-  //  error() << "ERROR cellID is: " << cellIDstr << endmsg;
-  //  return StatusCode::FAILURE;
-  //}
   const BitFieldCoder bf(cellIDstr);
 
   // Output CLUE clusters
@@ -263,6 +257,7 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   clue::CLUECalorimeterHitCollection clue_hit_coll_barrel;
   clue::CLUECalorimeterHitCollection clue_hit_coll_endcap;
 
+  info() << EB_calo_coll->size() << " caloHits in ECAL Barrel." << endmsg;
   // Fill CLUECaloHits in the barrel
   if( EB_calo_coll->isValid() ) {
     for(const auto& calo_hit : (*EB_calo_coll) ){
@@ -271,7 +266,6 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   } else {
     throw std::runtime_error("Collection not found.");
   }
-  // debug() << EB_calo_coll->size() << " caloHits in " << EBCaloCollectionName << "." << endmsg;
 
   // Run CLUE in the barrel
   if(!clue_hit_coll_barrel.vect.empty()){
@@ -291,6 +285,7 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   // already described in `include/CLDEndcapLayerTilesConstants.h` 
   int maxLayerPerSide = 40;
 
+  info() << EE_calo_coll->size() << " caloHits in ECAL Endcap." << endmsg;
   // Fill CLUECaloHits in the endcap
   if( EE_calo_coll->isValid() ) {
     for(const auto& calo_hit : (*EE_calo_coll) ){
