@@ -257,6 +257,8 @@ void ClueGaudiAlgorithmWrapper::transformClustersInCaloHits(edm4hep::ClusterColl
 
 StatusCode ClueGaudiAlgorithmWrapper::execute() {
 
+  std::cout << "ClueGaudiAlgorithmWrapper::execute START" << std::endl;
+
   // Read EB and EE collection
   EB_calo_coll = EB_calo_handle.get();
   EE_calo_coll = EE_calo_handle.get();
