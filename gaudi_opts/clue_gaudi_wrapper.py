@@ -6,7 +6,7 @@ algList = []
 
 from Configurables import PodioInput
 evtsvc = k4DataSvc('EventDataSvc')
-evtsvc.input = 'https://key4hep.web.cern.ch/testFiles/k4clue/inputData/cld/20230724_gammaFromSurface_10GeV_uniform_3events_reco_edm4hep.root'
+evtsvc.input = 'https://key4hep.web.cern.ch/testFiles/k4clue/inputData/clic/20230816_gammaFromVertex_10GeV_uniform_3events_reco_edm4hep.root'
 
 inp = PodioInput('InputReader')
 inp.collections = [
@@ -29,7 +29,7 @@ MyAIDAProcessor.Parameters = {"FileName": ["histograms_clue_standalone"],
 from Configurables import ClueGaudiAlgorithmWrapper
 
 MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper("ClueGaudiAlgorithmWrapperName")
-MyClueGaudiAlgorithmWrapper.OutputLevel = WARNING
+MyClueGaudiAlgorithmWrapper.OutputLevel = DEBUG
 MyClueGaudiAlgorithmWrapper.BarrelCaloHitsCollection = "ECALBarrel"
 MyClueGaudiAlgorithmWrapper.EndcapCaloHitsCollection = "ECALEndcap"
 MyClueGaudiAlgorithmWrapper.CriticalDistance = 15.00
