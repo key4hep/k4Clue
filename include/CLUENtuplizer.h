@@ -90,8 +90,6 @@ private:
   const clue::CLUECalorimeterHitCollection* clue_calo_coll;
   std::string ClusterCollectionName;
   const edm4hep::ClusterCollection* cluster_coll; 
-  //std::string EBCaloCollectionName = "ECALBarrel";
-  //std::string EECaloCollectionName = "ECALEndcap";
   const edm4hep::CalorimeterHitCollection* EB_calo_coll;
   const edm4hep::CalorimeterHitCollection* EE_calo_coll;
   DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {"BarrelInputHits", Gaudi::DataHandle::Reader, this};
