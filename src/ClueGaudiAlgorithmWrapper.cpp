@@ -257,8 +257,6 @@ void ClueGaudiAlgorithmWrapper::transformClustersInCaloHits(edm4hep::ClusterColl
 
 StatusCode ClueGaudiAlgorithmWrapper::execute() {
 
-  std::cout << "ClueGaudiAlgorithmWrapper::execute START" << std::endl;
-
   // Read EB and EE collection
   EB_calo_coll = EB_calo_handle.get();
   EE_calo_coll = EE_calo_handle.get();
@@ -329,10 +327,6 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
 
   }
 
-  // Add cellID to CLUE clusters
-  // STILL TO BE FIXED:
-  //auto& clusters_md = m_podioDataSvc->getProvider().getCollectionMetaData(finalClusters->getID());
-  //clusters_md.setValue("CellIDEncodingString", cellIDstr);
   info() << "Saved " << finalClusters->size() << " CLUE clusters in total." << endmsg;
 
   // Save CLUE calo hits
@@ -350,9 +344,8 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   caloHitsHandle.put(std::move(finalCaloHits));
   clustersHandle.put(std::move(finalClusters));
 
-  // STILL TO BE FIXED:
-  //auto& calohits_md = m_podioDataSvc->getProvider().getCollectionMetaData(finalCaloHits->getID());
-  //calohits_md.setValue("CellIDEncodingString", cellIDstr);
+  // To be fixed in the future:
+  // Add CellIDEncodingString to CLUE clusters and CLUE calo hits
 
   // Only now can we put the collections into the event store, as nothing needs
   // them any longer
