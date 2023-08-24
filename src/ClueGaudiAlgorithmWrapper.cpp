@@ -43,7 +43,7 @@ ClueGaudiAlgorithmWrapper::ClueGaudiAlgorithmWrapper(const std::string& name, IS
 StatusCode ClueGaudiAlgorithmWrapper::initialize() {
 
   auto start = std::chrono::high_resolution_clock::now();
-  clueAlgoBarrel_ = LArBarrelCLUEAlgo(dc, rhoc, outlierDeltaFactor, true);
+  clueAlgoBarrel_ = CLICdetBarrelCLUEAlgo(dc, rhoc, outlierDeltaFactor, true);
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
   std::cout << "ClueGaudiAlgorithmWrapper: Set up time (Barrel): " << elapsed.count() * 1000 << " ms\n";
@@ -371,7 +371,7 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
     clue_hit_coll.vect.insert(clue_hit_coll.vect.end(), clue_hit_coll_barrel.vect.begin(), clue_hit_coll_barrel.vect.end());
 
     fillFinalClusters(clue_hit_coll_barrel.vect, clueClustersBarrel, finalClusters.get());
-    debug() << "Saved " << finalClusters->size() << " clusters using ECAL Barrel hits" << endmsg;
+    info() << "Saved " << finalClusters->size() << " clusters using ECAL Barrel hits" << endmsg;
 
   }
 
@@ -402,7 +402,7 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
     clue_hit_coll.vect.insert(clue_hit_coll.vect.end(), clue_hit_coll_endcap.vect.begin(), clue_hit_coll_endcap.vect.end());
 
     fillFinalClusters(clue_hit_coll_endcap.vect, clueClustersEndcap, finalClusters.get());
-    debug() << "Saved " << finalClusters->size() << " clusters using ECAL Endcap hits" << endmsg;
+    info() << "Saved " << finalClusters->size() << " clusters using ECAL Endcap hits" << endmsg;
 
   }
 
