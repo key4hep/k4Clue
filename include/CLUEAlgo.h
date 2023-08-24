@@ -150,6 +150,8 @@ private:
   void calculateDistanceToHigher(TILES & );
   void findAndAssignClusters();
   inline float distance(int i, int j, bool isPhi = false, float r = 0.0) const ;
+  inline float distance2(int i, int j, bool isPhi = false, float r = 0.0) const ;
+
 };
 
 using CLUEAlgo = CLUEAlgo_T<LayerTiles>;
