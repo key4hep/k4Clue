@@ -51,6 +51,7 @@ public:
     delete m_hits_rho;
     delete m_hits_delta;
     delete m_hits_energy;
+    delete m_hits_MCEnergy;
 
     delete m_clusters;
     delete m_clusters_event;
@@ -114,6 +115,7 @@ private:
   std::vector<float> *m_hits_rho = nullptr;
   std::vector<float> *m_hits_delta = nullptr;
   std::vector<float> *m_hits_energy = nullptr;
+  std::vector<float> *m_hits_MCEnergy = nullptr;
 
   TTree* t_clusters{nullptr};
   std::vector<int> *m_clusters = nullptr;
