@@ -159,5 +159,6 @@ using CLICdetEndcapCLUEAlgo = CLUEAlgo_T<CLICdetEndcapLayerTiles>;
 using CLICdetBarrelCLUEAlgo = CLUEAlgo_T<CLICdetBarrelLayerTiles>;
 using CLDEndcapCLUEAlgo = CLUEAlgo_T<CLDEndcapLayerTiles>;
 using CLDBarrelCLUEAlgo = CLUEAlgo_T<CLDBarrelLayerTiles>;
+using LArBarrelCLUEAlgo = CLUEAlgo_T<LArBarrelLayerTiles>;
 
 #endif

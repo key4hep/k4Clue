@@ -176,7 +176,9 @@ StatusCode CLUENtuplizer::execute() {
       }
     }
     nClusters++;
-    totEnergy += cl.getEnergy();
+    if(!std::isnan(cl.getEnergy())){
+      totEnergy += cl.getEnergy();
+    }
     m_clusters_maxLayer->push_back (maxLayer);
 
   }
@@ -209,6 +211,7 @@ StatusCode CLUENtuplizer::execute() {
     m_hits_rho->push_back (clue_hit.getRho());
     m_hits_delta->push_back (clue_hit.getDelta());
     m_hits_energy->push_back (clue_hit.getEnergy());
+    m_hits_MCEnergy->push_back (mcp_primary_energy);
 
     if(clue_hit.isFollower()){
       m_hits_status->push_back(1);
@@ -249,6 +252,7 @@ void CLUENtuplizer::initializeTrees() {
   m_hits_rho = new std::vector<float>();
   m_hits_delta = new std::vector<float>();
   m_hits_energy = new std::vector<float>();
+  m_hits_MCEnergy = new std::vector<float>();
 
   t_hits->Branch ("event", &m_hits_event);
   t_hits->Branch ("region", &m_hits_region);
@@ -262,6 +266,7 @@ void CLUENtuplizer::initializeTrees() {
   t_hits->Branch ("rho", &m_hits_rho);
   t_hits->Branch ("delta", &m_hits_delta);
   t_hits->Branch ("energy", &m_hits_energy);
+  t_hits->Branch ("MCEnergy", &m_hits_MCEnergy);
 
   m_clusters          = new std::vector<int>();
   m_clusters_event    = new std::vector<int>();
@@ -319,6 +324,7 @@ void CLUENtuplizer::cleanTrees() {
   m_hits_rho->clear();
   m_hits_delta->clear();
   m_hits_energy->clear();
+  m_hits_MCEnergy->clear();
 
   m_clusters->clear();
   m_clusters_event->clear();
