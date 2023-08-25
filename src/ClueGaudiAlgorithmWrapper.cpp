@@ -350,6 +350,7 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   clue::CLUECalorimeterHitCollection clue_hit_coll_endcap;
 
   info() << EB_calo_coll->size() << " caloHits in ECAL Barrel." << endmsg;
+
   // Fill CLUECaloHits in the barrel
   if( EB_calo_coll->isValid() ) {
     for(const auto& calo_hit : (*EB_calo_coll) ){
@@ -380,6 +381,7 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   int maxLayerPerSide = 40;
 
   info() << EE_calo_coll->size() << " caloHits in ECAL Endcap." << endmsg;
+
   // Fill CLUECaloHits in the endcap
   if( EE_calo_coll->isValid() ) {
     for(const auto& calo_hit : (*EE_calo_coll) ){
@@ -392,7 +394,6 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   } else {
     throw std::runtime_error("Collection not found.");
   }
-  debug() << EE_calo_coll->size() << " caloHits in ECAL Endcap" << endmsg;
 
   // Run CLUE in the endcap
   if(!clue_hit_coll_endcap.vect.empty()){
