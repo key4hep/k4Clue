@@ -1768,6 +1768,7 @@ VertexFinderUnconstrained.Parameters = {
 from Configurables import ClueGaudiAlgorithmWrapper
 
 MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper("ClueGaudiAlgorithmWrapperName")
+MyClueGaudiAlgorithmWrapper.OutputLevel = INFO
 MyClueGaudiAlgorithmWrapper.BarrelCaloHitsCollection = "ECALBarrel"
 MyClueGaudiAlgorithmWrapper.EndcapCaloHitsCollection = "ECALEndcap"
 MyClueGaudiAlgorithmWrapper.CriticalDistance = 10.00
@@ -1785,11 +1786,25 @@ ClueAlgorithmEDM4hepConv.OutputLevel = DEBUG
 ## Add it to MyDDCaloDigi
 MyDDMarlinPandora.EDM4hep2LcioTool=ClueAlgorithmEDM4hepConv
 
+from Configurables import CLUENtuplizer
+MyCLUENtuplizer = CLUENtuplizer("CLUEAnalysis")
+MyCLUENtuplizer.OutputLevel = DEBUG
+MyCLUENtuplizer.ClusterCollection = "CLUEClusters"
+MyCLUENtuplizer.BarrelCaloHitsCollection = "ECALBarrel"
+MyCLUENtuplizer.EndcapCaloHitsCollection = "ECALEndcap"
+MyCLUENtuplizer.SingleMCParticle = True
+
+from Configurables import THistSvc
+THistSvc().Output = ["rec DATAFILE='k4clue_analysis_output.root' TYP='ROOT' OPT='RECREATE'"]
+THistSvc().OutputLevel = WARNING
+THistSvc().PrintAll = False
+THistSvc().AutoSave = True
+THistSvc().AutoFlush = True
+
 # Write output to EDM4hep
 from Configurables import PodioOutput
 out = PodioOutput("PodioOutput", filename = "my_output_clue.root")
 out.outputCommands = ["keep *"]
-
 
 algList.append(inp)
 algList.append(MyAIDAProcessor)
@@ -1842,6 +1857,7 @@ algList.append(JetClusteringAndRefiner)
 # # algList.append(VertexFinderUnconstrained)  # Config.VertexUnconstrainedON
 algList.append(Output_REC)
 algList.append(Output_DST)
+algList.append(MyCLUENtuplizer)
 algList.append(out)
 
 from Configurables import ApplicationMgr
