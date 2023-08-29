@@ -1,0 +1,17 @@
+name: pre-commit
+
+on: [push, pull_request]
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v3
+    - uses: cvmfs-contrib/github-action-cvmfs@v3.1
+    - name: Run pre-commit
+      run: |
+        source /cvmfs/sw-nightlies.hsf.org/key4hep/setup.sh
+        cd ${GITHUB_WORKSPACE}
+        pre-commit run --show-diff-on-failure \
+          --color=always \
+          --all-files
