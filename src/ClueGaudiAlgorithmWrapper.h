@@ -50,8 +50,6 @@ public:
 
   private:
   // Parameters in input
-  // std::string EBCaloCollectionName;
-  // std::string EECaloCollectionName;
   const edm4hep::CalorimeterHitCollection* EB_calo_coll; 
   const edm4hep::CalorimeterHitCollection* EE_calo_coll;
   float dc;
