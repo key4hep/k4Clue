@@ -24,6 +24,8 @@
 // podio specific includes
 #include "DDSegmentation/BitFieldCoder.h"
 
+#include "edm4hep/Constants.h"
+
 using namespace dd4hep ;
 using namespace DDSegmentation ;
 
@@ -341,7 +343,7 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
 
   // Add cellID to CLUE clusters
   auto& clusters_md = m_podioDataSvc->getProvider().getCollectionMetaData(finalClusters->getID());
-  clusters_md.setValue("CellIDEncodingString", cellIDstr);
+  clusters_md.setValue(edm4hep::CellIDEncoding, cellIDstr);
   info() << "Saved " << finalClusters->size() << " CLUE clusters in total." << endmsg;
 
   // Save CLUE calo hits
@@ -353,7 +355,7 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   edm4hep::CalorimeterHitCollection* finalCaloHits = caloHitsHandle.createAndPut();
   transformClustersInCaloHits(finalClusters, finalCaloHits);
   auto& calohits_md = m_podioDataSvc->getProvider().getCollectionMetaData(finalCaloHits->getID());
-  calohits_md.setValue("CellIDEncodingString", cellIDstr);
+  calohits_md.setValue(edm4hep::CellIDEncoding, cellIDstr);
   info() << "Saved " << finalCaloHits->size() << " clusters as calo hits" << endmsg;
 
   // Cleaning
