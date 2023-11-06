@@ -33,7 +33,7 @@ inp.collections = [
   'ECALBarrel',
   'ECALEndcap',
 ]
-inp.OutputLevel = DEBUG
+inp.OutputLevel = WARNING
 
 MyAIDAProcessor = MarlinProcessorWrapper("MyAIDAProcessor")
 MyAIDAProcessor.OutputLevel = WARNING
@@ -47,7 +47,7 @@ MyAIDAProcessor.Parameters = {"FileName": ["histograms_clue_standalone"],
 from Configurables import ClueGaudiAlgorithmWrapper
 
 MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper("ClueGaudiAlgorithmWrapperName")
-MyClueGaudiAlgorithmWrapper.OutputLevel = DEBUG
+MyClueGaudiAlgorithmWrapper.OutputLevel = WARNING
 MyClueGaudiAlgorithmWrapper.BarrelCaloHitsCollection = "ECALBarrel"
 MyClueGaudiAlgorithmWrapper.EndcapCaloHitsCollection = "ECALEndcap"
 MyClueGaudiAlgorithmWrapper.CriticalDistance = 15.00

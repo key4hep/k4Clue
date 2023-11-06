@@ -104,7 +104,7 @@ StatusCode CLUENtuplizer::execute() {
   EB_calo_coll = EB_calo_handle.get();
   EE_calo_coll = EE_calo_handle.get();
 
-  debug() << "ECAL Calorimeter Hits Size = " << int( (*EB_calo_coll).size()+(*EE_calo_coll).size() ) << endmsg;
+  debug() << "ECAL Calorimeter Hits Size = " << (*EB_calo_coll).size()+(*EE_calo_coll).size() << endmsg;
 
   // Read cluster collection
   DataHandle<edm4hep::ClusterCollection> cluster_handle {  
@@ -123,7 +123,7 @@ StatusCode CLUENtuplizer::execute() {
   std::uint64_t totSize = 0;
   bool foundInECAL = false;
 
-  debug() << "Cluster Collection size = " << (*cluster_coll).size() << endmsg;
+  debug() << "Cluster Collection size = " << cluster_coll->size() << endmsg;
   for (const auto& cl : *cluster_coll) {
     m_clusters_event->push_back (evNum);
     m_clusters_energy->push_back (cl.getEnergy());
