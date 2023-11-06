@@ -28,6 +28,7 @@
 #include <edm4hep/ClusterCollection.h>
 #include <edm4hep/MCParticleCollection.h>
 #include <edm4hep/EventHeaderCollection.h>
+#include <edm4hep/Constants.h>
 #include "CLUECalorimeterHit.h"
 
 #include "TH1F.h"
@@ -94,7 +95,7 @@ private:
   const edm4hep::CalorimeterHitCollection* EE_calo_coll;
   DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {"BarrelInputHits", Gaudi::DataHandle::Reader, this};
   DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {"EndcapInputHits", Gaudi::DataHandle::Reader, this};
-  MetaDataHandle<std::string> cellIDHandle {EB_calo_handle, "CellIDEncoding", Gaudi::DataHandle::Reader};
+  MetaDataHandle<std::string> cellIDHandle {EB_calo_handle, edm4hep::CellIDEncoding, Gaudi::DataHandle::Reader};
 
   bool singleMCParticle = false;
 
