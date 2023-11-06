@@ -288,3 +288,4 @@ template class CLUEAlgo_T<CLICdetEndcapLayerTiles>;
 template class CLUEAlgo_T<CLICdetBarrelLayerTiles>;
 template class CLUEAlgo_T<CLDEndcapLayerTiles>;
 template class CLUEAlgo_T<CLDBarrelLayerTiles>;
+template class CLUEAlgo_T<LArBarrelLayerTiles>;

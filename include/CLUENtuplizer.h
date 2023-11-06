@@ -28,6 +28,7 @@
 #include <edm4hep/ClusterCollection.h>
 #include <edm4hep/MCParticleCollection.h>
 #include <edm4hep/EventHeaderCollection.h>
+#include <edm4hep/Constants.h>
 #include "CLUECalorimeterHit.h"
 
 #include "TH1F.h"
@@ -52,6 +53,7 @@ public:
     delete m_hits_rho;
     delete m_hits_delta;
     delete m_hits_energy;
+    delete m_hits_MCEnergy;
 
     delete m_clusters;
     delete m_clusters_event;
@@ -93,7 +95,7 @@ private:
   const edm4hep::CalorimeterHitCollection* EE_calo_coll;
   DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {"BarrelInputHits", Gaudi::DataHandle::Reader, this};
   DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {"EndcapInputHits", Gaudi::DataHandle::Reader, this};
-  MetaDataHandle<std::string> cellIDHandle {EB_calo_handle, "CellIDEncoding", Gaudi::DataHandle::Reader};
+  MetaDataHandle<std::string> cellIDHandle {EB_calo_handle, edm4hep::CellIDEncoding, Gaudi::DataHandle::Reader};
 
   bool singleMCParticle = false;
 
@@ -112,6 +114,7 @@ private:
   std::vector<float> *m_hits_rho = nullptr;
   std::vector<float> *m_hits_delta = nullptr;
   std::vector<float> *m_hits_energy = nullptr;
+  std::vector<float> *m_hits_MCEnergy = nullptr;
 
   TTree* t_clusters{nullptr};
   std::vector<int> *m_clusters = nullptr;
