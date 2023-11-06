@@ -20,6 +20,7 @@
 #define CLUE_HISTOGRAMS_H
 
 #include "k4FWCore/DataHandle.h"
+#include "k4FWCore/MetaDataHandle.h"
 #include "GaudiAlg/GaudiAlgorithm.h"
 #include "GaudiKernel/ITHistSvc.h"
 
@@ -27,6 +28,7 @@
 #include <edm4hep/ClusterCollection.h>
 #include <edm4hep/MCParticleCollection.h>
 #include <edm4hep/EventHeaderCollection.h>
+#include <edm4hep/Constants.h>
 #include "CLUECalorimeterHit.h"
 
 #include "TH1F.h"
@@ -89,16 +91,13 @@ private:
   const clue::CLUECalorimeterHitCollection* clue_calo_coll;
   std::string ClusterCollectionName;
   const edm4hep::ClusterCollection* cluster_coll; 
-  std::string EBCaloCollectionName = "ECALBarrel";
-  std::string EECaloCollectionName = "ECALEndcap";
   const edm4hep::CalorimeterHitCollection* EB_calo_coll;
   const edm4hep::CalorimeterHitCollection* EE_calo_coll;
+  DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {"BarrelInputHits", Gaudi::DataHandle::Reader, this};
+  DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {"EndcapInputHits", Gaudi::DataHandle::Reader, this};
+  MetaDataHandle<std::string> cellIDHandle {EB_calo_handle, edm4hep::CellIDEncoding, Gaudi::DataHandle::Reader};
 
   bool singleMCParticle = false;
-
-  // PODIO data service
-  ServiceHandle<IDataProviderSvc> m_eventDataSvc;
-  PodioLegacyDataSvc* m_podioDataSvc;
 
   ITHistSvc* m_ths{nullptr};  ///< THistogram service
 

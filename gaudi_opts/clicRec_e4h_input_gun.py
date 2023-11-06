@@ -18,7 +18,7 @@
 #
 from Gaudi.Configuration import *
 
-from Configurables import LcioEvent, k4DataSvc, MarlinProcessorWrapper
+from Configurables import LcioEvent, MarlinProcessorWrapper
 from k4MarlinWrapper.parseConstants import *
 algList = []
 
@@ -43,7 +43,7 @@ from Configurables import ToolSvc, Lcio2EDM4hepTool, EDM4hep2LcioTool
 
 from Configurables import k4DataSvc, PodioInput
 evtsvc = k4DataSvc('EventDataSvc')
-evtsvc.input = '$TEST_DIR/inputFiles/ttbar1_edm4hep.root'
+evtsvc.input = '$TEST_DIR/inputFiles/ttbar_edm4hep_frame.root'
 
 
 inp = PodioInput('InputReader')
@@ -82,11 +82,11 @@ inp.OutputLevel = DEBUG
 
 
 MyAIDAProcessor = MarlinProcessorWrapper("MyAIDAProcessor")
-MyAIDAProcessor.OutputLevel = WARNING 
-MyAIDAProcessor.ProcessorType = "AIDAProcessor" 
+MyAIDAProcessor.OutputLevel = WARNING
+MyAIDAProcessor.ProcessorType = "AIDAProcessor"
 MyAIDAProcessor.Parameters = {
                               "Compress": ["1"],
-                              "FileName": ["histograms_clue"],
+                              "FileName": ["histograms"],
                               "FileType": ["root"]
                               }
 
@@ -100,16 +100,16 @@ MyAIDAProcessor.EDM4hep2LcioTool=edmConvTool
 
 
 InitDD4hep = MarlinProcessorWrapper("InitDD4hep")
-InitDD4hep.OutputLevel = WARNING 
-InitDD4hep.ProcessorType = "InitializeDD4hep" 
+InitDD4hep.OutputLevel = WARNING
+InitDD4hep.ProcessorType = "InitializeDD4hep"
 InitDD4hep.Parameters = {
-                         "DD4hepXMLFile": [os.environ["K4GEO"]+"/CLIC/compact/CLIC_o3_v14/CLIC_o3_v14.xml"],
+                         "DD4hepXMLFile": [os.environ["K4GEO"]+"/compact/CLIC/compact/CLIC_o3_v14/CLIC_o3_v14.xml"],
                          "EncodingStringParameter": ["GlobalTrackerReadoutID"]
                          }
 
 Config = MarlinProcessorWrapper("Config")
-Config.OutputLevel = WARNING 
-Config.ProcessorType = "CLICRecoConfig" 
+Config.OutputLevel = WARNING
+Config.ProcessorType = "CLICRecoConfig"
 Config.Parameters = {
                      "BeamCal": ["3TeV"],
                      "BeamCalChoices": ["3TeV", "380GeV"],
@@ -122,8 +122,8 @@ Config.Parameters = {
                      }
 
 VXDBarrelDigitiser = MarlinProcessorWrapper("VXDBarrelDigitiser")
-VXDBarrelDigitiser.OutputLevel = WARNING 
-VXDBarrelDigitiser.ProcessorType = "DDPlanarDigiProcessor" 
+VXDBarrelDigitiser.OutputLevel = WARNING
+VXDBarrelDigitiser.ProcessorType = "DDPlanarDigiProcessor"
 VXDBarrelDigitiser.Parameters = {
                                  "IsStrip": ["false"],
                                  "ResolutionU": ["0.003", "0.003", "0.003", "0.003", "0.003", "0.003"],
@@ -149,8 +149,8 @@ VXDBarrelDigitiser.Lcio2EDM4hepTool=VXDBarrelDigitiserLCIOConv
 
 
 VXDEndcapDigitiser = MarlinProcessorWrapper("VXDEndcapDigitiser")
-VXDEndcapDigitiser.OutputLevel = WARNING 
-VXDEndcapDigitiser.ProcessorType = "DDPlanarDigiProcessor" 
+VXDEndcapDigitiser.OutputLevel = WARNING
+VXDEndcapDigitiser.ProcessorType = "DDPlanarDigiProcessor"
 VXDEndcapDigitiser.Parameters = {
                                  "IsStrip": ["false"],
                                  "ResolutionU": ["0.003", "0.003", "0.003", "0.003", "0.003", "0.003"],
@@ -176,8 +176,8 @@ VXDEndcapDigitiser.Lcio2EDM4hepTool=VXDEndcapDigitiserLCIOConv
 
 
 InnerPlanarDigiProcessor = MarlinProcessorWrapper("InnerPlanarDigiProcessor")
-InnerPlanarDigiProcessor.OutputLevel = WARNING 
-InnerPlanarDigiProcessor.ProcessorType = "DDPlanarDigiProcessor" 
+InnerPlanarDigiProcessor.OutputLevel = WARNING
+InnerPlanarDigiProcessor.ProcessorType = "DDPlanarDigiProcessor"
 InnerPlanarDigiProcessor.Parameters = {
                                        "IsStrip": ["false"],
                                        "ResolutionU": ["0.007"],
@@ -204,8 +204,8 @@ InnerPlanarDigiProcessor.Lcio2EDM4hepTool=InnerPlanarDigiProcessorLCIOConv
 
 
 InnerEndcapPlanarDigiProcessor = MarlinProcessorWrapper("InnerEndcapPlanarDigiProcessor")
-InnerEndcapPlanarDigiProcessor.OutputLevel = WARNING 
-InnerEndcapPlanarDigiProcessor.ProcessorType = "DDPlanarDigiProcessor" 
+InnerEndcapPlanarDigiProcessor.OutputLevel = WARNING
+InnerEndcapPlanarDigiProcessor.ProcessorType = "DDPlanarDigiProcessor"
 InnerEndcapPlanarDigiProcessor.Parameters = {
                                              "IsStrip": ["false"],
                                              "ResolutionU": ["0.005", "0.007", "0.007", "0.007", "0.007", "0.007", "0.007"],
@@ -232,8 +232,8 @@ InnerEndcapPlanarDigiProcessor.Lcio2EDM4hepTool=InnerEndcapPlanarDigiProcessorLC
 
 
 OuterPlanarDigiProcessor = MarlinProcessorWrapper("OuterPlanarDigiProcessor")
-OuterPlanarDigiProcessor.OutputLevel = WARNING 
-OuterPlanarDigiProcessor.ProcessorType = "DDPlanarDigiProcessor" 
+OuterPlanarDigiProcessor.OutputLevel = WARNING
+OuterPlanarDigiProcessor.ProcessorType = "DDPlanarDigiProcessor"
 OuterPlanarDigiProcessor.Parameters = {
                                        "IsStrip": ["false"],
                                        "ResolutionU": ["0.007", "0.007", "0.007"],
@@ -259,8 +259,8 @@ OuterPlanarDigiProcessor.Lcio2EDM4hepTool=OuterPlanarDigiProcessorLCIOConv
 
 
 OuterEndcapPlanarDigiProcessor = MarlinProcessorWrapper("OuterEndcapPlanarDigiProcessor")
-OuterEndcapPlanarDigiProcessor.OutputLevel = WARNING 
-OuterEndcapPlanarDigiProcessor.ProcessorType = "DDPlanarDigiProcessor" 
+OuterEndcapPlanarDigiProcessor.OutputLevel = WARNING
+OuterEndcapPlanarDigiProcessor.ProcessorType = "DDPlanarDigiProcessor"
 OuterEndcapPlanarDigiProcessor.Parameters = {
                                              "IsStrip": ["false"],
                                              "ResolutionU": ["0.007", "0.007", "0.007", "0.007", "0.007"],
@@ -287,8 +287,8 @@ OuterEndcapPlanarDigiProcessor.Lcio2EDM4hepTool=OuterEndcapPlanarDigiProcessorLC
 
 
 MyTruthTrackFinder = MarlinProcessorWrapper("MyTruthTrackFinder")
-MyTruthTrackFinder.OutputLevel = WARNING 
-MyTruthTrackFinder.ProcessorType = "TruthTrackFinder" 
+MyTruthTrackFinder.OutputLevel = WARNING
+MyTruthTrackFinder.ProcessorType = "TruthTrackFinder"
 MyTruthTrackFinder.Parameters = {
                                  "FitForward": ["true"],
                                  "MCParticleCollectionName": ["MCParticle"],
@@ -300,8 +300,8 @@ MyTruthTrackFinder.Parameters = {
                                  }
 
 MyConformalTracking = MarlinProcessorWrapper("MyConformalTracking")
-MyConformalTracking.OutputLevel = WARNING 
-MyConformalTracking.ProcessorType = "ConformalTrackingV2" 
+MyConformalTracking.OutputLevel = WARNING
+MyConformalTracking.ProcessorType = "ConformalTrackingV2"
 MyConformalTracking.Parameters = {
                                   "DebugHits": ["DebugHits"],
                                   "DebugPlots": ["false"],
@@ -335,8 +335,8 @@ MyConformalTracking.Lcio2EDM4hepTool=MyConformalTrackingLCIOConv
 
 
 ClonesAndSplitTracksFinder = MarlinProcessorWrapper("ClonesAndSplitTracksFinder")
-ClonesAndSplitTracksFinder.OutputLevel = WARNING 
-ClonesAndSplitTracksFinder.ProcessorType = "ClonesAndSplitTracksFinder" 
+ClonesAndSplitTracksFinder.OutputLevel = WARNING
+ClonesAndSplitTracksFinder.ProcessorType = "ClonesAndSplitTracksFinder"
 ClonesAndSplitTracksFinder.Parameters = {
                                          "EnergyLossOn": ["true"],
                                          "InputTrackCollectionName": ["SiTracksCT"],
@@ -363,8 +363,8 @@ ClonesAndSplitTracksFinder.Lcio2EDM4hepTool=ClonesAndSplitTracksFinderLCIOConv
 
 
 Refit = MarlinProcessorWrapper("Refit")
-Refit.OutputLevel = WARNING 
-Refit.ProcessorType = "RefitFinal" 
+Refit.OutputLevel = WARNING
+Refit.ProcessorType = "RefitFinal"
 Refit.Parameters = {
                     "EnergyLossOn": ["true"],
                     "InputRelationCollectionName": ["SiTrackRelations"],
@@ -392,8 +392,8 @@ Refit.Lcio2EDM4hepTool=RefitLCIOConv
 
 
 MyClicEfficiencyCalculator = MarlinProcessorWrapper("MyClicEfficiencyCalculator")
-MyClicEfficiencyCalculator.OutputLevel = WARNING 
-MyClicEfficiencyCalculator.ProcessorType = "ClicEfficiencyCalculator" 
+MyClicEfficiencyCalculator.OutputLevel = WARNING
+MyClicEfficiencyCalculator.ProcessorType = "ClicEfficiencyCalculator"
 MyClicEfficiencyCalculator.Parameters = {
                                          "MCParticleCollectionName": ["MCParticle"],
                                          "MCParticleNotReco": ["MCParticleNotReco"],
@@ -422,8 +422,8 @@ MyClicEfficiencyCalculator.Lcio2EDM4hepTool=MyClicEfficiencyCalculatorLCIOConv
 
 
 MyTrackChecker = MarlinProcessorWrapper("MyTrackChecker")
-MyTrackChecker.OutputLevel = WARNING 
-MyTrackChecker.ProcessorType = "TrackChecker" 
+MyTrackChecker.OutputLevel = WARNING
+MyTrackChecker.ProcessorType = "TrackChecker"
 MyTrackChecker.Parameters = {
                              "MCParticleCollectionName": ["MCParticle"],
                              "TrackCollectionName": ["SiTracks_Refitted"],
@@ -441,15 +441,15 @@ MyTrackChecker.Parameters = {
 
 
 EventNumber = MarlinProcessorWrapper("EventNumber")
-EventNumber.OutputLevel = WARNING 
-EventNumber.ProcessorType = "Statusmonitor" 
+EventNumber.OutputLevel = WARNING
+EventNumber.ProcessorType = "Statusmonitor"
 EventNumber.Parameters = {
                           "HowOften": ["1"]
                           }
 
 MyDDCaloDigi = MarlinProcessorWrapper("MyDDCaloDigi")
 MyDDCaloDigi.OutputLevel = WARNING
-MyDDCaloDigi.ProcessorType = "DDCaloDigi" 
+MyDDCaloDigi.ProcessorType = "DDCaloDigi"
 MyDDCaloDigi.Parameters = {
                            "CalibECALMIP": ["0.0001"],
                            "CalibHCALMIP": ["0.0001"],
@@ -549,8 +549,8 @@ MyDDCaloDigi.Lcio2EDM4hepTool=MyDDCaloDigiLCIOConv
 
 
 MyDDMarlinPandora = MarlinProcessorWrapper("MyDDMarlinPandora")
-MyDDMarlinPandora.OutputLevel = WARNING 
-MyDDMarlinPandora.ProcessorType = "DDPandoraPFANewProcessor" 
+MyDDMarlinPandora.OutputLevel = WARNING
+MyDDMarlinPandora.ProcessorType = "DDPandoraPFANewProcessor"
 MyDDMarlinPandora.Parameters = {
                                 "ClusterCollectionName": ["PandoraClusters"],
                                 "CreateGaps": ["false"],
@@ -559,8 +559,7 @@ MyDDMarlinPandora.Parameters = {
                                 "D0UnmatchedVertexTrackCut": ["5"],
                                 "DigitalMuonHits": ["0"],
                                 "ECalBarrelNormalVector": ["0", "0", "1"],
-                                #"ECalCaloHitCollections": ["ECALBarrel", "ECALEndcap", "ECALOther"],
-                                "ECalCaloHitCollections": ["CLUEClustersAsHits"],
+                                "ECalCaloHitCollections": ["ECALBarrel", "ECALEndcap", "ECALOther"],
                                 "ECalMipThreshold": ["0.5"],
                                 "ECalScMipThreshold": ["0"],
                                 "ECalScToEMGeVCalibration": ["1"],
@@ -666,8 +665,8 @@ MyDDMarlinPandora.Lcio2EDM4hepTool=MyDDMarlinPandoraLCIOConv
 
 
 MyDDSimpleMuonDigi = MarlinProcessorWrapper("MyDDSimpleMuonDigi")
-MyDDSimpleMuonDigi.OutputLevel = WARNING 
-MyDDSimpleMuonDigi.ProcessorType = "DDSimpleMuonDigi" 
+MyDDSimpleMuonDigi.OutputLevel = WARNING
+MyDDSimpleMuonDigi.ProcessorType = "DDSimpleMuonDigi"
 MyDDSimpleMuonDigi.Parameters = {
                                  "CalibrMUON": ["70.1"],
                                  "MUONCollections": ["YokeBarrelCollection", "YokeEndcapCollection"],
@@ -692,8 +691,8 @@ MyDDSimpleMuonDigi.Lcio2EDM4hepTool=MyDDSimpleMuonDigiLCIOConv
 
 
 MyRecoMCTruthLinker = MarlinProcessorWrapper("MyRecoMCTruthLinker")
-MyRecoMCTruthLinker.OutputLevel = WARNING 
-MyRecoMCTruthLinker.ProcessorType = "RecoMCTruthLinker" 
+MyRecoMCTruthLinker.OutputLevel = WARNING
+MyRecoMCTruthLinker.ProcessorType = "RecoMCTruthLinker"
 MyRecoMCTruthLinker.Parameters = {
                                   "BremsstrahlungEnergyCut": ["1"],
                                   "CalohitMCTruthLinkName": ["CalohitMCTruthLink"],
@@ -738,8 +737,8 @@ MyRecoMCTruthLinker.Lcio2EDM4hepTool=MyRecoMCTruthLinkerLCIOConv
 
 
 MyHitResiduals = MarlinProcessorWrapper("MyHitResiduals")
-MyHitResiduals.OutputLevel = WARNING 
-MyHitResiduals.ProcessorType = "HitResiduals" 
+MyHitResiduals.OutputLevel = WARNING
+MyHitResiduals.ProcessorType = "HitResiduals"
 MyHitResiduals.Parameters = {
                              "EnergyLossOn": ["true"],
                              "MaxChi2Increment": ["1000"],
@@ -751,8 +750,8 @@ MyHitResiduals.Parameters = {
                              }
 
 LumiCalReco_Obs = MarlinProcessorWrapper("LumiCalReco_Obs")
-LumiCalReco_Obs.OutputLevel = WARNING 
-LumiCalReco_Obs.ProcessorType = "MarlinLumiCalClusterer" 
+LumiCalReco_Obs.OutputLevel = WARNING
+LumiCalReco_Obs.ProcessorType = "MarlinLumiCalClusterer"
 LumiCalReco_Obs.Parameters = {
                               "ClusterMinNumHits": ["15"],
                               "ElementsPercentInShowerPeakLayer": ["0.03"],
@@ -777,8 +776,8 @@ LumiCalReco_Obs.Parameters = {
                               }
 
 LumiCalReco = MarlinProcessorWrapper("LumiCalReco")
-LumiCalReco.OutputLevel = DEBUG 
-LumiCalReco.ProcessorType = "BeamCalClusterReco" 
+LumiCalReco.OutputLevel = DEBUG
+LumiCalReco.ProcessorType = "BeamCalClusterReco"
 LumiCalReco.Parameters = {
                           "BackgroundMethod": ["Empty"],
                           "BeamCalCollectionName": ["LumiCalCollection"],
@@ -824,8 +823,8 @@ LumiCalReco.Lcio2EDM4hepTool=LumiCalRecoLCIOConv
 
 
 RenameCollection = MarlinProcessorWrapper("RenameCollection")
-RenameCollection.OutputLevel = WARNING 
-RenameCollection.ProcessorType = "MergeCollections" 
+RenameCollection.OutputLevel = WARNING
+RenameCollection.ProcessorType = "MergeCollections"
 RenameCollection.Parameters = {
                                "CollectionParameterIndex": ["0"],
                                "InputCollectionIDs": [],
@@ -846,8 +845,8 @@ RenameCollection.Lcio2EDM4hepTool=RenameCollectionLCIOConv
 
 
 MyFastJetProcessor = MarlinProcessorWrapper("MyFastJetProcessor")
-MyFastJetProcessor.OutputLevel = WARNING 
-MyFastJetProcessor.ProcessorType = "FastJetProcessor" 
+MyFastJetProcessor.OutputLevel = WARNING
+MyFastJetProcessor.ProcessorType = "FastJetProcessor"
 MyFastJetProcessor.Parameters = {
                                  "algorithm": ["ValenciaPlugin", "1.2", "1.0", "0.7"],
                                  "clusteringMode": ["ExclusiveNJets", "2"],
@@ -859,8 +858,8 @@ MyFastJetProcessor.Parameters = {
                                  }
 
 JetClusteringAndRefiner = MarlinProcessorWrapper("JetClusteringAndRefiner")
-JetClusteringAndRefiner.OutputLevel = WARNING 
-JetClusteringAndRefiner.ProcessorType = "LcfiplusProcessor" 
+JetClusteringAndRefiner.OutputLevel = WARNING
+JetClusteringAndRefiner.ProcessorType = "LcfiplusProcessor"
 JetClusteringAndRefiner.Parameters = {
                                       "Algorithms": ["JetClustering", "JetVertexRefiner"],
                                       "JetClustering.AlphaParameter": ["1.0"],
@@ -935,32 +934,32 @@ JetClusteringAndRefiner.Lcio2EDM4hepTool=JetClusteringAndRefinerLCIOConv
 
 
 Output_REC = MarlinProcessorWrapper("Output_REC")
-Output_REC.OutputLevel = WARNING 
-Output_REC.ProcessorType = "LCIOOutputProcessor" 
+Output_REC.OutputLevel = WARNING
+Output_REC.ProcessorType = "LCIOOutputProcessor"
 Output_REC.Parameters = {
                          "DropCollectionNames": [],
                          "DropCollectionTypes": [],
                          "FullSubsetCollections": ["EfficientMCParticles", "InefficientMCParticles"],
                          "KeepCollectionNames": [],
-                         "LCIOOutputFile": ["Output_REC_clue.slcio"],
+                         "LCIOOutputFile": ["Output_REC_e4h_input.slcio"],
                          "LCIOWriteMode": ["WRITE_NEW"]
                          }
 
 Output_DST = MarlinProcessorWrapper("Output_DST")
-Output_DST.OutputLevel = WARNING 
-Output_DST.ProcessorType = "LCIOOutputProcessor" 
+Output_DST.OutputLevel = WARNING
+Output_DST.ProcessorType = "LCIOOutputProcessor"
 Output_DST.Parameters = {
                          "DropCollectionNames": [],
                          "DropCollectionTypes": ["MCParticle", "LCRelation", "SimCalorimeterHit", "CalorimeterHit", "SimTrackerHit", "TrackerHit", "TrackerHitPlane", "Track", "ReconstructedParticle", "LCFloatVec", "Clusters"],
                          "FullSubsetCollections": ["EfficientMCParticles", "InefficientMCParticles", "MCPhysicsParticles"],
                          "KeepCollectionNames": ["MCParticlesSkimmed", "MCPhysicsParticles", "RecoMCTruthLink", "SiTracks", "SiTracks_Refitted", "PandoraClusters", "PandoraPFOs", "SelectedPandoraPFOs", "LooseSelectedPandoraPFOs", "TightSelectedPandoraPFOs", "LE_SelectedPandoraPFOs", "LE_LooseSelectedPandoraPFOs", "LE_TightSelectedPandoraPFOs", "LumiCalClusters", "LumiCalRecoParticles", "BeamCalClusters", "BeamCalRecoParticles", "MergedRecoParticles", "MergedClusters", "RefinedVertexJets", "RefinedVertexJets_rel", "RefinedVertexJets_vtx", "RefinedVertexJets_vtx_RP", "BuildUpVertices", "BuildUpVertices_res", "BuildUpVertices_RP", "BuildUpVertices_res_RP", "BuildUpVertices_V0", "BuildUpVertices_V0_res", "BuildUpVertices_V0_RP", "BuildUpVertices_V0_res_RP", "PrimaryVertices", "PrimaryVertices_res", "PrimaryVertices_RP", "PrimaryVertices_res_RP", "RefinedVertices", "RefinedVertices_RP"],
-                         "LCIOOutputFile": ["Output_DST_clue.slcio"],
+                         "LCIOOutputFile": ["Output_DST_e4h_input.slcio"],
                          "LCIOWriteMode": ["WRITE_NEW"]
                          }
 
 OverlayFalse = MarlinProcessorWrapper("OverlayFalse")
-OverlayFalse.OutputLevel = DEBUG 
-OverlayFalse.ProcessorType = "OverlayTimingGeneric" 
+OverlayFalse.OutputLevel = DEBUG
+OverlayFalse.ProcessorType = "OverlayTimingGeneric"
 OverlayFalse.Parameters = {
                            "BackgroundFileNames": [],
                            "Collection_IntegrationTimes": ["VertexBarrelCollection", "10", "VertexEndcapCollection", "10", "InnerTrackerBarrelCollection", "10", "InnerTrackerEndcapCollection", "10", "OuterTrackerBarrelCollection", "10", "OuterTrackerEndcapCollection", "10", "ECalBarrelCollection", "10", "ECalEndcapCollection", "10", "ECalPlugCollection", "10", "HCalBarrelCollection", "10", "HCalEndcapCollection", "10", "HCalRingCollection", "10", "YokeBarrelCollection", "10", "YokeEndcapCollection", "10", "LumiCalCollection", "10", "BeamCalCollection", "10"],
@@ -989,8 +988,8 @@ OverlayFalse.Lcio2EDM4hepTool=OverlayFalseLCIOConv
 
 
 Overlay350GeV_CDR = MarlinProcessorWrapper("Overlay350GeV_CDR")
-Overlay350GeV_CDR.OutputLevel = WARNING 
-Overlay350GeV_CDR.ProcessorType = "OverlayTimingGeneric" 
+Overlay350GeV_CDR.OutputLevel = WARNING
+Overlay350GeV_CDR.ProcessorType = "OverlayTimingGeneric"
 Overlay350GeV_CDR.Parameters = {
                                 "BackgroundFileNames": ["gghad_01.slcio", "gghad_02.slcio"],
                                 "Collection_IntegrationTimes": ["VertexBarrelCollection", "10", "VertexEndcapCollection", "10", "InnerTrackerBarrelCollection", "10", "InnerTrackerEndcapCollection", "10", "OuterTrackerBarrelCollection", "10", "OuterTrackerEndcapCollection", "10", "ECalBarrelCollection", "10", "ECalEndcapCollection", "10", "ECalPlugCollection", "10", "HCalBarrelCollection", "10", "HCalEndcapCollection", "10", "HCalRingCollection", "10", "YokeBarrelCollection", "10", "YokeEndcapCollection", "10", "LumiCalCollection", "10", "BeamCalCollection", "10"],
@@ -1006,8 +1005,8 @@ Overlay350GeV_CDR.Parameters = {
                                 }
 
 Overlay350GeV = MarlinProcessorWrapper("Overlay350GeV")
-Overlay350GeV.OutputLevel = WARNING 
-Overlay350GeV.ProcessorType = "OverlayTimingGeneric" 
+Overlay350GeV.OutputLevel = WARNING
+Overlay350GeV.ProcessorType = "OverlayTimingGeneric"
 Overlay350GeV.Parameters = {
                             "BackgroundFileNames": ["gghad_01.slcio", "gghad_02.slcio"],
                             "Collection_IntegrationTimes": ["VertexBarrelCollection", "10", "VertexEndcapCollection", "10", "InnerTrackerBarrelCollection", "10", "InnerTrackerEndcapCollection", "10", "OuterTrackerBarrelCollection", "10", "OuterTrackerEndcapCollection", "10", "ECalBarrelCollection", "10", "ECalEndcapCollection", "10", "ECalPlugCollection", "10", "HCalBarrelCollection", "10", "HCalEndcapCollection", "10", "HCalRingCollection", "10", "YokeBarrelCollection", "10", "YokeEndcapCollection", "10", "LumiCalCollection", "10", "BeamCalCollection", "10"],
@@ -1023,8 +1022,8 @@ Overlay350GeV.Parameters = {
                             }
 
 Overlay350GeV_L6 = MarlinProcessorWrapper("Overlay350GeV_L6")
-Overlay350GeV_L6.OutputLevel = WARNING 
-Overlay350GeV_L6.ProcessorType = "OverlayTimingGeneric" 
+Overlay350GeV_L6.OutputLevel = WARNING
+Overlay350GeV_L6.ProcessorType = "OverlayTimingGeneric"
 Overlay350GeV_L6.Parameters = {
                                "BackgroundFileNames": ["gghad_01.slcio", "gghad_02.slcio"],
                                "Collection_IntegrationTimes": ["VertexBarrelCollection", "10", "VertexEndcapCollection", "10", "InnerTrackerBarrelCollection", "10", "InnerTrackerEndcapCollection", "10", "OuterTrackerBarrelCollection", "10", "OuterTrackerEndcapCollection", "10", "ECalBarrelCollection", "10", "ECalEndcapCollection", "10", "ECalPlugCollection", "10", "HCalBarrelCollection", "10", "HCalEndcapCollection", "10", "HCalRingCollection", "10", "YokeBarrelCollection", "10", "YokeEndcapCollection", "10", "LumiCalCollection", "10", "BeamCalCollection", "10"],
@@ -1040,8 +1039,8 @@ Overlay350GeV_L6.Parameters = {
                                }
 
 Overlay380GeV_CDR = MarlinProcessorWrapper("Overlay380GeV_CDR")
-Overlay380GeV_CDR.OutputLevel = WARNING 
-Overlay380GeV_CDR.ProcessorType = "OverlayTimingGeneric" 
+Overlay380GeV_CDR.OutputLevel = WARNING
+Overlay380GeV_CDR.ProcessorType = "OverlayTimingGeneric"
 Overlay380GeV_CDR.Parameters = {
                                 "BackgroundFileNames": ["gghad_01.slcio", "gghad_02.slcio"],
                                 "Collection_IntegrationTimes": ["VertexBarrelCollection", "10", "VertexEndcapCollection", "10", "InnerTrackerBarrelCollection", "10", "InnerTrackerEndcapCollection", "10", "OuterTrackerBarrelCollection", "10", "OuterTrackerEndcapCollection", "10", "ECalBarrelCollection", "10", "ECalEndcapCollection", "10", "ECalPlugCollection", "10", "HCalBarrelCollection", "10", "HCalEndcapCollection", "10", "HCalRingCollection", "10", "YokeBarrelCollection", "10", "YokeEndcapCollection", "10", "LumiCalCollection", "10", "BeamCalCollection", "10"],
@@ -1057,8 +1056,8 @@ Overlay380GeV_CDR.Parameters = {
                                 }
 
 Overlay380GeV = MarlinProcessorWrapper("Overlay380GeV")
-Overlay380GeV.OutputLevel = WARNING 
-Overlay380GeV.ProcessorType = "OverlayTimingGeneric" 
+Overlay380GeV.OutputLevel = WARNING
+Overlay380GeV.ProcessorType = "OverlayTimingGeneric"
 Overlay380GeV.Parameters = {
                             "BackgroundFileNames": ["gghad_01.slcio", "gghad_02.slcio"],
                             "Collection_IntegrationTimes": ["VertexBarrelCollection", "10", "VertexEndcapCollection", "10", "InnerTrackerBarrelCollection", "10", "InnerTrackerEndcapCollection", "10", "OuterTrackerBarrelCollection", "10", "OuterTrackerEndcapCollection", "10", "ECalBarrelCollection", "10", "ECalEndcapCollection", "10", "ECalPlugCollection", "10", "HCalBarrelCollection", "10", "HCalEndcapCollection", "10", "HCalRingCollection", "10", "YokeBarrelCollection", "10", "YokeEndcapCollection", "10", "LumiCalCollection", "10", "BeamCalCollection", "10"],
@@ -1074,8 +1073,8 @@ Overlay380GeV.Parameters = {
                             }
 
 Overlay380GeV_L6 = MarlinProcessorWrapper("Overlay380GeV_L6")
-Overlay380GeV_L6.OutputLevel = WARNING 
-Overlay380GeV_L6.ProcessorType = "OverlayTimingGeneric" 
+Overlay380GeV_L6.OutputLevel = WARNING
+Overlay380GeV_L6.ProcessorType = "OverlayTimingGeneric"
 Overlay380GeV_L6.Parameters = {
                                "BackgroundFileNames": ["gghad_01.slcio", "gghad_02.slcio"],
                                "Collection_IntegrationTimes": ["VertexBarrelCollection", "10", "VertexEndcapCollection", "10", "InnerTrackerBarrelCollection", "10", "InnerTrackerEndcapCollection", "10", "OuterTrackerBarrelCollection", "10", "OuterTrackerEndcapCollection", "10", "ECalBarrelCollection", "10", "ECalEndcapCollection", "10", "ECalPlugCollection", "10", "HCalBarrelCollection", "10", "HCalEndcapCollection", "10", "HCalRingCollection", "10", "YokeBarrelCollection", "10", "YokeEndcapCollection", "10", "LumiCalCollection", "10", "BeamCalCollection", "10"],
@@ -1091,8 +1090,8 @@ Overlay380GeV_L6.Parameters = {
                                }
 
 Overlay420GeV = MarlinProcessorWrapper("Overlay420GeV")
-Overlay420GeV.OutputLevel = WARNING 
-Overlay420GeV.ProcessorType = "OverlayTimingGeneric" 
+Overlay420GeV.OutputLevel = WARNING
+Overlay420GeV.ProcessorType = "OverlayTimingGeneric"
 Overlay420GeV.Parameters = {
                             "BackgroundFileNames": ["gghad_01.slcio", "gghad_02.slcio"],
                             "Collection_IntegrationTimes": ["VertexBarrelCollection", "10", "VertexEndcapCollection", "10", "InnerTrackerBarrelCollection", "10", "InnerTrackerEndcapCollection", "10", "OuterTrackerBarrelCollection", "10", "OuterTrackerEndcapCollection", "10", "ECalBarrelCollection", "10", "ECalEndcapCollection", "10", "ECalPlugCollection", "10", "HCalBarrelCollection", "10", "HCalEndcapCollection", "10", "HCalRingCollection", "10", "YokeBarrelCollection", "10", "YokeEndcapCollection", "10", "LumiCalCollection", "10", "BeamCalCollection", "10"],
@@ -1108,8 +1107,8 @@ Overlay420GeV.Parameters = {
                             }
 
 Overlay500GeV = MarlinProcessorWrapper("Overlay500GeV")
-Overlay500GeV.OutputLevel = WARNING 
-Overlay500GeV.ProcessorType = "OverlayTimingGeneric" 
+Overlay500GeV.OutputLevel = WARNING
+Overlay500GeV.ProcessorType = "OverlayTimingGeneric"
 Overlay500GeV.Parameters = {
                             "BackgroundFileNames": ["gghad_01.slcio", "gghad_02.slcio"],
                             "Collection_IntegrationTimes": ["VertexBarrelCollection", "10", "VertexEndcapCollection", "10", "InnerTrackerBarrelCollection", "10", "InnerTrackerEndcapCollection", "10", "OuterTrackerBarrelCollection", "10", "OuterTrackerEndcapCollection", "10", "ECalBarrelCollection", "10", "ECalEndcapCollection", "10", "ECalPlugCollection", "10", "HCalBarrelCollection", "10", "HCalEndcapCollection", "10", "HCalRingCollection", "10", "YokeBarrelCollection", "10", "YokeEndcapCollection", "10", "LumiCalCollection", "10", "BeamCalCollection", "10"],
@@ -1125,8 +1124,8 @@ Overlay500GeV.Parameters = {
                             }
 
 Overlay1_4TeV = MarlinProcessorWrapper("Overlay1.4TeV")
-Overlay1_4TeV.OutputLevel = WARNING 
-Overlay1_4TeV.ProcessorType = "OverlayTimingGeneric" 
+Overlay1_4TeV.OutputLevel = WARNING
+Overlay1_4TeV.ProcessorType = "OverlayTimingGeneric"
 Overlay1_4TeV.Parameters = {
                             "BackgroundFileNames": ["gghad_01.slcio", "gghad_02.slcio"],
                             "Collection_IntegrationTimes": ["VertexBarrelCollection", "10", "VertexEndcapCollection", "10", "InnerTrackerBarrelCollection", "10", "InnerTrackerEndcapCollection", "10", "OuterTrackerBarrelCollection", "10", "OuterTrackerEndcapCollection", "10", "ECalBarrelCollection", "10", "ECalEndcapCollection", "10", "ECalPlugCollection", "10", "HCalBarrelCollection", "10", "HCalEndcapCollection", "10", "HCalRingCollection", "10", "YokeBarrelCollection", "10", "YokeEndcapCollection", "10", "LumiCalCollection", "10", "BeamCalCollection", "10"],
@@ -1142,8 +1141,8 @@ Overlay1_4TeV.Parameters = {
                             }
 
 Overlay3TeV = MarlinProcessorWrapper("Overlay3TeV")
-Overlay3TeV.OutputLevel = WARNING 
-Overlay3TeV.ProcessorType = "OverlayTimingGeneric" 
+Overlay3TeV.OutputLevel = WARNING
+Overlay3TeV.ProcessorType = "OverlayTimingGeneric"
 Overlay3TeV.Parameters = {
                           "BackgroundFileNames": ["gghad_01.slcio", "gghad_02.slcio"],
                           "Collection_IntegrationTimes": ["VertexBarrelCollection", "10", "VertexEndcapCollection", "10", "InnerTrackerBarrelCollection", "10", "InnerTrackerEndcapCollection", "10", "OuterTrackerBarrelCollection", "10", "OuterTrackerEndcapCollection", "10", "ECalBarrelCollection", "10", "ECalEndcapCollection", "10", "ECalPlugCollection", "10", "HCalBarrelCollection", "10", "HCalEndcapCollection", "10", "HCalRingCollection", "10", "YokeBarrelCollection", "10", "YokeEndcapCollection", "10", "LumiCalCollection", "10", "BeamCalCollection", "10"],
@@ -1159,8 +1158,8 @@ Overlay3TeV.Parameters = {
                           }
 
 Overlay3TeV_L6 = MarlinProcessorWrapper("Overlay3TeV_L6")
-Overlay3TeV_L6.OutputLevel = WARNING 
-Overlay3TeV_L6.ProcessorType = "OverlayTimingGeneric" 
+Overlay3TeV_L6.OutputLevel = WARNING
+Overlay3TeV_L6.ProcessorType = "OverlayTimingGeneric"
 Overlay3TeV_L6.Parameters = {
                              "BackgroundFileNames": ["gghad_01.slcio", "gghad_02.slcio"],
                              "Collection_IntegrationTimes": ["VertexBarrelCollection", "10", "VertexEndcapCollection", "10", "InnerTrackerBarrelCollection", "10", "InnerTrackerEndcapCollection", "10", "OuterTrackerBarrelCollection", "10", "OuterTrackerEndcapCollection", "10", "ECalBarrelCollection", "10", "ECalEndcapCollection", "10", "ECalPlugCollection", "10", "HCalBarrelCollection", "10", "HCalEndcapCollection", "10", "HCalRingCollection", "10", "YokeBarrelCollection", "10", "YokeEndcapCollection", "10", "LumiCalCollection", "10", "BeamCalCollection", "10"],
@@ -1176,8 +1175,8 @@ Overlay3TeV_L6.Parameters = {
                              }
 
 MergeRP = MarlinProcessorWrapper("MergeRP")
-MergeRP.OutputLevel = WARNING 
-MergeRP.ProcessorType = "MergeCollections" 
+MergeRP.OutputLevel = WARNING
+MergeRP.ProcessorType = "MergeCollections"
 MergeRP.Parameters = {
                       "CollectionParameterIndex": ["0"],
                       "InputCollectionIDs": [],
@@ -1198,8 +1197,8 @@ MergeRP.Lcio2EDM4hepTool=MergeRPLCIOConv
 
 
 MergeClusters = MarlinProcessorWrapper("MergeClusters")
-MergeClusters.OutputLevel = WARNING 
-MergeClusters.ProcessorType = "MergeCollections" 
+MergeClusters.OutputLevel = WARNING
+MergeClusters.ProcessorType = "MergeCollections"
 MergeClusters.Parameters = {
                             "CollectionParameterIndex": ["0"],
                             "InputCollectionIDs": [],
@@ -1220,8 +1219,8 @@ MergeClusters.Lcio2EDM4hepTool=MergeClustersLCIOConv
 
 
 BeamCalReco3TeV = MarlinProcessorWrapper("BeamCalReco3TeV")
-BeamCalReco3TeV.OutputLevel = WARNING 
-BeamCalReco3TeV.ProcessorType = "BeamCalClusterReco" 
+BeamCalReco3TeV.OutputLevel = WARNING
+BeamCalReco3TeV.ProcessorType = "BeamCalClusterReco"
 BeamCalReco3TeV.Parameters = {
                               "BackgroundMethod": ["Gaussian"],
                               "BeamCalCollectionName": ["BeamCalCollection"],
@@ -1250,8 +1249,8 @@ BeamCalReco3TeV.Parameters = {
                               }
 
 BeamCalReco380GeV = MarlinProcessorWrapper("BeamCalReco380GeV")
-BeamCalReco380GeV.OutputLevel = WARNING 
-BeamCalReco380GeV.ProcessorType = "BeamCalClusterReco" 
+BeamCalReco380GeV.OutputLevel = WARNING
+BeamCalReco380GeV.ProcessorType = "BeamCalClusterReco"
 BeamCalReco380GeV.Parameters = {
                                 "BackgroundMethod": ["Gaussian"],
                                 "BeamCalCollectionName": ["BeamCalCollection"],
@@ -1280,8 +1279,8 @@ BeamCalReco380GeV.Parameters = {
                                 }
 
 CLICPfoSelectorDefault_HE = MarlinProcessorWrapper("CLICPfoSelectorDefault_HE")
-CLICPfoSelectorDefault_HE.OutputLevel = WARNING 
-CLICPfoSelectorDefault_HE.ProcessorType = "CLICPfoSelector" 
+CLICPfoSelectorDefault_HE.OutputLevel = WARNING
+CLICPfoSelectorDefault_HE.ProcessorType = "CLICPfoSelector"
 CLICPfoSelectorDefault_HE.Parameters = {
                                         "ChargedPfoLooseTimingCut": ["3"],
                                         "ChargedPfoNegativeLooseTimingCut": ["-1"],
@@ -1345,8 +1344,8 @@ CLICPfoSelectorDefault_HE.Lcio2EDM4hepTool=CLICPfoSelectorDefault_HELCIOConv
 
 
 CLICPfoSelectorLoose_HE = MarlinProcessorWrapper("CLICPfoSelectorLoose_HE")
-CLICPfoSelectorLoose_HE.OutputLevel = WARNING 
-CLICPfoSelectorLoose_HE.ProcessorType = "CLICPfoSelector" 
+CLICPfoSelectorLoose_HE.OutputLevel = WARNING
+CLICPfoSelectorLoose_HE.ProcessorType = "CLICPfoSelector"
 CLICPfoSelectorLoose_HE.Parameters = {
                                       "ChargedPfoLooseTimingCut": ["3"],
                                       "ChargedPfoNegativeLooseTimingCut": ["-2.0"],
@@ -1407,8 +1406,8 @@ CLICPfoSelectorLoose_HE.Lcio2EDM4hepTool=CLICPfoSelectorLoose_HELCIOConv
 
 
 CLICPfoSelectorTight_HE = MarlinProcessorWrapper("CLICPfoSelectorTight_HE")
-CLICPfoSelectorTight_HE.OutputLevel = WARNING 
-CLICPfoSelectorTight_HE.ProcessorType = "CLICPfoSelector" 
+CLICPfoSelectorTight_HE.OutputLevel = WARNING
+CLICPfoSelectorTight_HE.ProcessorType = "CLICPfoSelector"
 CLICPfoSelectorTight_HE.Parameters = {
                                       "ChargedPfoLooseTimingCut": ["2.0"],
                                       "ChargedPfoNegativeLooseTimingCut": ["-0.5"],
@@ -1470,8 +1469,8 @@ CLICPfoSelectorTight_HE.Lcio2EDM4hepTool=CLICPfoSelectorTight_HELCIOConv
 
 
 CLICPfoSelectorDefault_LE = MarlinProcessorWrapper("CLICPfoSelectorDefault_LE")
-CLICPfoSelectorDefault_LE.OutputLevel = WARNING 
-CLICPfoSelectorDefault_LE.ProcessorType = "CLICPfoSelector" 
+CLICPfoSelectorDefault_LE.OutputLevel = WARNING
+CLICPfoSelectorDefault_LE.ProcessorType = "CLICPfoSelector"
 CLICPfoSelectorDefault_LE.Parameters = {
                                         "ChargedPfoLooseTimingCut": ["10.0"],
                                         "ChargedPfoNegativeLooseTimingCut": ["-5.0"],
@@ -1534,8 +1533,8 @@ CLICPfoSelectorDefault_LE.Lcio2EDM4hepTool=CLICPfoSelectorDefault_LELCIOConv
 
 
 CLICPfoSelectorLoose_LE = MarlinProcessorWrapper("CLICPfoSelectorLoose_LE")
-CLICPfoSelectorLoose_LE.OutputLevel = WARNING 
-CLICPfoSelectorLoose_LE.ProcessorType = "CLICPfoSelector" 
+CLICPfoSelectorLoose_LE.OutputLevel = WARNING
+CLICPfoSelectorLoose_LE.ProcessorType = "CLICPfoSelector"
 CLICPfoSelectorLoose_LE.Parameters = {
                                       "ChargedPfoLooseTimingCut": ["10.0"],
                                       "ChargedPfoNegativeLooseTimingCut": ["-20.0"],
@@ -1598,8 +1597,8 @@ CLICPfoSelectorLoose_LE.Lcio2EDM4hepTool=CLICPfoSelectorLoose_LELCIOConv
 
 
 CLICPfoSelectorTight_LE = MarlinProcessorWrapper("CLICPfoSelectorTight_LE")
-CLICPfoSelectorTight_LE.OutputLevel = WARNING 
-CLICPfoSelectorTight_LE.ProcessorType = "CLICPfoSelector" 
+CLICPfoSelectorTight_LE.OutputLevel = WARNING
+CLICPfoSelectorTight_LE.ProcessorType = "CLICPfoSelector"
 CLICPfoSelectorTight_LE.Parameters = {
                                       "ChargedPfoLooseTimingCut": ["4.0"],
                                       "ChargedPfoNegativeLooseTimingCut": ["-2.0"],
@@ -1661,8 +1660,8 @@ CLICPfoSelectorTight_LE.Lcio2EDM4hepTool=CLICPfoSelectorTight_LELCIOConv
 
 
 VertexFinder = MarlinProcessorWrapper("VertexFinder")
-VertexFinder.OutputLevel = WARNING 
-VertexFinder.ProcessorType = "LcfiplusProcessor" 
+VertexFinder.OutputLevel = WARNING
+VertexFinder.ProcessorType = "LcfiplusProcessor"
 VertexFinder.Parameters = {
                            "Algorithms": ["PrimaryVertexFinder", "BuildUpVertex"],
                            "BeamSizeX": ["40.E-6"],
@@ -1729,8 +1728,8 @@ VertexFinder.Lcio2EDM4hepTool=VertexFinderLCIOConv
 
 
 VertexFinderUnconstrained = MarlinProcessorWrapper("VertexFinderUnconstrained")
-VertexFinderUnconstrained.OutputLevel = WARNING 
-VertexFinderUnconstrained.ProcessorType = "LcfiplusProcessor" 
+VertexFinderUnconstrained.OutputLevel = WARNING
+VertexFinderUnconstrained.ProcessorType = "LcfiplusProcessor"
 VertexFinderUnconstrained.Parameters = {
                                         "Algorithms": ["PrimaryVertexFinder", "BuildUpVertex"],
                                         "BeamSizeX": ["40.E-6"],
@@ -1783,29 +1782,9 @@ VertexFinderUnconstrained.Parameters = {
                                         }
 
 
-from Configurables import ClueGaudiAlgorithmWrapper
-
-MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper("ClueGaudiAlgorithmWrapperName")
-MyClueGaudiAlgorithmWrapper.BarrelCaloHitsCollection = "ECALBarrel"
-MyClueGaudiAlgorithmWrapper.EndcapCaloHitsCollection = "ECALEndcap"
-MyClueGaudiAlgorithmWrapper.CriticalDistance = 10.00
-MyClueGaudiAlgorithmWrapper.MinLocalDensity = 0.02
-MyClueGaudiAlgorithmWrapper.OutlierDeltaFactor = 1.00
-
-# EDM4hep to LCIO converter
-ClueAlgorithmEDM4hepConv = EDM4hep2LcioTool("MyDDMarlinPandoraEDM4hep2lcioConv")
-ClueAlgorithmEDM4hepConv.convertAll = False
-ClueAlgorithmEDM4hepConv.collNameMapping = {
-  "CLUEClusters": "CLUEClusters",
-  "CLUEClustersAsHits": "CLUEClustersAsHits"
-}
-ClueAlgorithmEDM4hepConv.OutputLevel = DEBUG
-## Add it to MyDDCaloDigi
-MyDDMarlinPandora.EDM4hep2LcioTool=ClueAlgorithmEDM4hepConv
-
 # Write output to EDM4hep
 from Configurables import PodioOutput
-out = PodioOutput("PodioOutput", filename = "my_output_clue.root")
+out = PodioOutput("PodioOutput", filename = "my_output.root")
 out.outputCommands = ["keep *"]
 
 
@@ -1837,7 +1816,6 @@ algList.append(ClonesAndSplitTracksFinder)  # Config.TrackingConformal
 algList.append(Refit)
 algList.append(MyDDCaloDigi)
 algList.append(MyDDSimpleMuonDigi)
-algList.append(MyClueGaudiAlgorithmWrapper)
 algList.append(MyDDMarlinPandora)
 algList.append(LumiCalReco)
 # # algList.append(BeamCalReco3TeV)  # Config.BeamCal3TeV
@@ -1865,7 +1843,7 @@ algList.append(out)
 from Configurables import ApplicationMgr
 ApplicationMgr( TopAlg = algList,
                 EvtSel = 'NONE',
-                EvtMax   = 3,
+                EvtMax   = 10,
                 ExtSvc = [evtsvc],
                 OutputLevel=WARNING
               )

@@ -36,8 +36,8 @@ cp ../../k4MarlinWrapper/test/gaudi_opts/clicRec_e4h_input.py .
 k4run clicRec_e4h_input.py --EventDataSvc.input gamma_10GeV_edm4hep.root
 
 #Run CLUE in CLIC reconstruction
-cp ../../k4Clue/gaudi_opts/clicRec_e4h_input_clue.py .
-k4run clicRec_e4h_input_clue.py --EventDataSvc.input gamma_10GeV_edm4hep.root
+cp ../../k4Clue/gaudi_opts/clicRec_e4h_input_gun_clue.py .
+k4run clicRec_e4h_input_gun_clue.py --EventDataSvc.input gamma_10GeV_edm4hep.root
 
 #Run CLUE standalone
 cp ../../k4Clue/gaudi_opts/clue_gaudi_wrapper.py .
@@ -56,6 +56,7 @@ ddsim --steeringFile clic_steer.py --compactFile $LCGEO/CLIC/compact/CLIC_o3_v14
 ```
 where `myGPS.mac` can be found in this folder.
 
+In the case of simulation from the surface, the config file needs to be adapted: `clicRec_e4h_input_gps.py`
 
 ## Visualization
 

@@ -26,21 +26,15 @@ using namespace DDSegmentation ;
 
 DECLARE_COMPONENT(CLUENtuplizer)
 
-CLUENtuplizer::CLUENtuplizer(const std::string& name, ISvcLocator* svcLoc) : GaudiAlgorithm(name, svcLoc), m_eventDataSvc("EventDataSvc", "CLUENtuplizer") {
+CLUENtuplizer::CLUENtuplizer(const std::string& name, ISvcLocator* svcLoc) : GaudiAlgorithm(name, svcLoc) {
   declareProperty("ClusterCollection", ClusterCollectionName, "Collection of clusters in input");
-  declareProperty("BarrelCaloHitsCollection", EBCaloCollectionName, "Collection for Barrel Calo Hits used in input");
-  declareProperty("EndcapCaloHitsCollection", EECaloCollectionName, "Collection for Endcap Calo Hits used in input");
+  declareProperty("BarrelCaloHitsCollection", EB_calo_handle, "Collection for Barrel Calo Hits used in input");
+  declareProperty("EndcapCaloHitsCollection", EE_calo_handle, "Collection for Endcap Calo Hits used in input");
   declareProperty("SingleMCParticle", singleMCParticle, "If this is True, the analysis is run only if one MCParticle is present in the event");
-  StatusCode sc = m_eventDataSvc.retrieve();
 }
 
 StatusCode CLUENtuplizer::initialize() {
   if (GaudiAlgorithm::initialize().isFailure()) return StatusCode::FAILURE;
-
-  m_podioDataSvc = dynamic_cast<PodioLegacyDataSvc*>(m_eventDataSvc.get());
-  if (m_podioDataSvc == nullptr) {
-    return StatusCode::FAILURE;
-  }
 
   if (service("THistSvc", m_ths).isFailure()) {
     error() << "Couldn't get THistSvc" << endmsg;
@@ -77,7 +71,7 @@ StatusCode CLUENtuplizer::execute() {
     "EventHeader", Gaudi::DataHandle::Reader, this};
   auto evs = ev_handle.get();
   evNum = (*evs)[0].getEventNumber();
-  info() << "Event number = " << evNum << std::endl;
+  info() << "Event number = " << evNum << endmsg;
 
   DataHandle<edm4hep::MCParticleCollection> mcp_handle {
     "MCParticles", Gaudi::DataHandle::Reader, this};
@@ -106,17 +100,11 @@ StatusCode CLUENtuplizer::execute() {
     throw std::runtime_error("CLUE hits collection not available");
   }
 
-  // Read EB collection for metadata cellID
-  DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {
-    EBCaloCollectionName, Gaudi::DataHandle::Reader, this};
+  // Read EB and EE collection
   EB_calo_coll = EB_calo_handle.get();
-
-  // Read EE collection
-  DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {
-    EECaloCollectionName, Gaudi::DataHandle::Reader, this};
   EE_calo_coll = EE_calo_handle.get();
 
-  debug() << "ECAL Calorimeter Hits Size = " << int( EB_calo_coll->size()+EE_calo_coll->size() ) << endmsg;
+  debug() << "ECAL Calorimeter Hits Size = " << (*EB_calo_coll).size()+(*EE_calo_coll).size() << endmsg;
 
   // Read cluster collection
   DataHandle<edm4hep::ClusterCollection> cluster_handle {  
@@ -124,8 +112,7 @@ StatusCode CLUENtuplizer::execute() {
   cluster_coll = cluster_handle.get();
 
   // Get collection metadata cellID which is valid for both EB, EE and Clusters
-  auto collID = EB_calo_coll->getID();
-  const auto cellIDstr = EB_calo_handle.getCollMetadataCellID(collID);
+  const auto cellIDstr = cellIDHandle.get();
   const BitFieldCoder bf(cellIDstr);
   cleanTrees();
 
@@ -136,6 +123,7 @@ StatusCode CLUENtuplizer::execute() {
   std::uint64_t totSize = 0;
   bool foundInECAL = false;
 
+  debug() << "Cluster Collection size = " << cluster_coll->size() << endmsg;
   for (const auto& cl : *cluster_coll) {
     m_clusters_event->push_back (evNum);
     m_clusters_energy->push_back (cl.getEnergy());
@@ -213,6 +201,7 @@ StatusCode CLUENtuplizer::execute() {
   std::uint64_t nFollowers = 0;
   std::uint64_t nOutliers = 0;
   totEnergy = 0;
+  debug() << "CLUE Calorimeter Hits Size = " << clue_calo_coll->vect.size() << endmsg;
   for (const auto& clue_hit : (clue_calo_coll->vect)) {
     m_hits_event->push_back (evNum);
     if(clue_hit.inBarrel()){
@@ -247,7 +236,6 @@ StatusCode CLUENtuplizer::execute() {
       nOutliers++;
     }
   }
-  debug() << "CLUE Calorimeter Hits Size = " << clue_calo_coll->vect.size() << endmsg;
   debug() << "Found: " << nSeeds << " seeds, "
          << nOutliers << " outliers, "
          << nFollowers << " followers." 
