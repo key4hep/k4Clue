@@ -427,14 +427,6 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   // To be fixed in the future:
   // Add CellIDEncodingString to CLUE clusters and CLUE calo hits
 
-  // Only now can we put the collections into the event store, as nothing needs
-  // them any longer
-  caloHitsHandle.put(std::move(finalCaloHits));
-  clustersHandle.put(std::move(finalClusters));
-
-  // To be fixed in the future:
-  // Add CellIDEncodingString to CLUE clusters and CLUE calo hits
-
   // Cleaning
   clue_hit_coll.vect.clear();
   cleanCLUEPoints();
