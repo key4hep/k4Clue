@@ -54,7 +54,8 @@ void CLUEAlgo_T<TILES>::makeClusters(){
 
   auto finishTOT = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsedTOT = finishTOT - startTOT;
-  std::cout << "ClueGaudiAlgorithmWrapper: TOT: " << elapsedTOT.count() *1000 << " ms\n";
+  if(verbose_)
+    std::cout << "ClueGaudiAlgorithmWrapper: TOT: " << elapsedTOT.count() *1000 << " ms\n";
 }
 
 template <typename TILES>

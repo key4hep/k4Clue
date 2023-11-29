@@ -47,12 +47,12 @@ MyAIDAProcessor.Parameters = {"FileName": ["histograms_clue_standalone"],
 from Configurables import ClueGaudiAlgorithmWrapper
 
 MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper("ClueGaudiAlgorithmWrapperName")
-MyClueGaudiAlgorithmWrapper.OutputLevel = DEBUG
 MyClueGaudiAlgorithmWrapper.BarrelCaloHitsCollection = "ECALBarrel"
 MyClueGaudiAlgorithmWrapper.EndcapCaloHitsCollection = "ECALEndcap"
 MyClueGaudiAlgorithmWrapper.CriticalDistance = 15.00
 MyClueGaudiAlgorithmWrapper.MinLocalDensity = 0.02
 MyClueGaudiAlgorithmWrapper.OutlierDeltaFactor = 3.00
+MyClueGaudiAlgorithmWrapper.OutputLevel = DEBUG
 
 from Configurables import CLUENtuplizer
 MyCLUENtuplizer = CLUENtuplizer("CLUEAnalysis")

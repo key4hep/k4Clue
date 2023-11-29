@@ -42,17 +42,22 @@ ClueGaudiAlgorithmWrapper::ClueGaudiAlgorithmWrapper(const std::string& name, IS
 
 StatusCode ClueGaudiAlgorithmWrapper::initialize() {
 
+  bool clue_verbose = false;
+  if (msgLevel(MSG::INFO) || msgLevel(MSG::DEBUG)){
+    clue_verbose = true;
+  }
+
   auto start = std::chrono::high_resolution_clock::now();
-  clueAlgoBarrel_ = CLICdetBarrelCLUEAlgo(dc, rhoc, outlierDeltaFactor, true);
+  clueAlgoBarrel_ = CLICdetBarrelCLUEAlgo(dc, rhoc, outlierDeltaFactor, clue_verbose);
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
-  std::cout << "ClueGaudiAlgorithmWrapper: Set up time (Barrel): " << elapsed.count() * 1000 << " ms\n";
+  info() << "ClueGaudiAlgorithmWrapper: Set up time (Barrel): " << elapsed.count() * 1000 << " ms" << endmsg;
 
   start = std::chrono::high_resolution_clock::now();
-  clueAlgoEndcap_ = CLICdetEndcapCLUEAlgo(dc, rhoc, outlierDeltaFactor, true);
+  clueAlgoEndcap_ = CLICdetEndcapCLUEAlgo(dc, rhoc, outlierDeltaFactor, clue_verbose);
   finish = std::chrono::high_resolution_clock::now();
   elapsed = finish - start;
-  std::cout << "ClueGaudiAlgorithmWrapper: Set up time (Endcap): " << elapsed.count() * 1000 << " ms\n";
+  info() << "ClueGaudiAlgorithmWrapper: Set up time (Endcap): " << elapsed.count() * 1000 << " ms" << endmsg;
 
   return Algorithm::initialize();
 
@@ -131,12 +136,12 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<
 
   // Fill CLUE inputs
   fillCLUEPoints(clue_hits);
+  info() << "Number of calo hits: " << clue_hits.size() << endmsg;
 
   // Run CLUE
   info() << "Running CLUEAlgo ... " << endmsg;
-  std::cout << "ClueGaudiAlgorithmWrapper: Number of calo hits: " << clue_hits.size() << std::endl;
   if(isBarrel){
-    info() << "... in the barrel" << std::endl;
+    info() << "... in the barrel" << endmsg;
 
     if(clueAlgoBarrel_.clearAndSetPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0], &r[0]))
       throw error() << "Error in setting the clue points for the barrel." << endmsg;
@@ -146,14 +151,14 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<
     clueAlgoBarrel_.makeClusters();
     auto finish = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = finish - start;
-    std::cout << "ClueGaudiAlgorithmWrapper: Elapsed time: " << elapsed.count() * 1000 << " ms\n";
+    debug() << "ClueGaudiAlgorithmWrapper: Elapsed time: " << elapsed.count() * 1000 << " ms\n";
 
     clueClusters = clueAlgoBarrel_.getClusters();
     cluePoints = clueAlgoBarrel_.getPoints();
     clueAlgoBarrel_.clearLayerTiles();
 
   } else {
-    std::cout << "... in the endcap" << std::endl;
+    info() << "... in the endcap" << endmsg;
 
     if(clueAlgoEndcap_.clearAndSetPoints(x.size(), &x[0], &y[0], &layer[0], &weight[0], &r[0]))
       throw error() << "Error in setting the clue points for the endcap." << endmsg;
@@ -163,7 +168,7 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<
     auto finish = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = finish - start;
     //std::cout << "Iteration " << rep;
-    std::cout << "ClueGaudiAlgorithmWrapper: Elapsed time: " << elapsed.count() * 1000 << " ms\n";
+    debug() << "ClueGaudiAlgorithmWrapper: Elapsed time: " << elapsed.count() * 1000 << " ms\n";
 
     clueClusters = clueAlgoEndcap_.getClusters();
     cluePoints = clueAlgoEndcap_.getPoints();
