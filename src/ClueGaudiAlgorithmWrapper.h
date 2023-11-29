@@ -78,7 +78,7 @@ public:
   MetaDataHandle<std::string> cellIDHandle {EB_calo_handle, edm4hep::CellIDEncoding, Gaudi::DataHandle::Reader};
 
   // CLUE Algo
-  LArBarrelCLUEAlgo clueAlgoBarrel_;
+  CLICdetBarrelCLUEAlgo clueAlgoBarrel_;
   CLICdetEndcapCLUEAlgo clueAlgoEndcap_;
 
   // Collections in output
