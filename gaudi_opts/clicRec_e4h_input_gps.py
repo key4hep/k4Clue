@@ -103,7 +103,7 @@ InitDD4hep = MarlinProcessorWrapper("InitDD4hep")
 InitDD4hep.OutputLevel = WARNING
 InitDD4hep.ProcessorType = "InitializeDD4hep"
 InitDD4hep.Parameters = {
-                         "DD4hepXMLFile": [os.environ["K4GEO"]+"/compact/CLIC/compact/CLIC_o3_v14/CLIC_o3_v14.xml"],
+                         "DD4hepXMLFile": [os.environ["K4GEO"]+"/CLIC/compact/CLIC_o3_v14/CLIC_o3_v14.xml"],
                          "EncodingStringParameter": ["GlobalTrackerReadoutID"]
                          }
 
@@ -701,7 +701,7 @@ MyRecoMCTruthLinker.Parameters = {
                                   "FullRecoRelation": ["false"],
                                   "InvertedNonDestructiveInteractionLogic": ["false"],
                                   "KeepDaughtersPDG": ["22", "111", "310", "13", "211", "321", "3120"],
-                                  "MCParticleCollection": ["MCParticles"],
+                                  "MCParticleCollection": ["MCPhysicsParticles"],
                                   "MCParticlesSkimmedName": ["MCParticlesSkimmed"],
                                   "MCTruthClusterLinkName": [],
                                   "MCTruthRecoLinkName": [],

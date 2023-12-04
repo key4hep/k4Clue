@@ -16,6 +16,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+import os 
+
 from Gaudi.Configuration import *
 
 from Configurables import LcioEvent, MarlinProcessorWrapper
@@ -43,7 +46,7 @@ from Configurables import ToolSvc, Lcio2EDM4hepTool, EDM4hep2LcioTool
 
 from Configurables import k4DataSvc, PodioInput
 evtsvc = k4DataSvc('EventDataSvc')
-evtsvc.input = '$TEST_DIR/inputFiles/ttbar_edm4hep_frame.root'
+evtsvc.input = os.path.join('$TEST_DIR/inputFiles/', os.environ.get("INPUTFILE", "ttbar_edm4hep_frame.root"))
 
 
 inp = PodioInput('InputReader')
@@ -1720,6 +1723,9 @@ VertexFinderLCIOConv.collNameMapping = {
   "BuildUpVertices_V0": "BuildUpVertices_V0",
   "BuildUpVertices": "BuildUpVertices",
   "PrimaryVertices": "PrimaryVertices",
+  "BuildUpVertices_RP": "BuildUpVertices_RP",
+  "BuildUpVertices_V0_RP": "BuildUpVertices_V0_RP",
+  "PrimaryVertices_RP": "PrimaryVertices_RP",
   }
 VertexFinderLCIOConv.OutputLevel = DEBUG
 # Add it to VertexFinder Algorithm
@@ -1789,9 +1795,9 @@ MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper("ClueGaudiAlgorithmWrapp
 MyClueGaudiAlgorithmWrapper.OutputLevel = INFO
 MyClueGaudiAlgorithmWrapper.BarrelCaloHitsCollection = "ECALBarrel"
 MyClueGaudiAlgorithmWrapper.EndcapCaloHitsCollection = "ECALEndcap"
-MyClueGaudiAlgorithmWrapper.CriticalDistance = 10.00
+MyClueGaudiAlgorithmWrapper.CriticalDistance = 15.00
 MyClueGaudiAlgorithmWrapper.MinLocalDensity = 0.02
-MyClueGaudiAlgorithmWrapper.OutlierDeltaFactor = 1.00
+MyClueGaudiAlgorithmWrapper.OutlierDeltaFactor = 3.00
 
 # EDM4hep to LCIO converter
 ClueAlgorithmEDM4hepConv = EDM4hep2LcioTool("MyDDMarlinPandoraEDM4hep2lcioConv")
@@ -1823,6 +1829,7 @@ THistSvc().AutoFlush = True
 from Configurables import PodioOutput
 out = PodioOutput("PodioOutput", filename = "my_output_clue.root")
 out.outputCommands = ["keep *"]
+
 
 algList.append(inp)
 algList.append(MyAIDAProcessor)
