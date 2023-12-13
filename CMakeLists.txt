@@ -39,10 +39,7 @@ if(NOT CMAKE_CXX_STANDARD MATCHES "17|20")
 endif()
 
 find_package(DD4hep REQUIRED)
-find_package(EDM4HEP)
-if(EDM4HEP_FOUND)
-  message(STATUS "EDM4HEP package found!")
-endif()
+find_package(EDM4HEP REQUIRED)
 
 find_package(k4FWCore REQUIRED)
 find_package(Gaudi REQUIRED)

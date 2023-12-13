@@ -18,8 +18,6 @@ limitations under the License.
 ]]
 
 # CLUE as Gaudi algorithm
-find_package(k4FWCore)
-find_package(EDM4HEP)
 
 gaudi_add_module(ClueGaudiAlgorithmWrapper
   SOURCES
