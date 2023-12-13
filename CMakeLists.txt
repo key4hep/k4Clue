@@ -38,31 +38,11 @@ if(NOT CMAKE_CXX_STANDARD MATCHES "17|20")
   message(FATAL_ERROR "Unsupported C++ standard: ${CMAKE_CXX_STANDARD}")
 endif()
 
-find_package(Boost REQUIRED)
-if(Boost_FOUND)
-  message(STATUS "Boost package found!")
-endif()
-
-find_package(EDM4HEP)
-if(EDM4HEP_FOUND)
-  message(STATUS "EDM4HEP package found!")
-endif()
-find_package(DD4hep)
-if(DD4HEP_FOUND)
-  message(STATUS "DD4HEP package found!")
-endif()
+find_package(DD4hep REQUIRED)
+find_package(EDM4HEP REQUIRED)
 
 find_package(k4FWCore REQUIRED)
-if(k4FWCore_FOUND)
-  message(STATUS "k4FWCore package found!")
-endif()
 find_package(Gaudi REQUIRED)
-if(Gaudi_FOUND)
-  message(STATUS "Gaudi package found!")
-endif()
-
-#gaudi_install(PYTHON)
-#gaudi_install(SCRIPTS)
 
 include(CTest)
 
