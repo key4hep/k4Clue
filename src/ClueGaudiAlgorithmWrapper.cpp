@@ -136,7 +136,6 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<
 
   // Fill CLUE inputs
   fillCLUEPoints(clue_hits);
-  info() << "Number of calo hits: " << clue_hits.size() << endmsg;
 
   // Run CLUE
   info() << "Running CLUEAlgo ... " << endmsg;
@@ -151,7 +150,7 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<
     clueAlgoBarrel_.makeClusters();
     auto finish = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = finish - start;
-    debug() << "ClueGaudiAlgorithmWrapper: Elapsed time: " << elapsed.count() * 1000 << " ms\n";
+    debug() << "ClueGaudiAlgorithmWrapper (barrel): Elapsed time: " << elapsed.count() * 1000 << " ms" << endmsg;
 
     clueClusters = clueAlgoBarrel_.getClusters();
     cluePoints = clueAlgoBarrel_.getPoints();
@@ -168,7 +167,7 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<
     auto finish = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = finish - start;
     //std::cout << "Iteration " << rep;
-    debug() << "ClueGaudiAlgorithmWrapper: Elapsed time: " << elapsed.count() * 1000 << " ms\n";
+    debug() << "ClueGaudiAlgorithmWrapper (endcap): Elapsed time: " << elapsed.count() * 1000 << " ms" << endmsg;
 
     clueClusters = clueAlgoEndcap_.getClusters();
     cluePoints = clueAlgoEndcap_.getPoints();
@@ -354,6 +353,7 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   clue::CLUECalorimeterHitCollection clue_hit_coll_barrel;
   clue::CLUECalorimeterHitCollection clue_hit_coll_endcap;
 
+  debug() << "ClueGaudiAlgorithmWrapper: Number of calo hits: " << int(EB_calo_coll->size()+EE_calo_coll->size()) << std::endl;
   info() << EB_calo_coll->size() << " caloHits in ECAL Barrel." << endmsg;
 
   // Fill CLUECaloHits in the barrel
@@ -435,7 +435,7 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   // Cleaning
   clue_hit_coll.vect.clear();
   cleanCLUEPoints();
- 
+
   return StatusCode::SUCCESS;
 }
 

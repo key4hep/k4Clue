@@ -51,7 +51,7 @@ public:
     if(verbose_){
       std::cout << "ClueGaudiAlgorithmWrapper: nTiles (cols,rows):     " << TILES::constants_type_t::nTiles ;
       std::cout << " (" << (TILES::constants_type_t::endcap ? TILES::constants_type_t::nColumns : TILES::constants_type_t::nColumnsPhi);
-      std::cout << "," << TILES::constants_type_t::nRows << " )\n";
+      std::cout << "," << TILES::constants_type_t::nRows << " )" << std::endl;
     }
   }
   ~CLUEAlgo_T(){} 
