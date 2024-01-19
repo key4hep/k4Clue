@@ -71,6 +71,7 @@ StatusCode CLUENtuplizer::execute() {
     "EventHeader", Gaudi::DataHandle::Reader, this};
   auto evs = ev_handle.get();
   evNum = (*evs)[0].getEventNumber();
+  //evNum = 0;
   info() << "Event number = " << evNum << endmsg;
 
   DataHandle<edm4hep::MCParticleCollection> mcp_handle {
@@ -91,6 +92,7 @@ StatusCode CLUENtuplizer::execute() {
     warning() << "This event is skipped because there are " << mcps_primary << " primary MC particles." << endmsg;
     return StatusCode::SUCCESS;
   }
+
 
   DataObject* pStatus  = nullptr;
   StatusCode  scStatus = eventSvc()->retrieveObject("/Event/CLUECalorimeterHitCollection", pStatus);
@@ -123,7 +125,7 @@ StatusCode CLUENtuplizer::execute() {
   std::uint64_t totSize = 0;
   bool foundInECAL = false;
 
-  debug() << "Cluster Collection size = " << cluster_coll->size() << endmsg;
+  info() << ClusterCollectionName << " : Total number of clusters =  " << int( cluster_coll->size() ) << endmsg;
   for (const auto& cl : *cluster_coll) {
     m_clusters_event->push_back (evNum);
     m_clusters_energy->push_back (cl.getEnergy());
@@ -138,6 +140,7 @@ StatusCode CLUENtuplizer::execute() {
     int maxLayer = 0;
     for (const auto& hit : cl.getHits()) {
       foundInECAL = false;
+/*
       for (const auto& clEB : *EB_calo_coll) {
         if( clEB.getCellID() == hit.getCellID()){
           foundInECAL = true;
@@ -162,6 +165,7 @@ StatusCode CLUENtuplizer::execute() {
         }
       }
       if(foundInECAL){
+*/
         ch_layer = bf.get( hit.getCellID(), "layer");
         maxLayer = std::max(int(ch_layer), maxLayer);
         //info() << "  ch cellID : " << hit.getCellID()
@@ -175,11 +179,13 @@ StatusCode CLUENtuplizer::execute() {
         m_clhits_energy->push_back (hit.getEnergy());
         totEnergyHits += hit.getEnergy();
         totSize += 1;
+/*
       } else {
         debug() << "  This calo hit was NOT found among ECAL hits (cellID : " << hit.getCellID()
                << ", layer : " << ch_layer   
                << ", energy : " << hit.getEnergy() << " )" << endmsg; 
       }
+*/
     }
     nClusters++;
     if(!std::isnan(cl.getEnergy())){

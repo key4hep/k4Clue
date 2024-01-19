@@ -32,7 +32,7 @@ struct CLICdetEndcapLayerTilesConstants {
   static constexpr float minY =  -1701.f;
   static constexpr float maxY =   1701.f;
 
-  static constexpr float tileSize = 30.f;
+  static constexpr float tileSize = 27.f;
   static constexpr float tileSizePhi = 0.10f;
   static constexpr int nColumns = reco::ceil((maxX-minX)/tileSize);
   static constexpr int nColumnsPhi = reco::ceil(2. * M_PI / tileSizePhi);

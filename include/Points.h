@@ -43,6 +43,7 @@ struct Points {
   void clear() {
     x.clear();
     y.clear();
+    r.clear();
     layer.clear();
     weight.clear();
 

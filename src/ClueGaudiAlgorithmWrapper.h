@@ -29,6 +29,7 @@
 #include <edm4hep/ClusterCollection.h>
 #include <edm4hep/Constants.h>
 #include "CLUECalorimeterHit.h"
+#include "CLUEAlgo.h"
 
 class ClueGaudiAlgorithmWrapper : public GaudiAlgorithm {
 public:
@@ -37,6 +38,12 @@ public:
   virtual StatusCode execute() override final;
   virtual StatusCode finalize() override final;
   virtual StatusCode initialize() override final;
+
+  // Timing analysis
+  void exclude_stats_outliers(std::vector<float> &v);
+  std::pair<float, float> stats(const std::vector<float> &v) ;
+  void printTimingReport(std::vector<float> &vals, int repeats,
+                       const std::string label) ;
 
   void fillCLUEPoints(std::vector<clue::CLUECalorimeterHit>& clue_hits);
   std::map<int, std::vector<int> > runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, 
@@ -69,6 +76,10 @@ public:
   DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {"BarrelInputHits", Gaudi::DataHandle::Reader, this};
   DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {"EndcapInputHits", Gaudi::DataHandle::Reader, this};
   MetaDataHandle<std::string> cellIDHandle {EB_calo_handle, edm4hep::CellIDEncoding, Gaudi::DataHandle::Reader};
+
+  // CLUE Algo
+  CLICdetBarrelCLUEAlgo clueAlgoBarrel_;
+  CLICdetEndcapCLUEAlgo clueAlgoEndcap_;
 
   // Collections in output
   DataHandle<edm4hep::CalorimeterHitCollection> caloHitsHandle{"CLUEClustersAsHits", Gaudi::DataHandle::Writer, this};

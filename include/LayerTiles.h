@@ -40,7 +40,7 @@ class LayerTiles_T {
     typedef T type;
 
     LayerTiles_T(){
-      layerTiles_.resize(T::nColumns * T::nRows);
+      layerTiles_.resize(T::nTiles);
     }
 
     void fill(const std::vector<float>& x, const std::vector<float>& y, const std::vector<float>& phi) {
@@ -133,7 +133,6 @@ class LayerTiles_T {
       }
     }
 
-
     std::vector<int>& operator[](int globalBinId) {
       return layerTiles_[globalBinId];
     }
@@ -178,6 +177,7 @@ class GenericTile {
     // numbering is not handled internally. It is the user's responsibility to
     // properly use and consistently access it here.
     const auto& operator[](int index) const { return tiles_[index]; }
+    auto& operator[](int index) { return tiles_[index]; }
     void fill(int index, float x, float y, float phi, unsigned int objectId) { tiles_[index].fill(x, y, phi, objectId); }
   
   private:
