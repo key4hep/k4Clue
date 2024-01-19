@@ -1,5 +1,5 @@
 #[[
-Copyright (c) 2020-2023 Key4hep-Project.
+Copyright (c) 2020-2024 Key4hep-Project.
 
 This file is part of Key4hep.
 See https://key4hep.github.io/key4hep-doc/ for further info.
@@ -18,8 +18,6 @@ limitations under the License.
 ]]
 
 # CLUE as Gaudi algorithm
-find_package(k4FWCore)
-find_package(EDM4HEP)
 
 gaudi_add_module(ClueGaudiAlgorithmWrapper
   SOURCES
