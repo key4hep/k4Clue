@@ -48,4 +48,7 @@ ExternalData_Add_Test(k4clue_tests NAME gaudiWrapper
 set_tests_properties(gaudiWrapper PROPERTIES
                      FAIL_REGULAR_EXPRESSION "ERROR;Failed")
 
+set_property(TEST gaudiWrapper APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${PROJECT_BINARY_DIR}:${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}:${PROJECT_BINARY_DIR}/src/k4clue:$<$<TARGET_EXISTS:ROOT::Core>:$<TARGET_FILE_DIR:ROOT::Core>>:$<$<TARGET_EXISTS:EDM4HEP::edm4hep>:$<TARGET_FILE_DIR:EDM4HEP::edm4hep>>:$<$<TARGET_EXISTS:podio::podio>:$<TARGET_FILE_DIR:podio::podio>>:$ENV{LD_LIBRARY_PATH}")
+set_property(TEST gaudiWrapper APPEND PROPERTY ENVIRONMENT "PYTHONPATH=${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/genConfDir:${PROJECT_BINARY_DIR}/src/k4clue/genConfDir:$ENV{PYTHONPATH}")        
+
 ExternalData_Add_Target(k4clue_tests)
