@@ -19,6 +19,11 @@ limitations under the License.
 
 # CLUE as Gaudi algorithm
 
+include(ExternalData)
+set(ExternalData_URL_TEMPLATES
+  "https://key4hep.web.cern.ch:443/testFiles/k4clue/inputData/clic/%(hash)"
+)
+
 gaudi_add_module(ClueGaudiAlgorithmWrapper
   SOURCES
     ${PROJECT_SOURCE_DIR}/src/ClueGaudiAlgorithmWrapper.cpp
@@ -36,12 +41,12 @@ gaudi_add_module(ClueGaudiAlgorithmWrapper
 target_include_directories(ClueGaudiAlgorithmWrapper PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
 )
-
-add_test(NAME gaudiWrapper 
+ExternalData_Add_Test(k4clue_tests NAME gaudiWrapper
          WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
          COMMAND bash -c "source k4clueenv.sh; \
-                 k4run ${PROJECT_SOURCE_DIR}/gaudi_opts/clue_gaudi_wrapper.py --ClueGaudiAlgorithmWrapperName.OutputLevel 2 --CLUEAnalysis.OutputLevel 2")
+                 k4run ${PROJECT_SOURCE_DIR}/gaudi_opts/clue_gaudi_wrapper.py DATA{${PROJECT_SOURCE_DIR}/test/input_files/20240226_gammaFromVertex_10GeV_uniform_10events_reco_edm4hep.root} --ClueGaudiAlgorithmWrapperName.OutputLevel 2 --CLUEAnalysis.OutputLevel 2")
 
 set_tests_properties(gaudiWrapper PROPERTIES
                      FAIL_REGULAR_EXPRESSION "ERROR;Failed")
 
+ExternalData_Add_Target(k4clue_tests)
