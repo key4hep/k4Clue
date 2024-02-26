@@ -27,13 +27,11 @@ from Configurables import THistSvc
 from Configurables import PodioOutput
 from Configurables import ApplicationMgr
 
-import sys
-
 algList = []
 
 
 evtsvc = k4DataSvc('EventDataSvc')
-evtsvc.input = sys.argv[1]
+# evtsvc.input =
 
 inp = PodioInput('InputReader')
 inp.collections = [
