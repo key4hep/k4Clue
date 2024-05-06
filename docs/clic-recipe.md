@@ -30,7 +30,7 @@ git clone git@github.com:key4hep/k4MarlinWrapper.git
 git clone https://github.com/iLCSoft/CLICPerformance
 
 cd CLICPerformance/clicConfig
-ddsim --steeringFile clic_steer.py --compactFile $LCGEO/CLIC/compact/CLIC_o3_v14/CLIC_o3_v14.xml --enableGun --gun.distribution uniform --gun.particle gamma --gun.energy 10*GeV --outputFile gamma_10GeV_edm4hep.root --numberOfEvents 10
+ddsim --steeringFile clic_steer.py --compactFile $LCGEO/CLIC/compact/CLIC_o3_v14/CLIC_o3_v14.xml --enableGun --gun.distribution uniform --gun.particle gamma --gun.energy "10*GeV" --outputFile gamma_10GeV_edm4hep.root --numberOfEvents 10
 
 cp $K4MARLINWRAPPER/examples/clicRec_e4h_input.py .
 k4run clicRec_e4h_input.py --EventDataSvc.input gamma_10GeV_edm4hep.root
