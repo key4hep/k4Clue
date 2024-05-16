@@ -21,6 +21,8 @@
 // podio specific includes
 #include "DDSegmentation/BitFieldCoder.h"
 
+#include "podio/podioVersion.h"
+
 using namespace dd4hep ;
 using namespace DDSegmentation ;
 
@@ -114,7 +116,11 @@ StatusCode CLUENtuplizer::execute() {
   cluster_coll = cluster_handle.get();
 
   // Get collection metadata cellID which is valid for both EB, EE and Clusters
-  const auto cellIDstr = cellIDHandle.get();
+#if PODIO_BUILD_VERSION > PODIO_VERSION(0, 99, 0)
+  const auto cellIDstr = cellIDHandle.get().value();
+#else
+  const auto& cellIDstr = cellIDHandle.get();
+#endif
   const BitFieldCoder bf(cellIDstr);
   cleanTrees();
 

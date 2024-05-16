@@ -23,6 +23,8 @@
 // podio specific includes
 #include "DDSegmentation/BitFieldCoder.h"
 
+#include "podio/podioVersion.h"
+
 using namespace dd4hep ;
 using namespace DDSegmentation ;
 using namespace std;
@@ -342,7 +344,11 @@ StatusCode ClueGaudiAlgorithmWrapper::execute() {
   EE_calo_coll = EE_calo_handle.get();
 
   // Get collection metadata cellID which is valid for both EB and EE
-  const auto cellIDstr = cellIDHandle.get();
+#if PODIO_BUILD_VERSION > PODIO_VERSION(0, 99, 0)
+  const auto cellIDstr = cellIDHandle.get().value();
+#else
+  const auto& cellIDstr = cellIDHandle.get();
+#endif
   const BitFieldCoder bf(cellIDstr);
 
   // Output CLUE clusters
