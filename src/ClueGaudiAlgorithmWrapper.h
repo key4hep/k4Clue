@@ -45,7 +45,7 @@ public:
   void printTimingReport(std::vector<float> &vals, int repeats,
                        const std::string label) ;
 
-  void fillCLUEPoints(std::vector<clue::CLUECalorimeterHit>& clue_hits);
+  void fillCLUEPoints(std::vector<clue::CLUECalorimeterHit>& clue_hits) const;
   std::map<int, std::vector<int> > runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, 
                                            bool isBarrel) const;
   void cleanCLUEPoints();
@@ -66,11 +66,11 @@ public:
 
   // CLUE points
   mutable clue::CLUECalorimeterHitCollection clue_hit_coll;
-  std::vector<float> x;
-  std::vector<float> y;
-  std::vector<float> r;
-  std::vector<int> layer;
-  std::vector<float> weight;
+  mutable std::vector<float> x;
+  mutable std::vector<float> y;
+  mutable std::vector<float> r;
+  mutable std::vector<int> layer;
+  mutable std::vector<float> weight;
 
   // Handle to read the calo cells and their cellID 
   mutable DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {"BarrelInputHits", Gaudi::DataHandle::Reader, this};
@@ -78,8 +78,8 @@ public:
   MetaDataHandle<std::string> cellIDHandle {EB_calo_handle, edm4hep::CellIDEncoding, Gaudi::DataHandle::Reader};
 
   // CLUE Algo
-  CLICdetBarrelCLUEAlgo clueAlgoBarrel_;
-  CLICdetEndcapCLUEAlgo clueAlgoEndcap_;
+  mutable CLICdetBarrelCLUEAlgo clueAlgoBarrel_;
+  mutable CLICdetEndcapCLUEAlgo clueAlgoEndcap_;
 
   // Collections in output
   mutable DataHandle<edm4hep::CalorimeterHitCollection> caloHitsHandle{"CLUEClustersAsHits", Gaudi::DataHandle::Writer, this};

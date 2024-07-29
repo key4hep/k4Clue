@@ -108,7 +108,7 @@ void ClueGaudiAlgorithmWrapper::printTimingReport(std::vector<float> &vals, int 
 }
 
 
-void ClueGaudiAlgorithmWrapper::fillCLUEPoints(std::vector<clue::CLUECalorimeterHit>& clue_hits){
+void ClueGaudiAlgorithmWrapper::fillCLUEPoints(std::vector<clue::CLUECalorimeterHit>& clue_hits) const{
 
   for (const auto& ch : clue_hits) {
     if(ch.inBarrel()){
