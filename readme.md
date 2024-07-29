@@ -85,5 +85,6 @@ A simple recipe to run k4CLUE as part of the CLIC reconstruction chain can be fo
 ## Package maintainer
 
 If you encounter any error when compiling or running this project, please contact:
-* Erica Brondolin, erica.brondolin@cern.ch
+* Marco Rovere, marco.rovere@cern.ch
+* Felice Pantaleo, felice.pantaleo@cern.ch
 
