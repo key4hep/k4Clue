@@ -116,7 +116,7 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
   // Get collection metadata cellID which is valid for both EB, EE and Clusters
   const auto cellIDstr = cellIDHandle.get();
   const BitFieldCoder bf(cellIDstr);
-  cleanTrees();
+  cleanTrees() const;
 
   std::uint64_t ch_layer = 0;
   std::uint64_t nClusters = 0;

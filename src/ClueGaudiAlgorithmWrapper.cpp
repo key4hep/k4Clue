@@ -30,7 +30,7 @@ using namespace std;
 DECLARE_COMPONENT(ClueGaudiAlgorithmWrapper)
 
 ClueGaudiAlgorithmWrapper::ClueGaudiAlgorithmWrapper(const std::string& name, ISvcLocator* pSL) :
-  GaudiAlgorithm(name, pSL) { 
+  Gaudi::Algorithm(name, pSL) {
   declareProperty("BarrelCaloHitsCollection", EB_calo_handle, "Collection for Barrel Calo Hits used in input");
   declareProperty("EndcapCaloHitsCollection", EE_calo_handle, "Collection for Endcap Calo Hits used in input");
   declareProperty("CriticalDistance", dc, "Used to compute the local density");
@@ -129,7 +129,7 @@ void ClueGaudiAlgorithmWrapper::fillCLUEPoints(std::vector<clue::CLUECalorimeter
 }
 
 std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, 
-								    bool isBarrel = false){
+								    bool isBarrel = false) const {
 
   std::map<int, std::vector<int> > clueClusters;
   Points cluePoints;

@@ -47,7 +47,7 @@ public:
 
   void fillCLUEPoints(std::vector<clue::CLUECalorimeterHit>& clue_hits);
   std::map<int, std::vector<int> > runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, 
-                                           bool isBarrel);
+                                           bool isBarrel) const;
   void cleanCLUEPoints();
   void fillFinalClusters(std::vector<clue::CLUECalorimeterHit>& clue_hits,
                          const std::map<int, std::vector<int> > clusterMap, 
@@ -58,14 +58,14 @@ public:
 
   private:
   // Parameters in input
-  const edm4hep::CalorimeterHitCollection* EB_calo_coll; 
-  const edm4hep::CalorimeterHitCollection* EE_calo_coll;
+  mutable const edm4hep::CalorimeterHitCollection* EB_calo_coll;
+  mutable const edm4hep::CalorimeterHitCollection* EE_calo_coll;
   float dc;
   float rhoc;
   float outlierDeltaFactor;
 
   // CLUE points
-  clue::CLUECalorimeterHitCollection clue_hit_coll;
+  mutable clue::CLUECalorimeterHitCollection clue_hit_coll;
   std::vector<float> x;
   std::vector<float> y;
   std::vector<float> r;
@@ -73,8 +73,8 @@ public:
   std::vector<float> weight;
 
   // Handle to read the calo cells and their cellID 
-  DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {"BarrelInputHits", Gaudi::DataHandle::Reader, this};
-  DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {"EndcapInputHits", Gaudi::DataHandle::Reader, this};
+  mutable DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {"BarrelInputHits", Gaudi::DataHandle::Reader, this};
+  mutable DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {"EndcapInputHits", Gaudi::DataHandle::Reader, this};
   MetaDataHandle<std::string> cellIDHandle {EB_calo_handle, edm4hep::CellIDEncoding, Gaudi::DataHandle::Reader};
 
   // CLUE Algo
@@ -82,8 +82,8 @@ public:
   CLICdetEndcapCLUEAlgo clueAlgoEndcap_;
 
   // Collections in output
-  DataHandle<edm4hep::CalorimeterHitCollection> caloHitsHandle{"CLUEClustersAsHits", Gaudi::DataHandle::Writer, this};
-  DataHandle<edm4hep::ClusterCollection> clustersHandle{"CLUEClusters", Gaudi::DataHandle::Writer, this};
+  mutable DataHandle<edm4hep::CalorimeterHitCollection> caloHitsHandle{"CLUEClustersAsHits", Gaudi::DataHandle::Writer, this};
+  mutable DataHandle<edm4hep::ClusterCollection> clustersHandle{"CLUEClusters", Gaudi::DataHandle::Writer, this};
 
 };
 
