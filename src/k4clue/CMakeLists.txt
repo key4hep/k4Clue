@@ -30,7 +30,6 @@ gaudi_add_module(ClueGaudiAlgorithmWrapper
     ${PROJECT_SOURCE_DIR}/src/CLUECalorimeterHit.cpp
     ${PROJECT_SOURCE_DIR}/src/CLUENtuplizer.cpp
   LINK
-    Gaudi::GaudiAlgLib
     Gaudi::GaudiKernel
     k4FWCore::k4FWCore
     DD4hep::DDCore

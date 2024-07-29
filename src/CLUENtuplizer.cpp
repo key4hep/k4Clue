@@ -26,7 +26,7 @@ using namespace DDSegmentation ;
 
 DECLARE_COMPONENT(CLUENtuplizer)
 
-CLUENtuplizer::CLUENtuplizer(const std::string& name, ISvcLocator* svcLoc) : GaudiAlgorithm(name, svcLoc) {
+CLUENtuplizer::CLUENtuplizer(const std::string& name, ISvcLocator* svcLoc) : Gaudi::Algorithm(name, svcLoc) {
   declareProperty("ClusterCollection", ClusterCollectionName, "Collection of clusters in input");
   declareProperty("BarrelCaloHitsCollection", EB_calo_handle, "Collection for Barrel Calo Hits used in input");
   declareProperty("EndcapCaloHitsCollection", EE_calo_handle, "Collection for Endcap Calo Hits used in input");
@@ -34,7 +34,7 @@ CLUENtuplizer::CLUENtuplizer(const std::string& name, ISvcLocator* svcLoc) : Gau
 }
 
 StatusCode CLUENtuplizer::initialize() {
-  if (GaudiAlgorithm::initialize().isFailure()) return StatusCode::FAILURE;
+  if (Gaudi::Algorithm::initialize().isFailure()) return StatusCode::FAILURE;
 
   if (service("THistSvc", m_ths).isFailure()) {
     error() << "Couldn't get THistSvc" << endmsg;
@@ -65,7 +65,7 @@ StatusCode CLUENtuplizer::initialize() {
   return StatusCode::SUCCESS;
 }
 
-StatusCode CLUENtuplizer::execute() {
+StatusCode CLUENtuplizer::execute(const EventContext&) const {
 
   DataHandle<edm4hep::EventHeaderCollection> ev_handle {
     "EventHeader", Gaudi::DataHandle::Reader, this};
@@ -362,7 +362,7 @@ void CLUENtuplizer::cleanTrees() {
 }
 
 StatusCode CLUENtuplizer::finalize() {
-  if (GaudiAlgorithm::finalize().isFailure()) return StatusCode::FAILURE;
+  if (Gaudi::Algorithm::finalize().isFailure()) return StatusCode::FAILURE;
 
   return StatusCode::SUCCESS;
 }

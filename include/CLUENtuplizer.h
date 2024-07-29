@@ -21,7 +21,7 @@
 
 #include "k4FWCore/DataHandle.h"
 #include "k4FWCore/MetaDataHandle.h"
-#include "GaudiAlg/GaudiAlgorithm.h"
+#include "Gaudi/Algorithm.h"
 #include "GaudiKernel/ITHistSvc.h"
 
 #include <edm4hep/CalorimeterHitCollection.h>
@@ -34,7 +34,7 @@
 #include "TH1F.h"
 #include "TGraph.h"
 
-class CLUENtuplizer : public GaudiAlgorithm {
+class CLUENtuplizer : public Gaudi::Algorithm {
 
 public:
   /// Constructor.
@@ -82,7 +82,7 @@ public:
   /// Clean tree.
   void cleanTrees();
   /// Execute.
-  virtual StatusCode execute();
+  virtual StatusCode execute(const EventContext&) const;
   /// Finalize.
   virtual StatusCode finalize();
 
@@ -93,8 +93,8 @@ private:
   const edm4hep::ClusterCollection* cluster_coll; 
   const edm4hep::CalorimeterHitCollection* EB_calo_coll;
   const edm4hep::CalorimeterHitCollection* EE_calo_coll;
-  DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {"BarrelInputHits", Gaudi::DataHandle::Reader, this};
-  DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {"EndcapInputHits", Gaudi::DataHandle::Reader, this};
+  mutable DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {"BarrelInputHits", Gaudi::DataHandle::Reader, this};
+  mutable DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {"EndcapInputHits", Gaudi::DataHandle::Reader, this};
   MetaDataHandle<std::string> cellIDHandle {EB_calo_handle, edm4hep::CellIDEncoding, Gaudi::DataHandle::Reader};
 
   bool singleMCParticle = false;

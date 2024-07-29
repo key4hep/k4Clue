@@ -19,7 +19,7 @@
 #ifndef CLUE_GAUDI_ALGORITHM_WRAPPER_H
 #define CLUE_GAUDI_ALGORITHM_WRAPPER_H
 
-#include <GaudiAlg/GaudiAlgorithm.h>
+#include <Gaudi/Algorithm.h>
 
 // FWCore
 #include "k4FWCore/DataHandle.h"
@@ -31,11 +31,11 @@
 #include "CLUECalorimeterHit.h"
 #include "CLUEAlgo.h"
 
-class ClueGaudiAlgorithmWrapper : public GaudiAlgorithm {
+class ClueGaudiAlgorithmWrapper : public Gaudi::Algorithm {
 public:
   explicit ClueGaudiAlgorithmWrapper(const std::string& name, ISvcLocator* svcLoc);
   virtual ~ClueGaudiAlgorithmWrapper() = default;
-  virtual StatusCode execute() override final;
+  virtual StatusCode execute(const EventContext&) const override final;
   virtual StatusCode finalize() override final;
   virtual StatusCode initialize() override final;
 

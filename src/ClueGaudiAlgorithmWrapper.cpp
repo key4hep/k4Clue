@@ -335,7 +335,7 @@ void ClueGaudiAlgorithmWrapper::transformClustersInCaloHits(edm4hep::ClusterColl
   return;
 }
 
-StatusCode ClueGaudiAlgorithmWrapper::execute() {
+StatusCode ClueGaudiAlgorithmWrapper::execute(const EventContext&) const {
 
   // Read EB and EE collection
   EB_calo_coll = EB_calo_handle.get();
