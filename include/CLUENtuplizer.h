@@ -88,13 +88,16 @@ public:
 
 
 private:
-  const clue::CLUECalorimeterHitCollection* clue_calo_coll;
+  mutable const clue::CLUECalorimeterHitCollection* clue_calo_coll;
   std::string ClusterCollectionName;
   mutable const edm4hep::ClusterCollection* cluster_coll; 
   mutable const edm4hep::CalorimeterHitCollection* EB_calo_coll;
   mutable const edm4hep::CalorimeterHitCollection* EE_calo_coll;
   mutable DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {"BarrelInputHits", Gaudi::DataHandle::Reader, this};
   mutable DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {"EndcapInputHits", Gaudi::DataHandle::Reader, this};
+  mutable DataHandle<edm4hep::EventHeaderCollection> ev_handle {"EventHeader", Gaudi::DataHandle::Reader, this};
+  mutable DataHandle<edm4hep::MCParticleCollection> mcp_handle {"MCParticles", Gaudi::DataHandle::Reader, this};
+  mutable DataHandle<edm4hep::ClusterCollection> cluster_handle {ClusterCollectionName, Gaudi::DataHandle::Reader, this};
   MetaDataHandle<std::string> cellIDHandle {EB_calo_handle, edm4hep::CellIDEncoding, Gaudi::DataHandle::Reader};
 
   bool singleMCParticle = false;

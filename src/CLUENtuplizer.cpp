@@ -67,15 +67,11 @@ StatusCode CLUENtuplizer::initialize() {
 
 StatusCode CLUENtuplizer::execute(const EventContext&) const {
 
-  DataHandle<edm4hep::EventHeaderCollection> ev_handle {
-    "EventHeader", Gaudi::DataHandle::Reader, this};
   auto evs = ev_handle.get();
   evNum = (*evs)[0].getEventNumber();
   //evNum = 0;
   info() << "Event number = " << evNum << endmsg;
 
-  DataHandle<edm4hep::MCParticleCollection> mcp_handle {
-    "MCParticles", Gaudi::DataHandle::Reader, this};
   auto mcps = mcp_handle.get();
   int mcps_primary = 0;
   float mcp_primary_energy = 0.f;
@@ -109,8 +105,6 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
   debug() << "ECAL Calorimeter Hits Size = " << (*EB_calo_coll).size()+(*EE_calo_coll).size() << endmsg;
 
   // Read cluster collection
-  DataHandle<edm4hep::ClusterCollection> cluster_handle {  
-    ClusterCollectionName, Gaudi::DataHandle::Reader, this};
   cluster_coll = cluster_handle.get();
 
   // Get collection metadata cellID which is valid for both EB, EE and Clusters

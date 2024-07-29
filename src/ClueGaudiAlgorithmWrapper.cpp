@@ -207,7 +207,7 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<
   return clueClusters;
 }
 
-void ClueGaudiAlgorithmWrapper::cleanCLUEPoints(){
+void ClueGaudiAlgorithmWrapper::cleanCLUEPoints() const{
   x.clear();
   y.clear();
   r.clear();
@@ -217,7 +217,7 @@ void ClueGaudiAlgorithmWrapper::cleanCLUEPoints(){
 
 void ClueGaudiAlgorithmWrapper::fillFinalClusters(std::vector<clue::CLUECalorimeterHit>& clue_hits, 
                                                   const std::map<int, std::vector<int> > clusterMap, 
-                                                  edm4hep::ClusterCollection* clusters){
+                                                  edm4hep::ClusterCollection* clusters) const{
 
   for(auto cl : clusterMap){
 
@@ -273,7 +273,7 @@ void ClueGaudiAlgorithmWrapper::fillFinalClusters(std::vector<clue::CLUECalorime
   return;
 }
 
-void ClueGaudiAlgorithmWrapper::calculatePosition(edm4hep::MutableCluster* cluster) {
+void ClueGaudiAlgorithmWrapper::calculatePosition(edm4hep::MutableCluster* cluster) const {
 
   float total_weight = cluster->getEnergy();
   if(total_weight <= 0)
@@ -305,7 +305,7 @@ void ClueGaudiAlgorithmWrapper::calculatePosition(edm4hep::MutableCluster* clust
 }
 
 void ClueGaudiAlgorithmWrapper::transformClustersInCaloHits(edm4hep::ClusterCollection* clusters,
-                                                            edm4hep::CalorimeterHitCollection* caloHits){
+                                                            edm4hep::CalorimeterHitCollection* caloHits) const{
 
   float time = 0.f;
   float maxEnergy = 0.f;
