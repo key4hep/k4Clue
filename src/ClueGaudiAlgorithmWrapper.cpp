@@ -30,7 +30,7 @@ using namespace std;
 DECLARE_COMPONENT(ClueGaudiAlgorithmWrapper)
 
 ClueGaudiAlgorithmWrapper::ClueGaudiAlgorithmWrapper(const std::string& name, ISvcLocator* pSL) :
-  GaudiAlgorithm(name, pSL) { 
+  Gaudi::Algorithm(name, pSL) {
   declareProperty("BarrelCaloHitsCollection", EB_calo_handle, "Collection for Barrel Calo Hits used in input");
   declareProperty("EndcapCaloHitsCollection", EE_calo_handle, "Collection for Endcap Calo Hits used in input");
   declareProperty("CriticalDistance", dc, "Used to compute the local density");
@@ -108,7 +108,7 @@ void ClueGaudiAlgorithmWrapper::printTimingReport(std::vector<float> &vals, int 
 }
 
 
-void ClueGaudiAlgorithmWrapper::fillCLUEPoints(std::vector<clue::CLUECalorimeterHit>& clue_hits){
+void ClueGaudiAlgorithmWrapper::fillCLUEPoints(std::vector<clue::CLUECalorimeterHit>& clue_hits) const{
 
   for (const auto& ch : clue_hits) {
     if(ch.inBarrel()){
@@ -129,7 +129,7 @@ void ClueGaudiAlgorithmWrapper::fillCLUEPoints(std::vector<clue::CLUECalorimeter
 }
 
 std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, 
-								    bool isBarrel = false){
+								    bool isBarrel = false) const {
 
   std::map<int, std::vector<int> > clueClusters;
   Points cluePoints;
@@ -207,7 +207,7 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<
   return clueClusters;
 }
 
-void ClueGaudiAlgorithmWrapper::cleanCLUEPoints(){
+void ClueGaudiAlgorithmWrapper::cleanCLUEPoints() const{
   x.clear();
   y.clear();
   r.clear();
@@ -217,7 +217,7 @@ void ClueGaudiAlgorithmWrapper::cleanCLUEPoints(){
 
 void ClueGaudiAlgorithmWrapper::fillFinalClusters(std::vector<clue::CLUECalorimeterHit>& clue_hits, 
                                                   const std::map<int, std::vector<int> > clusterMap, 
-                                                  edm4hep::ClusterCollection* clusters){
+                                                  edm4hep::ClusterCollection* clusters) const{
 
   for(auto cl : clusterMap){
 
@@ -273,7 +273,7 @@ void ClueGaudiAlgorithmWrapper::fillFinalClusters(std::vector<clue::CLUECalorime
   return;
 }
 
-void ClueGaudiAlgorithmWrapper::calculatePosition(edm4hep::MutableCluster* cluster) {
+void ClueGaudiAlgorithmWrapper::calculatePosition(edm4hep::MutableCluster* cluster) const {
 
   float total_weight = cluster->getEnergy();
   if(total_weight <= 0)
@@ -305,7 +305,7 @@ void ClueGaudiAlgorithmWrapper::calculatePosition(edm4hep::MutableCluster* clust
 }
 
 void ClueGaudiAlgorithmWrapper::transformClustersInCaloHits(edm4hep::ClusterCollection* clusters,
-                                                            edm4hep::CalorimeterHitCollection* caloHits){
+                                                            edm4hep::CalorimeterHitCollection* caloHits) const{
 
   float time = 0.f;
   float maxEnergy = 0.f;
@@ -335,7 +335,7 @@ void ClueGaudiAlgorithmWrapper::transformClustersInCaloHits(edm4hep::ClusterColl
   return;
 }
 
-StatusCode ClueGaudiAlgorithmWrapper::execute() {
+StatusCode ClueGaudiAlgorithmWrapper::execute(const EventContext&) const {
 
   // Read EB and EE collection
   EB_calo_coll = EB_calo_handle.get();

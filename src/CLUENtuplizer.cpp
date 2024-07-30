@@ -26,7 +26,7 @@ using namespace DDSegmentation ;
 
 DECLARE_COMPONENT(CLUENtuplizer)
 
-CLUENtuplizer::CLUENtuplizer(const std::string& name, ISvcLocator* svcLoc) : GaudiAlgorithm(name, svcLoc) {
+CLUENtuplizer::CLUENtuplizer(const std::string& name, ISvcLocator* svcLoc) : Gaudi::Algorithm(name, svcLoc) {
   declareProperty("ClusterCollection", ClusterCollectionName, "Collection of clusters in input");
   declareProperty("BarrelCaloHitsCollection", EB_calo_handle, "Collection for Barrel Calo Hits used in input");
   declareProperty("EndcapCaloHitsCollection", EE_calo_handle, "Collection for Endcap Calo Hits used in input");
@@ -34,7 +34,7 @@ CLUENtuplizer::CLUENtuplizer(const std::string& name, ISvcLocator* svcLoc) : Gau
 }
 
 StatusCode CLUENtuplizer::initialize() {
-  if (GaudiAlgorithm::initialize().isFailure()) return StatusCode::FAILURE;
+  if (Gaudi::Algorithm::initialize().isFailure()) return StatusCode::FAILURE;
 
   if (service("THistSvc", m_ths).isFailure()) {
     error() << "Couldn't get THistSvc" << endmsg;
@@ -65,17 +65,13 @@ StatusCode CLUENtuplizer::initialize() {
   return StatusCode::SUCCESS;
 }
 
-StatusCode CLUENtuplizer::execute() {
+StatusCode CLUENtuplizer::execute(const EventContext&) const {
 
-  DataHandle<edm4hep::EventHeaderCollection> ev_handle {
-    "EventHeader", Gaudi::DataHandle::Reader, this};
   auto evs = ev_handle.get();
   evNum = (*evs)[0].getEventNumber();
   //evNum = 0;
   info() << "Event number = " << evNum << endmsg;
 
-  DataHandle<edm4hep::MCParticleCollection> mcp_handle {
-    "MCParticles", Gaudi::DataHandle::Reader, this};
   auto mcps = mcp_handle.get();
   int mcps_primary = 0;
   float mcp_primary_energy = 0.f;
@@ -109,8 +105,6 @@ StatusCode CLUENtuplizer::execute() {
   debug() << "ECAL Calorimeter Hits Size = " << (*EB_calo_coll).size()+(*EE_calo_coll).size() << endmsg;
 
   // Read cluster collection
-  DataHandle<edm4hep::ClusterCollection> cluster_handle {  
-    ClusterCollectionName, Gaudi::DataHandle::Reader, this};
   cluster_coll = cluster_handle.get();
 
   // Get collection metadata cellID which is valid for both EB, EE and Clusters
@@ -323,7 +317,7 @@ void CLUENtuplizer::initializeTrees() {
   return;
 }
 
-void CLUENtuplizer::cleanTrees() {
+void CLUENtuplizer::cleanTrees() const {
   m_hits_event->clear();
   m_hits_region->clear(); 
   m_hits_layer->clear();
@@ -362,7 +356,7 @@ void CLUENtuplizer::cleanTrees() {
 }
 
 StatusCode CLUENtuplizer::finalize() {
-  if (GaudiAlgorithm::finalize().isFailure()) return StatusCode::FAILURE;
+  if (Gaudi::Algorithm::finalize().isFailure()) return StatusCode::FAILURE;
 
   return StatusCode::SUCCESS;
 }

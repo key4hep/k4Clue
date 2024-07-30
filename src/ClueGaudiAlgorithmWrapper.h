@@ -19,7 +19,7 @@
 #ifndef CLUE_GAUDI_ALGORITHM_WRAPPER_H
 #define CLUE_GAUDI_ALGORITHM_WRAPPER_H
 
-#include <GaudiAlg/GaudiAlgorithm.h>
+#include <Gaudi/Algorithm.h>
 
 // FWCore
 #include "k4FWCore/DataHandle.h"
@@ -31,11 +31,11 @@
 #include "CLUECalorimeterHit.h"
 #include "CLUEAlgo.h"
 
-class ClueGaudiAlgorithmWrapper : public GaudiAlgorithm {
+class ClueGaudiAlgorithmWrapper : public Gaudi::Algorithm {
 public:
   explicit ClueGaudiAlgorithmWrapper(const std::string& name, ISvcLocator* svcLoc);
   virtual ~ClueGaudiAlgorithmWrapper() = default;
-  virtual StatusCode execute() override final;
+  virtual StatusCode execute(const EventContext&) const override final;
   virtual StatusCode finalize() override final;
   virtual StatusCode initialize() override final;
 
@@ -45,45 +45,45 @@ public:
   void printTimingReport(std::vector<float> &vals, int repeats,
                        const std::string label) ;
 
-  void fillCLUEPoints(std::vector<clue::CLUECalorimeterHit>& clue_hits);
+  void fillCLUEPoints(std::vector<clue::CLUECalorimeterHit>& clue_hits) const;
   std::map<int, std::vector<int> > runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, 
-                                           bool isBarrel);
-  void cleanCLUEPoints();
+                                           bool isBarrel) const;
+  void cleanCLUEPoints() const;
   void fillFinalClusters(std::vector<clue::CLUECalorimeterHit>& clue_hits,
                          const std::map<int, std::vector<int> > clusterMap, 
-                         edm4hep::ClusterCollection* clusters);
-  void calculatePosition(edm4hep::MutableCluster* cluster) ;
+                         edm4hep::ClusterCollection* clusters) const;
+  void calculatePosition(edm4hep::MutableCluster* cluster) const ;
   void transformClustersInCaloHits(edm4hep::ClusterCollection* clusters,
-                                 edm4hep::CalorimeterHitCollection* caloHits);
+                                 edm4hep::CalorimeterHitCollection* caloHits) const;
 
   private:
   // Parameters in input
-  const edm4hep::CalorimeterHitCollection* EB_calo_coll; 
-  const edm4hep::CalorimeterHitCollection* EE_calo_coll;
+  mutable const edm4hep::CalorimeterHitCollection* EB_calo_coll;
+  mutable const edm4hep::CalorimeterHitCollection* EE_calo_coll;
   float dc;
   float rhoc;
   float outlierDeltaFactor;
 
   // CLUE points
-  clue::CLUECalorimeterHitCollection clue_hit_coll;
-  std::vector<float> x;
-  std::vector<float> y;
-  std::vector<float> r;
-  std::vector<int> layer;
-  std::vector<float> weight;
+  mutable clue::CLUECalorimeterHitCollection clue_hit_coll;
+  mutable std::vector<float> x;
+  mutable std::vector<float> y;
+  mutable std::vector<float> r;
+  mutable std::vector<int> layer;
+  mutable std::vector<float> weight;
 
   // Handle to read the calo cells and their cellID 
-  DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {"BarrelInputHits", Gaudi::DataHandle::Reader, this};
-  DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {"EndcapInputHits", Gaudi::DataHandle::Reader, this};
+  mutable DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {"BarrelInputHits", Gaudi::DataHandle::Reader, this};
+  mutable DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {"EndcapInputHits", Gaudi::DataHandle::Reader, this};
   MetaDataHandle<std::string> cellIDHandle {EB_calo_handle, edm4hep::CellIDEncoding, Gaudi::DataHandle::Reader};
 
   // CLUE Algo
-  CLICdetBarrelCLUEAlgo clueAlgoBarrel_;
-  CLICdetEndcapCLUEAlgo clueAlgoEndcap_;
+  mutable CLICdetBarrelCLUEAlgo clueAlgoBarrel_;
+  mutable CLICdetEndcapCLUEAlgo clueAlgoEndcap_;
 
   // Collections in output
-  DataHandle<edm4hep::CalorimeterHitCollection> caloHitsHandle{"CLUEClustersAsHits", Gaudi::DataHandle::Writer, this};
-  DataHandle<edm4hep::ClusterCollection> clustersHandle{"CLUEClusters", Gaudi::DataHandle::Writer, this};
+  mutable DataHandle<edm4hep::CalorimeterHitCollection> caloHitsHandle{"CLUEClustersAsHits", Gaudi::DataHandle::Writer, this};
+  mutable DataHandle<edm4hep::ClusterCollection> clustersHandle{"CLUEClusters", Gaudi::DataHandle::Writer, this};
 
 };
 

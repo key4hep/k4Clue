@@ -21,7 +21,7 @@
 
 #include "k4FWCore/DataHandle.h"
 #include "k4FWCore/MetaDataHandle.h"
-#include "GaudiAlg/GaudiAlgorithm.h"
+#include "Gaudi/Algorithm.h"
 #include "GaudiKernel/ITHistSvc.h"
 
 #include <edm4hep/CalorimeterHitCollection.h>
@@ -34,7 +34,7 @@
 #include "TH1F.h"
 #include "TGraph.h"
 
-class CLUENtuplizer : public GaudiAlgorithm {
+class CLUENtuplizer : public Gaudi::Algorithm {
 
 public:
   /// Constructor.
@@ -80,65 +80,68 @@ public:
   /// Initialize tree.
   void initializeTrees();
   /// Clean tree.
-  void cleanTrees();
+  void cleanTrees() const;
   /// Execute.
-  virtual StatusCode execute();
+  virtual StatusCode execute(const EventContext&) const;
   /// Finalize.
   virtual StatusCode finalize();
 
 
 private:
-  const clue::CLUECalorimeterHitCollection* clue_calo_coll;
+  mutable const clue::CLUECalorimeterHitCollection* clue_calo_coll;
   std::string ClusterCollectionName;
-  const edm4hep::ClusterCollection* cluster_coll; 
-  const edm4hep::CalorimeterHitCollection* EB_calo_coll;
-  const edm4hep::CalorimeterHitCollection* EE_calo_coll;
-  DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {"BarrelInputHits", Gaudi::DataHandle::Reader, this};
-  DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {"EndcapInputHits", Gaudi::DataHandle::Reader, this};
+  mutable const edm4hep::ClusterCollection* cluster_coll; 
+  mutable const edm4hep::CalorimeterHitCollection* EB_calo_coll;
+  mutable const edm4hep::CalorimeterHitCollection* EE_calo_coll;
+  mutable DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle {"BarrelInputHits", Gaudi::DataHandle::Reader, this};
+  mutable DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {"EndcapInputHits", Gaudi::DataHandle::Reader, this};
+  mutable DataHandle<edm4hep::EventHeaderCollection> ev_handle {"EventHeader", Gaudi::DataHandle::Reader, this};
+  mutable DataHandle<edm4hep::MCParticleCollection> mcp_handle {"MCParticles", Gaudi::DataHandle::Reader, this};
+  mutable DataHandle<edm4hep::ClusterCollection> cluster_handle {ClusterCollectionName, Gaudi::DataHandle::Reader, this};
   MetaDataHandle<std::string> cellIDHandle {EB_calo_handle, edm4hep::CellIDEncoding, Gaudi::DataHandle::Reader};
 
   bool singleMCParticle = false;
 
   ITHistSvc* m_ths{nullptr};  ///< THistogram service
 
-  TTree* t_hits{nullptr};
-  std::vector<int> *m_hits_event = nullptr;
-  std::vector<int> *m_hits_region = nullptr;
-  std::vector<int> *m_hits_layer = nullptr;
-  std::vector<int> *m_hits_status = nullptr;
-  std::vector<float> *m_hits_x = nullptr;
-  std::vector<float> *m_hits_y = nullptr;
-  std::vector<float> *m_hits_z = nullptr;
-  std::vector<float> *m_hits_eta = nullptr;
-  std::vector<float> *m_hits_phi = nullptr;
-  std::vector<float> *m_hits_rho = nullptr;
-  std::vector<float> *m_hits_delta = nullptr;
-  std::vector<float> *m_hits_energy = nullptr;
-  std::vector<float> *m_hits_MCEnergy = nullptr;
+  mutable TTree* t_hits{nullptr};
+  mutable std::vector<int> *m_hits_event = nullptr;
+  mutable std::vector<int> *m_hits_region = nullptr;
+  mutable std::vector<int> *m_hits_layer = nullptr;
+  mutable std::vector<int> *m_hits_status = nullptr;
+  mutable std::vector<float> *m_hits_x = nullptr;
+  mutable std::vector<float> *m_hits_y = nullptr;
+  mutable std::vector<float> *m_hits_z = nullptr;
+  mutable std::vector<float> *m_hits_eta = nullptr;
+  mutable std::vector<float> *m_hits_phi = nullptr;
+  mutable std::vector<float> *m_hits_rho = nullptr;
+  mutable std::vector<float> *m_hits_delta = nullptr;
+  mutable std::vector<float> *m_hits_energy = nullptr;
+  mutable std::vector<float> *m_hits_MCEnergy = nullptr;
 
-  TTree* t_clusters{nullptr};
-  std::vector<int> *m_clusters = nullptr;
-  std::vector<int> *m_clusters_event = nullptr;
-  std::vector<int> *m_clusters_maxLayer = nullptr;
-  std::vector<int> *m_clusters_size = nullptr;
-  std::vector<int> *m_clusters_totSize = nullptr;
-  std::vector<float> *m_clusters_x = nullptr;
-  std::vector<float> *m_clusters_y = nullptr;
-  std::vector<float> *m_clusters_z = nullptr;
-  std::vector<float> *m_clusters_energy = nullptr;
-  std::vector<float> *m_clusters_totEnergy = nullptr;
-  std::vector<float> *m_clusters_totEnergyHits = nullptr;
-  std::vector<float> *m_clusters_MCEnergy = nullptr;
+  mutable TTree* t_clusters{nullptr};
+  mutable std::vector<int> *m_clusters = nullptr;
+  mutable std::vector<int> *m_clusters_event = nullptr;
+  mutable std::vector<int> *m_clusters_maxLayer = nullptr;
+  mutable std::vector<int> *m_clusters_size = nullptr;
+  mutable std::vector<int> *m_clusters_totSize = nullptr;
+  mutable std::vector<float> *m_clusters_x = nullptr;
+  mutable std::vector<float> *m_clusters_y = nullptr;
+  mutable std::vector<float> *m_clusters_z = nullptr;
+  mutable std::vector<float> *m_clusters_energy = nullptr;
+  mutable std::vector<float> *m_clusters_totEnergy = nullptr;
+  mutable std::vector<float> *m_clusters_totEnergyHits = nullptr;
+  mutable std::vector<float> *m_clusters_MCEnergy = nullptr;
 
-  TTree* t_clhits{nullptr};
-  std::vector<int> *m_clhits_event = nullptr;
-  std::vector<int> *m_clhits_layer = nullptr;
-  std::vector<float> *m_clhits_x = nullptr;
-  std::vector<float> *m_clhits_y = nullptr;
-  std::vector<float> *m_clhits_z = nullptr;
-  std::vector<float> *m_clhits_energy = nullptr;
+  mutable TTree* t_clhits{nullptr};
+  mutable std::vector<int> *m_clhits_event = nullptr;
+  mutable std::vector<int> *m_clhits_layer = nullptr;
+  mutable std::vector<float> *m_clhits_x = nullptr;
+  mutable std::vector<float> *m_clhits_y = nullptr;
+  mutable std::vector<float> *m_clhits_z = nullptr;
+  mutable std::vector<float> *m_clhits_energy = nullptr;
 
-  std::int32_t evNum;
+  mutable std::int32_t evNum;
 };
 
 #endif  // CLUE_HISTOGRAMS_H
