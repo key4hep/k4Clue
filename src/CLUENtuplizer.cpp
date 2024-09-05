@@ -105,6 +105,10 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
   debug() << "ECAL Calorimeter Hits Size = " << (*EB_calo_coll).size()+(*EE_calo_coll).size() << endmsg;
 
   // Read cluster collection
+  // This should be fixed, for now the const cast is added to be able to create the handle
+  // as it was done before https://github.com/key4hep/k4Clue/pull/60
+  DataHandle<edm4hep::ClusterCollection> cluster_handle {
+    ClusterCollectionName, Gaudi::DataHandle::Reader, const_cast<CLUENtuplizer*>(this) };
   cluster_coll = cluster_handle.get();
 
   // Get collection metadata cellID which is valid for both EB, EE and Clusters
