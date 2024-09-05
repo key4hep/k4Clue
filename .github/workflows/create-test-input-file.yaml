@@ -7,6 +7,7 @@ on:
 
 jobs:
   create:
+    runs-on: ubuntu-latest
     steps:
     - name: Start container
       shell: bash
@@ -20,10 +21,11 @@ jobs:
 
           cat <<'EOF' > ${GITHUB_WORKSPACE}/script_container.sh
           set -e
+          name=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
 
           source /cvmfs/sw-nightlies.hsf.org/key4hep/setup.sh
 
-          git clone https://github.com/iLCSoft/CLICPerformance
+          git clone https://github.com/iLCSoft/CLICPerformance --depth 1
           cd CLICPerformance/clicConfig
 
           ddsim --steeringFile clic_steer.py --compactFile $K4GEO/CLIC/compact/CLIC_o3_v14/CLIC_o3_v14.xml --enableGun --gun.distribution uniform --gun.particle gamma --gun.energy "10*GeV" --outputFile gamma_10GeV_edm4hep.root --numberOfEvents 10
@@ -31,11 +33,12 @@ jobs:
 
           EOF
 
-          docker exec container /bin/bash -c /${name}/script_container.sh
+          chmod +x ${GITHUB_WORKSPACE}/script_container.sh
+          docker exec container /bin/bash -c "/mount.sh && /${name}/script_container.sh"
 
     - name: Upload test input file
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
-        name: test
+        name: Input file
         path: ${{ github.workspace }}/gamma_10GeV_edm4hep.root
-      retention-days: 7
+        retention-days: 7
