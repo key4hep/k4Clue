@@ -1,0 +1,37 @@
+# Mostly copied from the Key4hep build action and workflows
+
+name: Create test input file
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create:
+    steps:
+    - name: Start container
+      shell: bash
+      run: |
+        name=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
+        docker run --name container --privileged -v ${GITHUB_WORKSPACE}:/${name} -v ~/.cache/ccache:/root/.cache/ccache -d ghcr.io/key4hep/key4hep-images/alma9-cvmfs tail -f /dev/null
+    - name: Setup environment and build
+      shell: bash
+      run: |
+          name=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
+
+          cat <<'EOF' > ${GITHUB_WORKSPACE}/script_container.sh
+          set -e
+
+          source /cvmfs/sw-nightlies.hsf.org/key4hep/setup.sh
+
+          git clone https://github.com/iLCSoft/CLICPerformance
+          cd CLICPerformance/clicConfig
+
+          ddsim --steeringFile clic_steer.py --compactFile $K4GEO/CLIC/compact/CLIC_o3_v14/CLIC_o3_v14.xml --enableGun --gun.distribution uniform --gun.particle gamma --gun.energy "10*GeV" --outputFile gamma_10GeV_edm4hep.root --numberOfEvents 10
+          cp gamma_10GeV_edm4hep.root /${name}/gamma_10GeV_edm4hep.root
+
+    - name: Upload test input file
+      uses: actions/upload-artifact@v2
+      with:
+        name: test
+        path: ${{ github.workspace }}/gamma_10GeV_edm4hep.root
+      retention-days: 7
