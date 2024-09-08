@@ -29,14 +29,9 @@ if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
       set (CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/install" CACHE PATH "default install path" FORCE )
       endif()
 
+include(cmake/Key4hepConfig.cmake)
+
 include(GNUInstallDirs)
-
-# Set up C++ Standard
-set(CMAKE_CXX_STANDARD 17 CACHE STRING "")
-
-if(NOT CMAKE_CXX_STANDARD MATCHES "17|20")
-  message(FATAL_ERROR "Unsupported C++ standard: ${CMAKE_CXX_STANDARD}")
-endif()
 
 find_package(DD4hep REQUIRED)
 find_package(EDM4HEP REQUIRED)
@@ -47,6 +42,3 @@ find_package(Gaudi REQUIRED)
 include(CTest)
 
 add_subdirectory(src)
-
-message(STATUS "Finished!")
-
