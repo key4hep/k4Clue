@@ -97,7 +97,7 @@ private:
   mutable DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle {"EndcapInputHits", Gaudi::DataHandle::Reader, this};
   mutable DataHandle<edm4hep::EventHeaderCollection> ev_handle {"EventHeader", Gaudi::DataHandle::Reader, this};
   mutable DataHandle<edm4hep::MCParticleCollection> mcp_handle {"MCParticles", Gaudi::DataHandle::Reader, this};
-  MetaDataHandle<std::string> cellIDHandle {EB_calo_handle, edm4hep::CellIDEncoding, Gaudi::DataHandle::Reader};
+  MetaDataHandle<std::string> cellIDHandle {EB_calo_handle, edm4hep::labels::CellIDEncoding, Gaudi::DataHandle::Reader};
 
   bool singleMCParticle = false;
 
