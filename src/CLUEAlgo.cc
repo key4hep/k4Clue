@@ -17,7 +17,9 @@
  * limitations under the License.
  */
 #include "CLUEAlgo.h"
+
 #include <array>
+#include <chrono>
 
 template <typename TILES>
 void CLUEAlgo_T<TILES>::makeClusters(){
@@ -70,7 +72,7 @@ std::map<int, std::vector<int> > CLUEAlgo_T<TILES>::getClusters(){
 
 template <typename TILES>
 void CLUEAlgo_T<TILES>::prepareDataStructures(){
-  for (int i=0; i<points_.n; i++){
+  for (size_t i=0; i<points_.n; i++){
     // push index of points into tiles
     allLayerTiles_.fill( points_.layer[i], points_.x[i], points_.y[i], points_.x[i]/(1.*points_.r[i]), i );
   }
@@ -83,7 +85,7 @@ void CLUEAlgo_T<TILES>::calculateLocalDensity(){
   auto dc2 = dc_*dc_;
 
   // loop over all points
-  for(unsigned i = 0; i < points_.n; i++) {
+  for(size_t i = 0; i < points_.n; i++) {
     const auto& lt = allLayerTiles_[points_.layer[i]];
     float ri = points_.r[i];
     float inv_ri = 1.f/ri;
@@ -110,18 +112,18 @@ void CLUEAlgo_T<TILES>::calculateLocalDensity(){
           binId = lt.getGlobalBinByBinPhi(phi, yBin);
         }
         // get the size of this bin
-        int binSize = lt[binId].size();
+        size_t binSize = lt[binId].size();
 //        std::cout << "binSize = " << binSize << " for [xBin,yBin] = [" << xBin << "," << yBin << "]" << std::endl;
 
         // iterate inside this bin
-        for (unsigned int binIter = 0; binIter < binSize; binIter++) {
-          int j = lt[binId][binIter];
+        for (size_t binIter = 0; binIter < binSize; binIter++) {
+          auto j = lt[binId][binIter];
           // query N_{dc_}(i)
           float dist2_ij = TILES::constants_type_t::endcap ?
            distance2(i, j) : distance2(i, j, true, ri);
           if(dist2_ij <= dc2) {
             // sum weights within N_{dc_}(i)
-            points_.rho[i] += (i == j ? 1.f : 0.5f) * points_.weight[j];
+            points_.rho[i] += (i == static_cast<unsigned int>(j) ? 1.f : 0.5f) * points_.weight[j];
           }
         } // end of interate inside this bin
       } 
@@ -135,7 +137,7 @@ template <typename TILES>
 void CLUEAlgo_T<TILES>::calculateDistanceToHigher(){
   // loop over all points
   float dm = outlierDeltaFactor_ * dc_;
-  for(unsigned i = 0; i < points_.n; i++) {
+  for(size_t i = 0; i < points_.n; i++) {
     // default values of delta and nearest higher for i
     float delta_i = std::numeric_limits<float>::max();
     int nearestHigher_i = -1;
@@ -172,7 +174,7 @@ void CLUEAlgo_T<TILES>::calculateDistanceToHigher(){
           // query N'_{dm}(i)
           bool foundHigher = (points_.rho[j] > rho_i);
           // in the rare case where rho is the same, use detid
-          foundHigher = foundHigher || ((points_.rho[j] == rho_i) && (j>i) );
+          foundHigher = foundHigher || ((points_.rho[j] == rho_i) && (static_cast<unsigned int>(j)>i) );
           float dist_ij = TILES::constants_type_t::endcap ?
            distance(i, j) : distance(i, j, true, ri);
           if(foundHigher && dist_ij <= dm) { // definition of N'_{dm}(i)

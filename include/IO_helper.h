@@ -31,9 +31,6 @@
 // podio specific includes
 #include "DDSegmentation/BitFieldCoder.h"
 
-using namespace dd4hep ;
-using namespace DDSegmentation ;
-
 void read_EDM4HEP_event(const edm4hep::CalorimeterHitCollection& calo_coll, std::string cellIDstr,
                         std::vector<float>& x, std::vector<float>& y, std::vector<int>& layer, std::vector<float>& weight) {
 
@@ -42,7 +39,7 @@ void read_EDM4HEP_event(const edm4hep::CalorimeterHitCollection& calo_coll, std:
   float phi_tmp;
 
   for (const auto& ch : calo_coll) {
-    const BitFieldCoder bf(cellIDstr);
+    const dd4hep::DDSegmentation::BitFieldCoder bf(cellIDstr);
     auto ch_layer = bf.get( ch.getCellID(), "layer");
     auto ch_energy = ch.getEnergy();
 

@@ -30,8 +30,8 @@ CLUECalorimeterHit::CLUECalorimeterHit(const CalorimeterHit& ch)
 
 CLUECalorimeterHit::CLUECalorimeterHit(const CalorimeterHit& ch, const CLUECalorimeterHit::DetectorRegion detRegion, const int layer)
   : CalorimeterHit(ch),
-    m_layer(layer),
-    m_detectorRegion(detRegion) {
+    m_detectorRegion(detRegion),
+    m_layer(layer) {
   setR();
   setEta();
   setPhi();
@@ -43,9 +43,9 @@ CLUECalorimeterHit::CLUECalorimeterHit(const CalorimeterHit& ch, const CLUECalor
     m_detectorRegion(detRegion),
     m_layer(layer),
     m_status(status),
-    m_clusterIndex(clusterIndex),
     m_rho(rho),
-    m_delta(delta) {
+    m_delta(delta),
+    m_clusterIndex(clusterIndex) {
   setR();
   setEta();
   setPhi();

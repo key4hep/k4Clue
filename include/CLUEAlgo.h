@@ -20,15 +20,12 @@
 #define CLUEAlgo_h
 
 // C/C++ headers
-#include <set>
 #include <string>
 #include <vector>
 #include <map>
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <functional>
-#include <chrono>
 
 #include "LayerTiles.h"
 #include "Points.h"
@@ -54,7 +51,6 @@ public:
       std::cout << "," << TILES::constants_type_t::nRows << " )" << std::endl;
     }
   }
-  ~CLUEAlgo_T(){} 
     
   // public variables
   float dc_, rhoc_, outlierDeltaFactor_;
@@ -138,8 +134,7 @@ public:
   std::string getVerboseString_(unsigned it,
 				float x, float y, int layer, float weight,
 				float rho, float delta,
-				int nh, int isseed, float clusterid,
-				unsigned nVerbose) const {
+				int nh, int isseed, float clusterid) const {
     std::stringstream s;
     std::string sep = ",";
     s << it << sep << x << sep << y << sep;
@@ -152,18 +147,18 @@ public:
     return s.str();
   }
   
-  void verboseResults(std::string outputFileName="cout", unsigned nVerbose=-1) const {
+  void verboseResults(std::string outputFileName="cout", int nVerbose=-1) const {
     if(verbose_)
       {
 	if (nVerbose==-1) nVerbose=points_.n;
     
 	std::string s;
 	s = "index,x,y,layer,weight,rho,delta,nh,isSeed,clusterId\n";
-	for(unsigned i=0; i<nVerbose; i++) {
+	for(int i=0; i<nVerbose; i++) {
 	  s += getVerboseString_(i, points_.x[i], points_.y[i], points_.layer[i],
 				 points_.weight[i], points_.rho[i], points_.delta[i],
 				 points_.nearestHigher[i], points_.isSeed[i],
-				 points_.clusterIndex[i], nVerbose);
+				 points_.clusterIndex[i]);
 	}
 
 	if(outputFileName.compare("cout")==0) //verbose to screen

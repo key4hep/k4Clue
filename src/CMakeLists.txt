@@ -21,8 +21,6 @@ limitations under the License.
 # CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/include/modern/*.hpp")
 set(GLOB HEADER_LIST CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/include/*.h")
 
-set(CMAKE_CXX_FLAGS "-fPIC")
-
 ## Make an automatic library - will be static or dynamic based on user setting
 add_library(CLUEAlgo_lib CLUEAlgo.cc ${HEADER_LIST})
 

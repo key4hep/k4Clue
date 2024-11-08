@@ -177,7 +177,7 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<
   info() << "Finished running CLUE algorithm" << endmsg;
 
   // Including CLUE info in cluePoints
-  for(int i = 0; i < cluePoints.n; i++){
+  for(size_t i = 0; i < cluePoints.n; i++){
 
     clue_hits[i].setRho(cluePoints.rho[i]);
     clue_hits[i].setDelta(cluePoints.delta[i]);
@@ -285,9 +285,7 @@ void ClueGaudiAlgorithmWrapper::calculatePosition(edm4hep::MutableCluster* clust
   float z_log = 0.f;
   double thresholdW0_ = 2.9; //Min percentage of energy to contribute to the log-reweight position
 
-  float maxEnergyValue = 0.f;
-  unsigned int maxEnergyIndex = 0;
-  for (int i = 0; i < cluster->hits_size(); i++) {
+  for (size_t i = 0; i < cluster->hits_size(); i++) {
     float rhEnergy = cluster->getHits(i).getEnergy();
     float Wi = std::max(thresholdW0_ - std::log(rhEnergy / total_weight), 0.);
     x_log += cluster->getHits(i).getPosition().x * Wi;
@@ -417,6 +415,10 @@ StatusCode ClueGaudiAlgorithmWrapper::execute(const EventContext&) const {
   // Save CLUE calo hits
   auto pCHV = std::make_unique<clue::CLUECalorimeterHitCollection>(clue_hit_coll);
   const StatusCode scStatusV = eventSvc()->registerObject("/Event/CLUECalorimeterHitCollection", pCHV.release());
+  if (scStatusV.isFailure()) {
+    error() << "Failed to register CLUECalorimeterHitCollection" << endmsg;
+    return StatusCode::FAILURE;
+  }
   info() << "Saved " << clue_hit_coll.vect.size() << " CLUE calo hits in total. " << endmsg;
 
   // Save clusters as calo hits and add cellID to them

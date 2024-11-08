@@ -38,7 +38,7 @@ struct Points {
   // std::vector<bool> behaves similarly to std::vector, but in order to be space efficient, it:
   // Does not necessarily store its elements as a contiguous array (so &v[0] + n != &v[n])
 
-  int n;
+  size_t n;
 
   void clear() {
     x.clear();
