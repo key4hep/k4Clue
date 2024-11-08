@@ -69,13 +69,13 @@ void ClueGaudiAlgorithmWrapper::exclude_stats_outliers(std::vector<float> &v) {
   float mean = std::accumulate(v.begin(), v.end(), 0.0) / v.size();
   float sum_sq_diff = std::accumulate(
       v.begin(), v.end(), 0.0,
-      [mean](float acc, float x) { return acc + (x - mean) * (x - mean); });
+      [mean](float acc, float val) { return acc + (val - mean) * (val - mean); });
   float stddev = std::sqrt(sum_sq_diff / (v.size() - 1));
   std::cout << "Sigma cut outliers: " << stddev << std::endl;
   float z_score_threshold = 3.0;
   v.erase(std::remove_if(v.begin(), v.end(),
-                         [mean, stddev, z_score_threshold](float x) {
-            float z_score = std::abs(x - mean) / stddev;
+                         [mean, stddev, z_score_threshold](float val) {
+            float z_score = std::abs(val - mean) / stddev;
             return z_score > z_score_threshold;
           }),
           v.end());
@@ -83,8 +83,8 @@ void ClueGaudiAlgorithmWrapper::exclude_stats_outliers(std::vector<float> &v) {
 
 std::pair<float, float> ClueGaudiAlgorithmWrapper::stats(const std::vector<float> &v) {
   float m = std::accumulate(v.begin(), v.end(), 0.0) / v.size();
-  float sum = std::accumulate(v.begin(), v.end(), 0.0, [m](float acc, float x) {
-    return acc + (x - m) * (x - m);
+  float sum = std::accumulate(v.begin(), v.end(), 0.0, [m](float acc, float val) {
+    return acc + (val - m) * (val - m);
   });
   auto den = v.size() > 1 ? (v.size() - 1) : v.size();
   return {m, std::sqrt(sum / den)};
