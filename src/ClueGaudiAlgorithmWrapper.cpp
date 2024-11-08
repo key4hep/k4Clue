@@ -69,13 +69,13 @@ void ClueGaudiAlgorithmWrapper::exclude_stats_outliers(std::vector<float> &v) {
   float mean = std::accumulate(v.begin(), v.end(), 0.0) / v.size();
   float sum_sq_diff = std::accumulate(
       v.begin(), v.end(), 0.0,
-      [mean](float acc, float x) { return acc + (x - mean) * (x - mean); });
+      [mean](float acc, float val) { return acc + (val - mean) * (val - mean); });
   float stddev = std::sqrt(sum_sq_diff / (v.size() - 1));
   std::cout << "Sigma cut outliers: " << stddev << std::endl;
   float z_score_threshold = 3.0;
   v.erase(std::remove_if(v.begin(), v.end(),
-                         [mean, stddev, z_score_threshold](float x) {
-            float z_score = std::abs(x - mean) / stddev;
+                         [mean, stddev, z_score_threshold](float val) {
+            float z_score = std::abs(val - mean) / stddev;
             return z_score > z_score_threshold;
           }),
           v.end());
@@ -83,8 +83,8 @@ void ClueGaudiAlgorithmWrapper::exclude_stats_outliers(std::vector<float> &v) {
 
 std::pair<float, float> ClueGaudiAlgorithmWrapper::stats(const std::vector<float> &v) {
   float m = std::accumulate(v.begin(), v.end(), 0.0) / v.size();
-  float sum = std::accumulate(v.begin(), v.end(), 0.0, [m](float acc, float x) {
-    return acc + (x - m) * (x - m);
+  float sum = std::accumulate(v.begin(), v.end(), 0.0, [m](float acc, float val) {
+    return acc + (val - m) * (val - m);
   });
   auto den = v.size() > 1 ? (v.size() - 1) : v.size();
   return {m, std::sqrt(sum / den)};
@@ -177,7 +177,7 @@ std::map<int, std::vector<int> > ClueGaudiAlgorithmWrapper::runAlgo(std::vector<
   info() << "Finished running CLUE algorithm" << endmsg;
 
   // Including CLUE info in cluePoints
-  for(int i = 0; i < cluePoints.n; i++){
+  for(size_t i = 0; i < cluePoints.n; i++){
 
     clue_hits[i].setRho(cluePoints.rho[i]);
     clue_hits[i].setDelta(cluePoints.delta[i]);
@@ -285,9 +285,7 @@ void ClueGaudiAlgorithmWrapper::calculatePosition(edm4hep::MutableCluster* clust
   float z_log = 0.f;
   double thresholdW0_ = 2.9; //Min percentage of energy to contribute to the log-reweight position
 
-  float maxEnergyValue = 0.f;
-  unsigned int maxEnergyIndex = 0;
-  for (int i = 0; i < cluster->hits_size(); i++) {
+  for (size_t i = 0; i < cluster->hits_size(); i++) {
     float rhEnergy = cluster->getHits(i).getEnergy();
     float Wi = std::max(thresholdW0_ - std::log(rhEnergy / total_weight), 0.);
     x_log += cluster->getHits(i).getPosition().x * Wi;
@@ -417,6 +415,10 @@ StatusCode ClueGaudiAlgorithmWrapper::execute(const EventContext&) const {
   // Save CLUE calo hits
   auto pCHV = std::make_unique<clue::CLUECalorimeterHitCollection>(clue_hit_coll);
   const StatusCode scStatusV = eventSvc()->registerObject("/Event/CLUECalorimeterHitCollection", pCHV.release());
+  if (scStatusV.isFailure()) {
+    error() << "Failed to register CLUECalorimeterHitCollection" << endmsg;
+    return StatusCode::FAILURE;
+  }
   info() << "Saved " << clue_hit_coll.vect.size() << " CLUE calo hits in total. " << endmsg;
 
   // Save clusters as calo hits and add cellID to them

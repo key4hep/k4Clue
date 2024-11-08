@@ -121,7 +121,7 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
   float totEnergy = 0;
   float totEnergyHits = 0;
   std::uint64_t totSize = 0;
-  bool foundInECAL = false;
+  // bool foundInECAL = false;
 
   info() << ClusterCollectionName << " : Total number of clusters =  " << int( cluster_coll->size() ) << endmsg;
   for (const auto& cl : *cluster_coll) {
@@ -137,7 +137,7 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
     // Printout the hits that are in Ecal but not included in the clusters
     int maxLayer = 0;
     for (const auto& hit : cl.getHits()) {
-      foundInECAL = false;
+      // foundInECAL = false;
 /*
       for (const auto& clEB : *EB_calo_coll) {
         if( clEB.getCellID() == hit.getCellID()){

@@ -22,11 +22,9 @@
 #include "edm4hep/CalorimeterHit.h"
 #include <GaudiKernel/DataObject.h>
 
-using namespace edm4hep;
-
 namespace clue {
 
-class CLUECalorimeterHit : public CalorimeterHit, public DataObject {
+  class CLUECalorimeterHit : public edm4hep::CalorimeterHit, public DataObject {
 public:
   using CalorimeterHit::CalorimeterHit;
 
@@ -80,10 +78,10 @@ public:
   void setEta();
   void setPhi();
 
-  void setRho( float rho ) { m_rho = rho; };
-  void setDelta( float delta ) { m_delta = delta; };
-  void setStatus( Status status ) { m_status = status; };
-  void setClusterIndex( int clIdx ) { m_clusterIndex = clIdx; };
+  void setRho( float rho ) { m_rho = rho; }
+  void setDelta( float delta ) { m_delta = delta; }
+  void setStatus( Status status ) { m_status = status; }
+  void setClusterIndex( int clIdx ) { m_clusterIndex = clIdx; }
 
 private:
   std::uint8_t m_detectorRegion{0};
