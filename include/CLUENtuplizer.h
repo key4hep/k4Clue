@@ -101,7 +101,7 @@ private:
 
   bool singleMCParticle = false;
 
-  ITHistSvc* m_ths{nullptr};  ///< THistogram service
+  SmartIF<ITHistSvc> m_ths;  ///< THistogram service
 
   mutable TTree* t_hits{nullptr};
   mutable std::vector<int> *m_hits_event = nullptr;

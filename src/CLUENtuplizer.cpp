@@ -36,7 +36,8 @@ CLUENtuplizer::CLUENtuplizer(const std::string& name, ISvcLocator* svcLoc) : Gau
 StatusCode CLUENtuplizer::initialize() {
   if (Gaudi::Algorithm::initialize().isFailure()) return StatusCode::FAILURE;
 
-  if (service("THistSvc", m_ths).isFailure()) {
+  m_ths = service("THistSvc", false);
+  if (!m_ths) {
     error() << "Couldn't get THistSvc" << endmsg;
     return StatusCode::FAILURE;
   }
