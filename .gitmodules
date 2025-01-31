@@ -1,0 +1,3 @@
+[submodule "CLUEstering"]
+	path = CLUEstering
+	url = https://gitlab.cern.ch/kalos/CLUEstering.git

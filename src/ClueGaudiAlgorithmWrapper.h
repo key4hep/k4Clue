@@ -27,10 +27,12 @@
 
 #include "CLUEAlgo.h"
 #include "CLUECalorimeterHit.h"
+#include "CLUEstering/CLUEstering.hpp"
 #include <edm4hep/CalorimeterHitCollection.h>
 #include <edm4hep/ClusterCollection.h>
 #include <edm4hep/Constants.h>
 
+template <uint8_t nDim>
 class ClueGaudiAlgorithmWrapper : public Gaudi::Algorithm {
 public:
   explicit ClueGaudiAlgorithmWrapper(const std::string& name, ISvcLocator* svcLoc);
@@ -44,11 +46,12 @@ public:
   std::pair<float, float> stats(const std::vector<float>& v);
   void printTimingReport(std::vector<float>& vals, int repeats, const std::string label);
 
-  void fillCLUEPoints(std::vector<clue::CLUECalorimeterHit>& clue_hits) const;
-  std::map<int, std::vector<int>> runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, bool isBarrel) const;
-  void cleanCLUEPoints() const;
-  void fillFinalClusters(std::vector<clue::CLUECalorimeterHit>& clue_hits,
-                         const std::map<int, std::vector<int>> clusterMap, edm4hep::ClusterCollection* clusters) const;
+  PointsSoA<nDim> fillCLUEPoints(const std::vector<clue::CLUECalorimeterHit>& clue_hits, float* floatBuffer,
+                                 int* intBuffer, const bool isBarrel) const;
+  std::vector<std::vector<int>> runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, const bool isBarrel) const;
+
+  void fillFinalClusters(std::vector<clue::CLUECalorimeterHit> const& clue_hits,
+                         std::vector<std::vector<int>> const& clusterMap, edm4hep::ClusterCollection* clusters) const;
   void calculatePosition(edm4hep::MutableCluster* cluster) const;
   void transformClustersInCaloHits(edm4hep::ClusterCollection* clusters,
                                    edm4hep::CalorimeterHitCollection* caloHits) const;
@@ -59,15 +62,11 @@ private:
   mutable const edm4hep::CalorimeterHitCollection* EE_calo_coll;
   float dc;
   float rhoc;
-  float outlierDeltaFactor;
+  float dm;
+  int pointsPerBin = 10;
 
   // CLUE points
   mutable clue::CLUECalorimeterHitCollection clue_hit_coll;
-  mutable std::vector<float> x;
-  mutable std::vector<float> y;
-  mutable std::vector<float> r;
-  mutable std::vector<int> layer;
-  mutable std::vector<float> weight;
 
   // Handle to read the calo cells and their cellID
   mutable k4FWCore::DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle{"BarrelInputHits",
@@ -78,8 +77,8 @@ private:
                                                      Gaudi::DataHandle::Reader};
 
   // CLUE Algo
-  mutable CLICdetBarrelCLUEAlgo clueAlgoBarrel_;
-  mutable CLICdetEndcapCLUEAlgo clueAlgoEndcap_;
+  mutable std::optional<ALPAKA_ACCELERATOR_NAMESPACE_CLUE::CLUEAlgoAlpaka<nDim>> clueAlgo_;
+  mutable std::optional<ALPAKA_ACCELERATOR_NAMESPACE_CLUE::Queue> queue_;
 
   // Collections in output
   mutable k4FWCore::DataHandle<edm4hep::CalorimeterHitCollection> caloHitsHandle{"CLUEClustersAsHits",

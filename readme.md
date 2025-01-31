@@ -53,7 +53,7 @@ In the original article and implementation, four parameters were needed (`dc`, `
 * `deltao` is the maximum distance for a point to be linked to a nearest higher
 point.
 * `deltac` is the minimum distance for a local high density point to be promoted
-as a Seed. 
+as a Seed.
 )
 
 ### Detector layer layout
@@ -87,4 +87,4 @@ A simple recipe to run k4CLUE as part of the CLIC reconstruction chain can be fo
 If you encounter any error when compiling or running this project, please contact:
 * Marco Rovere, marco.rovere@cern.ch
 * Felice Pantaleo, felice.pantaleo@cern.ch
-
+* Aurora Perego, aurora.perego@cern.ch
