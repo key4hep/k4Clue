@@ -126,13 +126,13 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
 
   info() << ClusterCollectionName << " : Total number of clusters =  " << int(cluster_coll->size()) << endmsg;
   for (const auto& cl : *cluster_coll) {
-    m_clusters_event->push_back(evNum);
-    m_clusters_energy->push_back(cl.getEnergy());
-    m_clusters_size->push_back(cl.hits_size());
+    m_clusters_event.push_back(evNum);
+    m_clusters_energy.push_back(cl.getEnergy());
+    m_clusters_size.push_back(cl.hits_size());
 
-    m_clusters_x->push_back(cl.getPosition().x);
-    m_clusters_y->push_back(cl.getPosition().y);
-    m_clusters_z->push_back(cl.getPosition().z);
+    m_clusters_x.push_back(cl.getPosition().x);
+    m_clusters_y.push_back(cl.getPosition().y);
+    m_clusters_z.push_back(cl.getPosition().z);
 
     // Sum up energy of cluster hits and save info
     // Printout the hits that are in Ecal but not included in the clusters
@@ -170,12 +170,12 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
       // info() << "  ch cellID : " << hit.getCellID()
       //        << ", layer : " << ch_layer
       //        << ", energy : " << hit.getEnergy() << endmsg;
-      m_clhits_event->push_back(evNum);
-      m_clhits_layer->push_back(ch_layer);
-      m_clhits_x->push_back(hit.getPosition().x);
-      m_clhits_y->push_back(hit.getPosition().y);
-      m_clhits_z->push_back(hit.getPosition().z);
-      m_clhits_energy->push_back(hit.getEnergy());
+      m_clhits_event.push_back(evNum);
+      m_clhits_layer.push_back(ch_layer);
+      m_clhits_x.push_back(hit.getPosition().x);
+      m_clhits_y.push_back(hit.getPosition().y);
+      m_clhits_z.push_back(hit.getPosition().z);
+      m_clhits_energy.push_back(hit.getEnergy());
       totEnergyHits += hit.getEnergy();
       totSize += 1;
       /*
@@ -190,13 +190,13 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
     if (!std::isnan(cl.getEnergy())) {
       totEnergy += cl.getEnergy();
     }
-    m_clusters_maxLayer->push_back(maxLayer);
+    m_clusters_maxLayer.push_back(maxLayer);
   }
-  m_clusters->push_back(nClusters);
-  m_clusters_totEnergy->push_back(totEnergy);
-  m_clusters_totEnergyHits->push_back(totEnergyHits);
-  m_clusters_MCEnergy->push_back(mcp_primary_energy);
-  m_clusters_totSize->push_back(totSize);
+  m_clusters.push_back(nClusters);
+  m_clusters_totEnergy.push_back(totEnergy);
+  m_clusters_totEnergyHits.push_back(totEnergyHits);
+  m_clusters_MCEnergy.push_back(mcp_primary_energy);
+  m_clusters_totSize.push_back(totSize);
   t_clusters->Fill();
   t_clhits->Fill();
   info() << ClusterCollectionName << " : Total number hits = " << totSize << " with total energy (cl) = " << totEnergy
@@ -208,36 +208,36 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
   totEnergy = 0;
   debug() << "CLUE Calorimeter Hits Size = " << clue_calo_coll->vect.size() << endmsg;
   for (const auto& clue_hit : (clue_calo_coll->vect)) {
-    m_hits_event->push_back(evNum);
+    m_hits_event.push_back(evNum);
     if (clue_hit.inBarrel()) {
-      m_hits_region->push_back(0);
+      m_hits_region.push_back(0);
     } else {
-      m_hits_region->push_back(1);
+      m_hits_region.push_back(1);
     }
-    m_hits_layer->push_back(clue_hit.getLayer());
-    m_hits_x->push_back(clue_hit.getPosition().x);
-    m_hits_y->push_back(clue_hit.getPosition().y);
-    m_hits_z->push_back(clue_hit.getPosition().z);
-    m_hits_eta->push_back(clue_hit.getEta());
-    m_hits_phi->push_back(clue_hit.getPhi());
-    m_hits_rho->push_back(clue_hit.getRho());
-    m_hits_delta->push_back(clue_hit.getDelta());
-    m_hits_energy->push_back(clue_hit.getEnergy());
-    m_hits_MCEnergy->push_back(mcp_primary_energy);
+    m_hits_layer.push_back(clue_hit.getLayer());
+    m_hits_x.push_back(clue_hit.getPosition().x);
+    m_hits_y.push_back(clue_hit.getPosition().y);
+    m_hits_z.push_back(clue_hit.getPosition().z);
+    m_hits_eta.push_back(clue_hit.getEta());
+    m_hits_phi.push_back(clue_hit.getPhi());
+    m_hits_rho.push_back(clue_hit.getRho());
+    m_hits_delta.push_back(clue_hit.getDelta());
+    m_hits_energy.push_back(clue_hit.getEnergy());
+    m_hits_MCEnergy.push_back(mcp_primary_energy);
 
     if (clue_hit.isFollower()) {
-      m_hits_status->push_back(1);
+      m_hits_status.push_back(1);
       totEnergy += clue_hit.getEnergy();
       nFollowers++;
     }
     if (clue_hit.isSeed()) {
-      m_hits_status->push_back(2);
+      m_hits_status.push_back(2);
       totEnergy += clue_hit.getEnergy();
       nSeeds++;
     }
 
     if (clue_hit.isOutlier()) {
-      m_hits_status->push_back(0);
+      m_hits_status.push_back(0);
       nOutliers++;
     }
   }
@@ -248,21 +248,6 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
 }
 
 void CLUENtuplizer::initializeTrees() {
-
-  m_hits_event = new std::vector<int>();
-  m_hits_region = new std::vector<int>();
-  m_hits_layer = new std::vector<int>();
-  m_hits_status = new std::vector<int>();
-  m_hits_x = new std::vector<float>();
-  m_hits_y = new std::vector<float>();
-  m_hits_z = new std::vector<float>();
-  m_hits_eta = new std::vector<float>();
-  m_hits_phi = new std::vector<float>();
-  m_hits_rho = new std::vector<float>();
-  m_hits_delta = new std::vector<float>();
-  m_hits_energy = new std::vector<float>();
-  m_hits_MCEnergy = new std::vector<float>();
-
   t_hits->Branch("event", &m_hits_event);
   t_hits->Branch("region", &m_hits_region);
   t_hits->Branch("layer", &m_hits_layer);
@@ -277,19 +262,6 @@ void CLUENtuplizer::initializeTrees() {
   t_hits->Branch("energy", &m_hits_energy);
   t_hits->Branch("MCEnergy", &m_hits_MCEnergy);
 
-  m_clusters = new std::vector<int>();
-  m_clusters_event = new std::vector<int>();
-  m_clusters_maxLayer = new std::vector<int>();
-  m_clusters_size = new std::vector<int>();
-  m_clusters_totSize = new std::vector<int>();
-  m_clusters_x = new std::vector<float>();
-  m_clusters_y = new std::vector<float>();
-  m_clusters_z = new std::vector<float>();
-  m_clusters_energy = new std::vector<float>();
-  m_clusters_totEnergy = new std::vector<float>();
-  m_clusters_totEnergyHits = new std::vector<float>();
-  m_clusters_MCEnergy = new std::vector<float>();
-
   t_clusters->Branch("clusters", &m_clusters);
   t_clusters->Branch("event", &m_clusters_event);
   t_clusters->Branch("maxLayer", &m_clusters_maxLayer);
@@ -303,13 +275,6 @@ void CLUENtuplizer::initializeTrees() {
   t_clusters->Branch("totEnergyHits", &m_clusters_totEnergyHits);
   t_clusters->Branch("MCEnergy", &m_clusters_MCEnergy);
 
-  m_clhits_event = new std::vector<int>();
-  m_clhits_layer = new std::vector<int>();
-  m_clhits_x = new std::vector<float>();
-  m_clhits_y = new std::vector<float>();
-  m_clhits_z = new std::vector<float>();
-  m_clhits_energy = new std::vector<float>();
-
   t_clhits->Branch("event", &m_clhits_event);
   t_clhits->Branch("layer", &m_clhits_layer);
   t_clhits->Branch("x", &m_clhits_x);
@@ -321,39 +286,39 @@ void CLUENtuplizer::initializeTrees() {
 }
 
 void CLUENtuplizer::cleanTrees() const {
-  m_hits_event->clear();
-  m_hits_region->clear();
-  m_hits_layer->clear();
-  m_hits_status->clear();
-  m_hits_x->clear();
-  m_hits_y->clear();
-  m_hits_z->clear();
-  m_hits_eta->clear();
-  m_hits_phi->clear();
-  m_hits_rho->clear();
-  m_hits_delta->clear();
-  m_hits_energy->clear();
-  m_hits_MCEnergy->clear();
+  m_hits_event.clear();
+  m_hits_region.clear();
+  m_hits_layer.clear();
+  m_hits_status.clear();
+  m_hits_x.clear();
+  m_hits_y.clear();
+  m_hits_z.clear();
+  m_hits_eta.clear();
+  m_hits_phi.clear();
+  m_hits_rho.clear();
+  m_hits_delta.clear();
+  m_hits_energy.clear();
+  m_hits_MCEnergy.clear();
 
-  m_clusters->clear();
-  m_clusters_event->clear();
-  m_clusters_maxLayer->clear();
-  m_clusters_size->clear();
-  m_clusters_totSize->clear();
-  m_clusters_x->clear();
-  m_clusters_y->clear();
-  m_clusters_z->clear();
-  m_clusters_energy->clear();
-  m_clusters_totEnergy->clear();
-  m_clusters_totEnergyHits->clear();
-  m_clusters_MCEnergy->clear();
+  m_clusters.clear();
+  m_clusters_event.clear();
+  m_clusters_maxLayer.clear();
+  m_clusters_size.clear();
+  m_clusters_totSize.clear();
+  m_clusters_x.clear();
+  m_clusters_y.clear();
+  m_clusters_z.clear();
+  m_clusters_energy.clear();
+  m_clusters_totEnergy.clear();
+  m_clusters_totEnergyHits.clear();
+  m_clusters_MCEnergy.clear();
 
-  m_clhits_event->clear();
-  m_clhits_layer->clear();
-  m_clhits_x->clear();
-  m_clhits_y->clear();
-  m_clhits_z->clear();
-  m_clhits_energy->clear();
+  m_clhits_event.clear();
+  m_clhits_layer.clear();
+  m_clhits_x.clear();
+  m_clhits_y.clear();
+  m_clhits_z.clear();
+  m_clhits_energy.clear();
 
   return;
 }

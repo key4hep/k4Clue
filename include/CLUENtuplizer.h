@@ -39,42 +39,6 @@ class CLUENtuplizer : public Gaudi::Algorithm {
 public:
   /// Constructor.
   CLUENtuplizer(const std::string& name, ISvcLocator* svcLoc);
-  /// Destructor.
-  ~CLUENtuplizer() {
-    delete m_hits_event;
-    delete m_hits_region;
-    delete m_hits_layer;
-    delete m_hits_status;
-    delete m_hits_x;
-    delete m_hits_y;
-    delete m_hits_z;
-    delete m_hits_eta;
-    delete m_hits_phi;
-    delete m_hits_rho;
-    delete m_hits_delta;
-    delete m_hits_energy;
-    delete m_hits_MCEnergy;
-
-    delete m_clusters;
-    delete m_clusters_event;
-    delete m_clusters_maxLayer;
-    delete m_clusters_size;
-    delete m_clusters_totSize;
-    delete m_clusters_x;
-    delete m_clusters_y;
-    delete m_clusters_z;
-    delete m_clusters_energy;
-    delete m_clusters_totEnergy;
-    delete m_clusters_totEnergyHits;
-    delete m_clusters_MCEnergy;
-
-    delete m_clhits_event;
-    delete m_clhits_layer;
-    delete m_clhits_x;
-    delete m_clhits_y;
-    delete m_clhits_z;
-    delete m_clhits_energy;
-  };
   /// Initialize.
   virtual StatusCode initialize();
   /// Initialize tree.
@@ -105,41 +69,41 @@ private:
   SmartIF<ITHistSvc> m_ths; ///< THistogram service
 
   mutable TTree* t_hits{nullptr};
-  mutable std::vector<int>* m_hits_event = nullptr;
-  mutable std::vector<int>* m_hits_region = nullptr;
-  mutable std::vector<int>* m_hits_layer = nullptr;
-  mutable std::vector<int>* m_hits_status = nullptr;
-  mutable std::vector<float>* m_hits_x = nullptr;
-  mutable std::vector<float>* m_hits_y = nullptr;
-  mutable std::vector<float>* m_hits_z = nullptr;
-  mutable std::vector<float>* m_hits_eta = nullptr;
-  mutable std::vector<float>* m_hits_phi = nullptr;
-  mutable std::vector<float>* m_hits_rho = nullptr;
-  mutable std::vector<float>* m_hits_delta = nullptr;
-  mutable std::vector<float>* m_hits_energy = nullptr;
-  mutable std::vector<float>* m_hits_MCEnergy = nullptr;
+  mutable std::vector<int> m_hits_event;
+  mutable std::vector<int> m_hits_region;
+  mutable std::vector<int> m_hits_layer;
+  mutable std::vector<int> m_hits_status;
+  mutable std::vector<float> m_hits_x;
+  mutable std::vector<float> m_hits_y;
+  mutable std::vector<float> m_hits_z;
+  mutable std::vector<float> m_hits_eta;
+  mutable std::vector<float> m_hits_phi;
+  mutable std::vector<float> m_hits_rho;
+  mutable std::vector<float> m_hits_delta;
+  mutable std::vector<float> m_hits_energy;
+  mutable std::vector<float> m_hits_MCEnergy;
 
   mutable TTree* t_clusters{nullptr};
-  mutable std::vector<int>* m_clusters = nullptr;
-  mutable std::vector<int>* m_clusters_event = nullptr;
-  mutable std::vector<int>* m_clusters_maxLayer = nullptr;
-  mutable std::vector<int>* m_clusters_size = nullptr;
-  mutable std::vector<int>* m_clusters_totSize = nullptr;
-  mutable std::vector<float>* m_clusters_x = nullptr;
-  mutable std::vector<float>* m_clusters_y = nullptr;
-  mutable std::vector<float>* m_clusters_z = nullptr;
-  mutable std::vector<float>* m_clusters_energy = nullptr;
-  mutable std::vector<float>* m_clusters_totEnergy = nullptr;
-  mutable std::vector<float>* m_clusters_totEnergyHits = nullptr;
-  mutable std::vector<float>* m_clusters_MCEnergy = nullptr;
+  mutable std::vector<int> m_clusters;
+  mutable std::vector<int> m_clusters_event;
+  mutable std::vector<int> m_clusters_maxLayer;
+  mutable std::vector<int> m_clusters_size;
+  mutable std::vector<int> m_clusters_totSize;
+  mutable std::vector<float> m_clusters_x;
+  mutable std::vector<float> m_clusters_y;
+  mutable std::vector<float> m_clusters_z;
+  mutable std::vector<float> m_clusters_energy;
+  mutable std::vector<float> m_clusters_totEnergy;
+  mutable std::vector<float> m_clusters_totEnergyHits;
+  mutable std::vector<float> m_clusters_MCEnergy;
 
   mutable TTree* t_clhits{nullptr};
-  mutable std::vector<int>* m_clhits_event = nullptr;
-  mutable std::vector<int>* m_clhits_layer = nullptr;
-  mutable std::vector<float>* m_clhits_x = nullptr;
-  mutable std::vector<float>* m_clhits_y = nullptr;
-  mutable std::vector<float>* m_clhits_z = nullptr;
-  mutable std::vector<float>* m_clhits_energy = nullptr;
+  mutable std::vector<int> m_clhits_event;
+  mutable std::vector<int> m_clhits_layer;
+  mutable std::vector<float> m_clhits_x;
+  mutable std::vector<float> m_clhits_y;
+  mutable std::vector<float> m_clhits_z;
+  mutable std::vector<float> m_clhits_energy;
 
   mutable std::int32_t evNum;
 };
