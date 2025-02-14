@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-import os 
+import os
 
 from Gaudi.Configuration import *
 
@@ -47,6 +47,7 @@ from Configurables import ToolSvc, Lcio2EDM4hepTool, EDM4hep2LcioTool
 from Configurables import k4DataSvc, PodioInput
 evtsvc = k4DataSvc('EventDataSvc')
 evtsvc.input = os.path.join('$TEST_DIR/inputFiles/', os.environ.get("INPUTFILE", "ttbar_edm4hep_frame.root"))
+evtsvc.input =  "/eos/user/a/aperego/fcc/CLICPerformance/clicConfig/my_output_10_gamma_10GeV_edm4hep_eta1p5to2p5.root"
 
 
 inp = PodioInput('InputReader')
@@ -700,7 +701,7 @@ MyRecoMCTruthLinker.ProcessorType = "RecoMCTruthLinker"
 MyRecoMCTruthLinker.Parameters = {
                                   "BremsstrahlungEnergyCut": ["1"],
                                   "CalohitMCTruthLinkName": ["CalohitMCTruthLink"],
-                                  "ClusterCollection": ["MergedClusters"],
+                                  "ClusterCollection": ["CLUEClusters"],
                                   "ClusterMCTruthLinkName": ["ClusterMCTruthLink"],
                                   "FullRecoRelation": ["false"],
                                   "InvertedNonDestructiveInteractionLogic": ["false"],
@@ -1789,7 +1790,7 @@ VertexFinderUnconstrained.Parameters = {
                                         }
 
 
-from Configurables import ClueGaudiAlgorithmWrapper
+from Configurables import ClueGaudiAlgorithmWrapper__unsignedschar_3_ as ClueGaudiAlgorithmWrapper
 
 MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper("ClueGaudiAlgorithmWrapperName")
 MyClueGaudiAlgorithmWrapper.OutputLevel = INFO
@@ -1816,7 +1817,6 @@ MyCLUENtuplizer.OutputLevel = DEBUG
 MyCLUENtuplizer.ClusterCollection = "CLUEClusters"
 MyCLUENtuplizer.BarrelCaloHitsCollection = "ECALBarrel"
 MyCLUENtuplizer.EndcapCaloHitsCollection = "ECALEndcap"
-MyCLUENtuplizer.SingleMCParticle = True
 
 from Configurables import THistSvc
 THistSvc().Output = ["rec DATAFILE='k4clue_analysis_output.root' TYP='ROOT' OPT='RECREATE'"]
