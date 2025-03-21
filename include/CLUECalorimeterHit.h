@@ -24,7 +24,7 @@
 
 namespace clue {
 
-  class CLUECalorimeterHit : public edm4hep::CalorimeterHit, public DataObject {
+class CLUECalorimeterHit : public edm4hep::CalorimeterHit, public DataObject {
 public:
   using CalorimeterHit::CalorimeterHit;
 
@@ -37,8 +37,9 @@ public:
 
   CLUECalorimeterHit(const CalorimeterHit& ch, const CLUECalorimeterHit::DetectorRegion detRegion, const int layer);
 
-  CLUECalorimeterHit(const CalorimeterHit& ch, const CLUECalorimeterHit::DetectorRegion detRegion, const int layer, 
-                     const CLUECalorimeterHit::Status status, const int clusterIndex, const float rho, const float delta);
+  CLUECalorimeterHit(const CalorimeterHit& ch, const CLUECalorimeterHit::DetectorRegion detRegion, const int layer,
+                     const CLUECalorimeterHit::Status status, const int clusterIndex, const float rho,
+                     const float delta);
 
   /// Access the layer number
   const std::uint64_t& getLayer() const;
@@ -78,10 +79,10 @@ public:
   void setEta();
   void setPhi();
 
-  void setRho( float rho ) { m_rho = rho; }
-  void setDelta( float delta ) { m_delta = delta; }
-  void setStatus( Status status ) { m_status = status; }
-  void setClusterIndex( int clIdx ) { m_clusterIndex = clIdx; }
+  void setRho(float rho) { m_rho = rho; }
+  void setDelta(float delta) { m_delta = delta; }
+  void setStatus(Status status) { m_status = status; }
+  void setClusterIndex(int clIdx) { m_clusterIndex = clIdx; }
 
 private:
   std::uint8_t m_detectorRegion{0};

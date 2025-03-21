@@ -21,8 +21,8 @@
 // podio specific includes
 #include "DDSegmentation/BitFieldCoder.h"
 
-using namespace dd4hep ;
-using namespace DDSegmentation ;
+using namespace dd4hep;
+using namespace DDSegmentation;
 
 DECLARE_COMPONENT(CLUENtuplizer)
 
@@ -30,11 +30,13 @@ CLUENtuplizer::CLUENtuplizer(const std::string& name, ISvcLocator* svcLoc) : Gau
   declareProperty("ClusterCollection", ClusterCollectionName, "Collection of clusters in input");
   declareProperty("BarrelCaloHitsCollection", EB_calo_handle, "Collection for Barrel Calo Hits used in input");
   declareProperty("EndcapCaloHitsCollection", EE_calo_handle, "Collection for Endcap Calo Hits used in input");
-  declareProperty("SingleMCParticle", singleMCParticle, "If this is True, the analysis is run only if one MCParticle is present in the event");
+  declareProperty("SingleMCParticle", singleMCParticle,
+                  "If this is True, the analysis is run only if one MCParticle is present in the event");
 }
 
 StatusCode CLUENtuplizer::initialize() {
-  if (Gaudi::Algorithm::initialize().isFailure()) return StatusCode::FAILURE;
+  if (Gaudi::Algorithm::initialize().isFailure())
+    return StatusCode::FAILURE;
 
   m_ths = service("THistSvc", true);
   if (!m_ths) {
@@ -42,21 +44,21 @@ StatusCode CLUENtuplizer::initialize() {
     return StatusCode::FAILURE;
   }
 
-  t_hits = new TTree ("CLUEHits", "CLUE calo hits ntuple");
+  t_hits = new TTree("CLUEHits", "CLUE calo hits ntuple");
   if (m_ths->regTree("/rec/NtuplesHits", t_hits).isFailure()) {
     error() << "Couldn't register hits tree" << endmsg;
     return StatusCode::FAILURE;
   }
 
-  t_clusters = new TTree (TString(ClusterCollectionName), "Clusters ntuple");
-  if (m_ths->regTree("/rec/"+ClusterCollectionName, t_clusters).isFailure()) {
+  t_clusters = new TTree(TString(ClusterCollectionName), "Clusters ntuple");
+  if (m_ths->regTree("/rec/" + ClusterCollectionName, t_clusters).isFailure()) {
     error() << "Couldn't register clusters tree" << endmsg;
     return StatusCode::FAILURE;
   }
 
   std::string ClusterHitsCollectionName = ClusterCollectionName + "Hits";
-  t_clhits = new TTree (TString(ClusterHitsCollectionName), "Clusters ntuple");
-  if (m_ths->regTree("/rec/"+ClusterHitsCollectionName, t_clhits).isFailure()) {
+  t_clhits = new TTree(TString(ClusterHitsCollectionName), "Clusters ntuple");
+  if (m_ths->regTree("/rec/" + ClusterHitsCollectionName, t_clhits).isFailure()) {
     error() << "Couldn't register cluster hits tree" << endmsg;
     return StatusCode::FAILURE;
   }
@@ -70,29 +72,27 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
 
   auto evs = ev_handle.get();
   evNum = (*evs)[0].getEventNumber();
-  //evNum = 0;
+  // evNum = 0;
   info() << "Event number = " << evNum << endmsg;
 
   auto mcps = mcp_handle.get();
   int mcps_primary = 0;
   float mcp_primary_energy = 0.f;
-  std::for_each((*mcps).begin(), (*mcps).end(),
-                [&mcps_primary, &mcp_primary_energy] (edm4hep::MCParticle mcp) { 
-                  if(mcp.getGeneratorStatus() == 1){
-                    mcps_primary += 1;
-                    mcp_primary_energy = mcp.getEnergy();
-                  }
-                });
+  std::for_each((*mcps).begin(), (*mcps).end(), [&mcps_primary, &mcp_primary_energy](edm4hep::MCParticle mcp) {
+    if (mcp.getGeneratorStatus() == 1) {
+      mcps_primary += 1;
+      mcp_primary_energy = mcp.getEnergy();
+    }
+  });
   info() << "MC Particles = " << mcps->size() << " (of which primaries = " << mcps_primary << ")" << endmsg;
   // If there is more than one primary, skip event
-  if(singleMCParticle && mcps_primary > 1){
+  if (singleMCParticle && mcps_primary > 1) {
     warning() << "This event is skipped because there are " << mcps_primary << " primary MC particles." << endmsg;
     return StatusCode::SUCCESS;
   }
 
-
-  DataObject* pStatus  = nullptr;
-  StatusCode  scStatus = eventSvc()->retrieveObject("/Event/CLUECalorimeterHitCollection", pStatus);
+  DataObject* pStatus = nullptr;
+  StatusCode scStatus = eventSvc()->retrieveObject("/Event/CLUECalorimeterHitCollection", pStatus);
   if (scStatus.isSuccess()) {
     clue_calo_coll = static_cast<clue::CLUECalorimeterHitCollection*>(pStatus);
   } else {
@@ -103,13 +103,13 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
   EB_calo_coll = EB_calo_handle.get();
   EE_calo_coll = EE_calo_handle.get();
 
-  debug() << "ECAL Calorimeter Hits Size = " << (*EB_calo_coll).size()+(*EE_calo_coll).size() << endmsg;
+  debug() << "ECAL Calorimeter Hits Size = " << (*EB_calo_coll).size() + (*EE_calo_coll).size() << endmsg;
 
   // Read cluster collection
   // This should be fixed, for now the const cast is added to be able to create the handle
   // as it was done before https://github.com/key4hep/k4Clue/pull/60
-  DataHandle<edm4hep::ClusterCollection> cluster_handle {
-    ClusterCollectionName, Gaudi::DataHandle::Reader, const_cast<CLUENtuplizer*>(this) };
+  DataHandle<edm4hep::ClusterCollection> cluster_handle{ClusterCollectionName, Gaudi::DataHandle::Reader,
+                                                        const_cast<CLUENtuplizer*>(this)};
   cluster_coll = cluster_handle.get();
 
   // Get collection metadata cellID which is valid for both EB, EE and Clusters
@@ -124,83 +124,83 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
   std::uint64_t totSize = 0;
   // bool foundInECAL = false;
 
-  info() << ClusterCollectionName << " : Total number of clusters =  " << int( cluster_coll->size() ) << endmsg;
+  info() << ClusterCollectionName << " : Total number of clusters =  " << int(cluster_coll->size()) << endmsg;
   for (const auto& cl : *cluster_coll) {
-    m_clusters_event->push_back (evNum);
-    m_clusters_energy->push_back (cl.getEnergy());
-    m_clusters_size->push_back (cl.hits_size());
+    m_clusters_event->push_back(evNum);
+    m_clusters_energy->push_back(cl.getEnergy());
+    m_clusters_size->push_back(cl.hits_size());
 
-    m_clusters_x->push_back (cl.getPosition().x);
-    m_clusters_y->push_back (cl.getPosition().y);
-    m_clusters_z->push_back (cl.getPosition().z);
+    m_clusters_x->push_back(cl.getPosition().x);
+    m_clusters_y->push_back(cl.getPosition().y);
+    m_clusters_z->push_back(cl.getPosition().z);
 
     // Sum up energy of cluster hits and save info
     // Printout the hits that are in Ecal but not included in the clusters
     int maxLayer = 0;
     for (const auto& hit : cl.getHits()) {
       // foundInECAL = false;
-/*
-      for (const auto& clEB : *EB_calo_coll) {
-        if( clEB.getCellID() == hit.getCellID()){
-          foundInECAL = true;
-          break;  // Found in EB, break the loop
-        }
-        if(foundInECAL) {
-          // Found in EB, break the loop
-          break;
-        } 
-      }
+      /*
+            for (const auto& clEB : *EB_calo_coll) {
+              if( clEB.getCellID() == hit.getCellID()){
+                foundInECAL = true;
+                break;  // Found in EB, break the loop
+              }
+              if(foundInECAL) {
+                // Found in EB, break the loop
+                break;
+              }
+            }
 
-      if(!foundInECAL){
-        for (const auto& clEE : *EE_calo_coll) {
-          if( clEE.getCellID() == hit.getCellID()){
-            foundInECAL = true;
-            break;  // Found in EE, break the loop
-          }
-          if(foundInECAL) {
-            // Found in EE, break the loop
-            break;
-          }
-        }
-      }
-      if(foundInECAL){
-*/
-        ch_layer = bf.get( hit.getCellID(), "layer");
-        maxLayer = std::max(int(ch_layer), maxLayer);
-        //info() << "  ch cellID : " << hit.getCellID()
-        //       << ", layer : " << ch_layer   
-        //       << ", energy : " << hit.getEnergy() << endmsg; 
-        m_clhits_event->push_back (evNum);
-        m_clhits_layer->push_back (ch_layer);
-        m_clhits_x->push_back (hit.getPosition().x);
-        m_clhits_y->push_back (hit.getPosition().y);
-        m_clhits_z->push_back (hit.getPosition().z);
-        m_clhits_energy->push_back (hit.getEnergy());
-        totEnergyHits += hit.getEnergy();
-        totSize += 1;
-/*
-      } else {
-        debug() << "  This calo hit was NOT found among ECAL hits (cellID : " << hit.getCellID()
-               << ", layer : " << ch_layer   
-               << ", energy : " << hit.getEnergy() << " )" << endmsg; 
-      }
-*/
+            if(!foundInECAL){
+              for (const auto& clEE : *EE_calo_coll) {
+                if( clEE.getCellID() == hit.getCellID()){
+                  foundInECAL = true;
+                  break;  // Found in EE, break the loop
+                }
+                if(foundInECAL) {
+                  // Found in EE, break the loop
+                  break;
+                }
+              }
+            }
+            if(foundInECAL){
+      */
+      ch_layer = bf.get(hit.getCellID(), "layer");
+      maxLayer = std::max(int(ch_layer), maxLayer);
+      // info() << "  ch cellID : " << hit.getCellID()
+      //        << ", layer : " << ch_layer
+      //        << ", energy : " << hit.getEnergy() << endmsg;
+      m_clhits_event->push_back(evNum);
+      m_clhits_layer->push_back(ch_layer);
+      m_clhits_x->push_back(hit.getPosition().x);
+      m_clhits_y->push_back(hit.getPosition().y);
+      m_clhits_z->push_back(hit.getPosition().z);
+      m_clhits_energy->push_back(hit.getEnergy());
+      totEnergyHits += hit.getEnergy();
+      totSize += 1;
+      /*
+            } else {
+              debug() << "  This calo hit was NOT found among ECAL hits (cellID : " << hit.getCellID()
+                     << ", layer : " << ch_layer
+                     << ", energy : " << hit.getEnergy() << " )" << endmsg;
+            }
+      */
     }
     nClusters++;
-    if(!std::isnan(cl.getEnergy())){
+    if (!std::isnan(cl.getEnergy())) {
       totEnergy += cl.getEnergy();
     }
-    m_clusters_maxLayer->push_back (maxLayer);
-
+    m_clusters_maxLayer->push_back(maxLayer);
   }
-  m_clusters->push_back (nClusters);
-  m_clusters_totEnergy->push_back (totEnergy);
-  m_clusters_totEnergyHits->push_back (totEnergyHits);
-  m_clusters_MCEnergy->push_back (mcp_primary_energy);
-  m_clusters_totSize->push_back (totSize);
-  t_clusters->Fill ();
-  t_clhits->Fill ();
-  info() << ClusterCollectionName << " : Total number hits = " << totSize << " with total energy (cl) = " << totEnergy << "; (hits) = " << totEnergyHits << endmsg; 
+  m_clusters->push_back(nClusters);
+  m_clusters_totEnergy->push_back(totEnergy);
+  m_clusters_totEnergyHits->push_back(totEnergyHits);
+  m_clusters_MCEnergy->push_back(mcp_primary_energy);
+  m_clusters_totSize->push_back(totSize);
+  t_clusters->Fill();
+  t_clhits->Fill();
+  info() << ClusterCollectionName << " : Total number hits = " << totSize << " with total energy (cl) = " << totEnergy
+         << "; (hits) = " << totEnergyHits << endmsg;
 
   std::uint64_t nSeeds = 0;
   std::uint64_t nFollowers = 0;
@@ -208,44 +208,42 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
   totEnergy = 0;
   debug() << "CLUE Calorimeter Hits Size = " << clue_calo_coll->vect.size() << endmsg;
   for (const auto& clue_hit : (clue_calo_coll->vect)) {
-    m_hits_event->push_back (evNum);
-    if(clue_hit.inBarrel()){
-      m_hits_region->push_back (0);
+    m_hits_event->push_back(evNum);
+    if (clue_hit.inBarrel()) {
+      m_hits_region->push_back(0);
     } else {
-      m_hits_region->push_back (1);
+      m_hits_region->push_back(1);
     }
-    m_hits_layer->push_back (clue_hit.getLayer());
-    m_hits_x->push_back (clue_hit.getPosition().x);
-    m_hits_y->push_back (clue_hit.getPosition().y);
-    m_hits_z->push_back (clue_hit.getPosition().z);
-    m_hits_eta->push_back (clue_hit.getEta());
-    m_hits_phi->push_back (clue_hit.getPhi());
-    m_hits_rho->push_back (clue_hit.getRho());
-    m_hits_delta->push_back (clue_hit.getDelta());
-    m_hits_energy->push_back (clue_hit.getEnergy());
-    m_hits_MCEnergy->push_back (mcp_primary_energy);
+    m_hits_layer->push_back(clue_hit.getLayer());
+    m_hits_x->push_back(clue_hit.getPosition().x);
+    m_hits_y->push_back(clue_hit.getPosition().y);
+    m_hits_z->push_back(clue_hit.getPosition().z);
+    m_hits_eta->push_back(clue_hit.getEta());
+    m_hits_phi->push_back(clue_hit.getPhi());
+    m_hits_rho->push_back(clue_hit.getRho());
+    m_hits_delta->push_back(clue_hit.getDelta());
+    m_hits_energy->push_back(clue_hit.getEnergy());
+    m_hits_MCEnergy->push_back(mcp_primary_energy);
 
-    if(clue_hit.isFollower()){
+    if (clue_hit.isFollower()) {
       m_hits_status->push_back(1);
       totEnergy += clue_hit.getEnergy();
       nFollowers++;
     }
-    if(clue_hit.isSeed()){
+    if (clue_hit.isSeed()) {
       m_hits_status->push_back(2);
       totEnergy += clue_hit.getEnergy();
       nSeeds++;
     }
 
-    if(clue_hit.isOutlier()){
+    if (clue_hit.isOutlier()) {
       m_hits_status->push_back(0);
       nOutliers++;
     }
   }
-  debug() << "Found: " << nSeeds << " seeds, "
-         << nOutliers << " outliers, "
-         << nFollowers << " followers." 
-         << " Total energy clusterized: " << totEnergy << " GeV" << endmsg;
-  t_hits->Fill ();
+  debug() << "Found: " << nSeeds << " seeds, " << nOutliers << " outliers, " << nFollowers << " followers."
+          << " Total energy clusterized: " << totEnergy << " GeV" << endmsg;
+  t_hits->Fill();
   return StatusCode::SUCCESS;
 }
 
@@ -265,25 +263,25 @@ void CLUENtuplizer::initializeTrees() {
   m_hits_energy = new std::vector<float>();
   m_hits_MCEnergy = new std::vector<float>();
 
-  t_hits->Branch ("event", &m_hits_event);
-  t_hits->Branch ("region", &m_hits_region);
-  t_hits->Branch ("layer", &m_hits_layer);
-  t_hits->Branch ("status", &m_hits_status);
-  t_hits->Branch ("x", &m_hits_x);
-  t_hits->Branch ("y", &m_hits_y);
-  t_hits->Branch ("z", &m_hits_z);
-  t_hits->Branch ("eta", &m_hits_eta);
-  t_hits->Branch ("phi", &m_hits_phi);
-  t_hits->Branch ("rho", &m_hits_rho);
-  t_hits->Branch ("delta", &m_hits_delta);
-  t_hits->Branch ("energy", &m_hits_energy);
-  t_hits->Branch ("MCEnergy", &m_hits_MCEnergy);
+  t_hits->Branch("event", &m_hits_event);
+  t_hits->Branch("region", &m_hits_region);
+  t_hits->Branch("layer", &m_hits_layer);
+  t_hits->Branch("status", &m_hits_status);
+  t_hits->Branch("x", &m_hits_x);
+  t_hits->Branch("y", &m_hits_y);
+  t_hits->Branch("z", &m_hits_z);
+  t_hits->Branch("eta", &m_hits_eta);
+  t_hits->Branch("phi", &m_hits_phi);
+  t_hits->Branch("rho", &m_hits_rho);
+  t_hits->Branch("delta", &m_hits_delta);
+  t_hits->Branch("energy", &m_hits_energy);
+  t_hits->Branch("MCEnergy", &m_hits_MCEnergy);
 
-  m_clusters          = new std::vector<int>();
-  m_clusters_event    = new std::vector<int>();
+  m_clusters = new std::vector<int>();
+  m_clusters_event = new std::vector<int>();
   m_clusters_maxLayer = new std::vector<int>();
-  m_clusters_size     = new std::vector<int>();
-  m_clusters_totSize  = new std::vector<int>();
+  m_clusters_size = new std::vector<int>();
+  m_clusters_totSize = new std::vector<int>();
   m_clusters_x = new std::vector<float>();
   m_clusters_y = new std::vector<float>();
   m_clusters_z = new std::vector<float>();
@@ -292,18 +290,18 @@ void CLUENtuplizer::initializeTrees() {
   m_clusters_totEnergyHits = new std::vector<float>();
   m_clusters_MCEnergy = new std::vector<float>();
 
-  t_clusters->Branch ("clusters", &m_clusters);
-  t_clusters->Branch ("event", &m_clusters_event);
-  t_clusters->Branch ("maxLayer", &m_clusters_maxLayer);
-  t_clusters->Branch ("size", &m_clusters_size);
-  t_clusters->Branch ("totSize", &m_clusters_totSize);
-  t_clusters->Branch ("x", &m_clusters_x);
-  t_clusters->Branch ("y", &m_clusters_y);
-  t_clusters->Branch ("z", &m_clusters_z);
-  t_clusters->Branch ("energy", &m_clusters_energy);
-  t_clusters->Branch ("totEnergy", &m_clusters_totEnergy);
-  t_clusters->Branch ("totEnergyHits", &m_clusters_totEnergyHits);
-  t_clusters->Branch ("MCEnergy", &m_clusters_MCEnergy);
+  t_clusters->Branch("clusters", &m_clusters);
+  t_clusters->Branch("event", &m_clusters_event);
+  t_clusters->Branch("maxLayer", &m_clusters_maxLayer);
+  t_clusters->Branch("size", &m_clusters_size);
+  t_clusters->Branch("totSize", &m_clusters_totSize);
+  t_clusters->Branch("x", &m_clusters_x);
+  t_clusters->Branch("y", &m_clusters_y);
+  t_clusters->Branch("z", &m_clusters_z);
+  t_clusters->Branch("energy", &m_clusters_energy);
+  t_clusters->Branch("totEnergy", &m_clusters_totEnergy);
+  t_clusters->Branch("totEnergyHits", &m_clusters_totEnergyHits);
+  t_clusters->Branch("MCEnergy", &m_clusters_MCEnergy);
 
   m_clhits_event = new std::vector<int>();
   m_clhits_layer = new std::vector<int>();
@@ -312,19 +310,19 @@ void CLUENtuplizer::initializeTrees() {
   m_clhits_z = new std::vector<float>();
   m_clhits_energy = new std::vector<float>();
 
-  t_clhits->Branch ("event", &m_clhits_event);
-  t_clhits->Branch ("layer", &m_clhits_layer);
-  t_clhits->Branch ("x", &m_clhits_x);
-  t_clhits->Branch ("y", &m_clhits_y);
-  t_clhits->Branch ("z", &m_clhits_z);
-  t_clhits->Branch ("energy", &m_clhits_energy);
+  t_clhits->Branch("event", &m_clhits_event);
+  t_clhits->Branch("layer", &m_clhits_layer);
+  t_clhits->Branch("x", &m_clhits_x);
+  t_clhits->Branch("y", &m_clhits_y);
+  t_clhits->Branch("z", &m_clhits_z);
+  t_clhits->Branch("energy", &m_clhits_energy);
 
   return;
 }
 
 void CLUENtuplizer::cleanTrees() const {
   m_hits_event->clear();
-  m_hits_region->clear(); 
+  m_hits_region->clear();
   m_hits_layer->clear();
   m_hits_status->clear();
   m_hits_x->clear();
@@ -361,7 +359,8 @@ void CLUENtuplizer::cleanTrees() const {
 }
 
 StatusCode CLUENtuplizer::finalize() {
-  if (Gaudi::Algorithm::finalize().isFailure()) return StatusCode::FAILURE;
+  if (Gaudi::Algorithm::finalize().isFailure())
+    return StatusCode::FAILURE;
 
   return StatusCode::SUCCESS;
 }

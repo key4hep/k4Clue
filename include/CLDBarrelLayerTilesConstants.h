@@ -25,22 +25,22 @@
 struct CLDBarrelLayerTilesConstants {
 
   // Global r*phi coordinate
-  static constexpr float minX =  -7400.f;
-  static constexpr float maxX =   7400.f;
+  static constexpr float minX = -7400.f;
+  static constexpr float maxX = 7400.f;
 
   // Global z coordinate
-  static constexpr float minY =  -2210.f;
-  static constexpr float maxY =   2210.f;
+  static constexpr float minY = -2210.f;
+  static constexpr float maxY = 2210.f;
 
   static constexpr float tileSize = 15.f;
   static constexpr float tileSizePhi = 0.01f;
-  static constexpr int nColumns = reco::ceil((maxX-minX)/tileSize);
+  static constexpr int nColumns = reco::ceil((maxX - minX) / tileSize);
   static constexpr int nColumnsPhi = reco::ceil(2. * M_PI / tileSizePhi);
-  static constexpr int nRows    = reco::ceil((maxY-minY)/tileSize);
+  static constexpr int nRows = reco::ceil((maxY - minY) / tileSize);
   static constexpr int maxTileDepth = 40;
 
-  static constexpr float rX = nColumns/(maxX-minX);
-  static constexpr float rY = nRows/(maxY-minY);
+  static constexpr float rX = nColumns / (maxX - minX);
+  static constexpr float rY = nRows / (maxY - minY);
 
   static constexpr int nTiles = nColumnsPhi * nRows;
 
