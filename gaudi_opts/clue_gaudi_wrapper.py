@@ -21,8 +21,7 @@ from Gaudi.Configuration import WARNING, DEBUG
 from Configurables import k4DataSvc, MarlinProcessorWrapper
 
 from Configurables import PodioInput
-from Configurables import ClueGaudiAlgorithmWrapper3, ClueGaudiAlgorithmWrapperCUDA3
-from Configurables import ClueGaudiAlgorithmWrapper2
+from Configurables import ClueGaudiAlgorithmWrapper3
 from Configurables import CLUENtuplizer
 from Configurables import THistSvc
 from Configurables import PodioOutput
@@ -39,7 +38,7 @@ inp.collections = [
   'MCParticles',
   'ECALBarrel',
   'ECALEndcap',
-  'CalohitMCTruthLink',
+#  'CalohitMCTruthLink',
 ]
 inp.OutputLevel = WARNING
 
@@ -88,7 +87,7 @@ algList.append(out)
 
 ApplicationMgr( TopAlg = algList,
                 EvtSel = 'NONE',
-                EvtMax   = 10,
+                EvtMax   = 3,
                 ExtSvc = [evtsvc],
                 OutputLevel=WARNING
               )
