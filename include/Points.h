@@ -20,13 +20,13 @@
 #define Points_h
 
 struct Points {
-  
+
   std::vector<float> x;
   std::vector<float> y;
   std::vector<float> r;
   std::vector<int> layer;
   std::vector<float> weight;
-  
+
   std::vector<float> rho;
   std::vector<float> delta;
   std::vector<int> nearestHigher;
