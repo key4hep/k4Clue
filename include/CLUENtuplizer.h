@@ -73,6 +73,7 @@ private:
   mutable std::vector<int> m_hits_region;
   mutable std::vector<int> m_hits_layer;
   mutable std::vector<int> m_hits_status;
+  mutable std::vector<int> m_hits_clusId;
   mutable std::vector<float> m_hits_x;
   mutable std::vector<float> m_hits_y;
   mutable std::vector<float> m_hits_z;
@@ -100,6 +101,7 @@ private:
   mutable TTree* t_clhits{nullptr};
   mutable std::vector<int> m_clhits_event;
   mutable std::vector<int> m_clhits_layer;
+  mutable std::vector<int> m_clhits_id;
   mutable std::vector<float> m_clhits_x;
   mutable std::vector<float> m_clhits_y;
   mutable std::vector<float> m_clhits_z;

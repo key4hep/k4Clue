@@ -176,6 +176,7 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
       m_clhits_y.push_back(hit.getPosition().y);
       m_clhits_z.push_back(hit.getPosition().z);
       m_clhits_energy.push_back(hit.getEnergy());
+      m_clhits_id.push_back(nClusters);
       totEnergyHits += hit.getEnergy();
       totSize += 1;
       /*
@@ -202,18 +203,21 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
   info() << ClusterCollectionName << " : Total number hits = " << totSize << " with total energy (cl) = " << totEnergy
          << "; (hits) = " << totEnergyHits << endmsg;
 
+  const auto& clue_calo_coll_vect = clue_calo_coll->vect;
+
   std::uint64_t nSeeds = 0;
   std::uint64_t nFollowers = 0;
   std::uint64_t nOutliers = 0;
   totEnergy = 0;
-  debug() << "CLUE Calorimeter Hits Size = " << clue_calo_coll->vect.size() << endmsg;
-  for (const auto& clue_hit : (clue_calo_coll->vect)) {
+  debug() << "CLUE Calorimeter Hits Size = " << clue_calo_coll_vect.size() << endmsg;
+  for (const auto& clue_hit : (clue_calo_coll_vect)) {
     m_hits_event.push_back(evNum);
     if (clue_hit.inBarrel()) {
       m_hits_region.push_back(0);
     } else {
       m_hits_region.push_back(1);
     }
+    m_hits_clusId.push_back(clue_hit.getClusterIndex());
     m_hits_layer.push_back(clue_hit.getLayer());
     m_hits_x.push_back(clue_hit.getPosition().x);
     m_hits_y.push_back(clue_hit.getPosition().y);
@@ -252,6 +256,7 @@ void CLUENtuplizer::initializeTrees() {
   t_hits->Branch("region", &m_hits_region);
   t_hits->Branch("layer", &m_hits_layer);
   t_hits->Branch("status", &m_hits_status);
+  t_hits->Branch("clusterId", &m_hits_clusId);
   t_hits->Branch("x", &m_hits_x);
   t_hits->Branch("y", &m_hits_y);
   t_hits->Branch("z", &m_hits_z);
@@ -281,6 +286,7 @@ void CLUENtuplizer::initializeTrees() {
   t_clhits->Branch("y", &m_clhits_y);
   t_clhits->Branch("z", &m_clhits_z);
   t_clhits->Branch("energy", &m_clhits_energy);
+  t_clhits->Branch("clusterId", &m_clhits_id);
 
   return;
 }
@@ -290,6 +296,7 @@ void CLUENtuplizer::cleanTrees() const {
   m_hits_region.clear();
   m_hits_layer.clear();
   m_hits_status.clear();
+  m_hits_clusId.clear();
   m_hits_x.clear();
   m_hits_y.clear();
   m_hits_z.clear();
@@ -319,6 +326,7 @@ void CLUENtuplizer::cleanTrees() const {
   m_clhits_y.clear();
   m_clhits_z.clear();
   m_clhits_energy.clear();
+  m_clhits_id.clear();
 
   return;
 }
