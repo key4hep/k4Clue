@@ -66,8 +66,6 @@ private:
                                                                          this};
   mutable k4FWCore::DataHandle<edm4hep::MCParticleCollection> mcp_handle{"MCParticles", Gaudi::DataHandle::Reader,
                                                                          this};
-  mutable k4FWCore::DataHandle<edm4hep::CaloHitSimCaloHitLinkCollection> relationHitLink_handle{
-      "RelationCaloHit", Gaudi::DataHandle::Reader, this};
   mutable k4FWCore::DataHandle<edm4hep::ClusterMCParticleLinkCollection> clustersLink_handle{"ClusterMCTruthLink",
                                                                                      Gaudi::DataHandle::Reader, this};
   k4FWCore::MetaDataHandle<std::string> cellIDHandle{EB_calo_handle, edm4hep::labels::CellIDEncoding,
@@ -127,6 +125,7 @@ private:
   mutable std::vector<float> m_sim_momentum_z;
   mutable std::vector<float> m_sim_time;
   mutable std::vector<float> m_sim_energy;
+  mutable std::vector<bool> m_sim_primary;
 
   mutable TTree* t_links{nullptr};
   mutable std::vector<std::vector<int>> m_simToReco_index;

@@ -25,7 +25,6 @@
 #include "k4FWCore/DataHandle.h"
 #include "k4FWCore/MetaDataHandle.h"
 
-#include "CLUEAlgo.h"
 #include "CLUECalorimeterHit.h"
 #include "CLUEstering/CLUEstering.hpp"
 #include <edm4hep/CalorimeterHitCollection.h>
@@ -48,7 +47,8 @@ public:
 
   PointsSoA<nDim> fillCLUEPoints(const std::vector<clue::CLUECalorimeterHit>& clue_hits, float* floatBuffer,
                                  int* intBuffer, const bool isBarrel) const;
-  std::vector<std::vector<int>> runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, const bool isBarrel) const;
+  std::vector<std::vector<int>> runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, const bool isBarrel = true,
+                                        const uint32_t offset = 0) const;
 
   void fillFinalClusters(std::vector<clue::CLUECalorimeterHit> const& clue_hits,
                          std::vector<std::vector<int>> const& clusterMap, edm4hep::ClusterCollection* clusters) const;

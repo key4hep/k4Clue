@@ -150,7 +150,8 @@ PointsSoA<nDim> ClueGaudiAlgorithmWrapper<nDim>::fillCLUEPoints(const std::vecto
 
 template <uint8_t nDim>
 std::vector<std::vector<int>> ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits,
-                                                                       const bool isBarrel) const {
+                                                                       const bool isBarrel,
+                                                                       const uint32_t offset) const {
   std::vector<std::vector<int>> clueClusters;
 
   // Fill CLUE inputs
@@ -176,7 +177,8 @@ std::vector<std::vector<int>> ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vect
 
   // Including CLUE info in cluePoints
   for (size_t i = 0; i < cluePoints.nPoints(); i++) {
-    clue_hits[i].setClusterIndex(cluePoints.clusterIndexes()[i]);
+    // offset is 0 for the barrel and is the number of clusters in the barrel for the endcap
+    clue_hits[i].setClusterIndex(cluePoints.clusterIndexes()[i] + offset);
     verbose() << "CLUE Point #" << i << " : (x,y,z) = (" << clue_hits[i].getPosition().x << ","
               << clue_hits[i].getPosition().y << "," << clue_hits[i].getPosition().z << ")";
     if (cluePoints.isSeed()[i] == 1) {
@@ -331,11 +333,8 @@ StatusCode ClueGaudiAlgorithmWrapper<nDim>::execute(const EventContext&) const {
 
   // Run CLUE in the barrel
   if (!clue_hit_coll_barrel.vect.empty()) {
-    auto clueClustersBarrel = runAlgo(clue_hit_coll_barrel.vect, true);
+    auto clueClustersBarrel = runAlgo(clue_hit_coll_barrel.vect);
     info() << "Produced " << clueClustersBarrel.size() << " clusters in ECAL Barrel" << endmsg;
-
-    std::map<int, std::vector<int>> clueClustersBarrel = runAlgo(clue_hit_coll_barrel.vect, true);
-    debug() << "Produced " << clueClustersBarrel.size() << " clusters in ECAL Barrel" << endmsg;
 
     clue_hit_coll.vect.insert(clue_hit_coll.vect.end(), clue_hit_coll_barrel.vect.begin(),
                               clue_hit_coll_barrel.vect.end());
@@ -343,6 +342,7 @@ StatusCode ClueGaudiAlgorithmWrapper<nDim>::execute(const EventContext&) const {
     fillFinalClusters(clue_hit_coll_barrel.vect, clueClustersBarrel, finalClusters.get());
     debug() << "Saved " << finalClusters->size() << " clusters using ECAL Barrel hits" << endmsg;
   }
+  uint32_t barrelOffset = finalClusters->size();
 
   // Total amount of EE+ and EE- layers (80)
   int maxLayerPerSide = 40;
@@ -367,7 +367,7 @@ StatusCode ClueGaudiAlgorithmWrapper<nDim>::execute(const EventContext&) const {
 
   // Run CLUE in the endcap
   if (!clue_hit_coll_endcap.vect.empty()) {
-    auto clueClustersEndcap = runAlgo(clue_hit_coll_endcap.vect, false);
+    auto clueClustersEndcap = runAlgo(clue_hit_coll_endcap.vect, false, barrelOffset);
     info() << "Produced " << clueClustersEndcap.size() << " clusters in ECAL Endcap" << endmsg;
 
     clue_hit_coll.vect.insert(clue_hit_coll.vect.end(), clue_hit_coll_endcap.vect.begin(),

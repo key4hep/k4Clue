@@ -26,22 +26,11 @@ using namespace DDSegmentation;
 
 DECLARE_COMPONENT(CLUENtuplizer)
 
-CLUENtuplizer::CLUENtuplizer(const std::string& name, ISvcLocator* svcLoc)
-    : Gaudi::Algorithm(name, svcLoc) {
-  declareProperty(
-      "ClusterCollection", ClusterCollectionName, "Collection of clusters in input");
-  declareProperty("BarrelCaloHitsCollection",
-                  EB_calo_handle,
-                  "Collection for Barrel Calo Hits used in input");
-  declareProperty("EndcapCaloHitsCollection",
-                  EE_calo_handle,
-                  "Collection for Endcap Calo Hits used in input");
-  declareProperty("RelationCaloHit",
-                  relationHitLink_handle,
-                  "Association between simulated hits and calorimeter hits");
-  declareProperty("ClusterMCTruthLink",
-                  clustersLink_handle,
-                  "Association between MCParticles and Clusters");
+CLUENtuplizer::CLUENtuplizer(const std::string& name, ISvcLocator* svcLoc) : Gaudi::Algorithm(name, svcLoc) {
+  declareProperty("ClusterCollection", ClusterCollectionName, "Collection of clusters in input");
+  declareProperty("BarrelCaloHitsCollection", EB_calo_handle, "Collection for Barrel Calo Hits used in input");
+  declareProperty("EndcapCaloHitsCollection", EE_calo_handle, "Collection for Endcap Calo Hits used in input");
+  declareProperty("ClusterMCTruthLink", clustersLink_handle, "Association between MCParticles and Clusters");
 }
 
 StatusCode CLUENtuplizer::initialize() {
@@ -104,8 +93,7 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
       mcps_primary += 1;
     }
   });
-  info() << "MC Particles = " << mcps->size() << " (of which primaries = " << mcps_primary
-         << ")" << endmsg;
+  info() << "MC Particles = " << mcps->size() << " (of which primaries = " << mcps_primary << ")" << endmsg;
 
   DataObject* pStatus = nullptr;
   StatusCode scStatus = eventSvc()->retrieveObject("/Event/CLUECalorimeterHitCollection", pStatus);
@@ -118,8 +106,6 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
   // Read EB and EE collection
   EB_calo_coll = EB_calo_handle.get();
   EE_calo_coll = EE_calo_handle.get();
-  const auto EB_collID = EB_calo_coll->getID();
-  const auto EE_collID = EE_calo_coll->getID();
 
   debug() << "ECAL Calorimeter Hits Size = " << (*EB_calo_coll).size() + (*EE_calo_coll).size() << endmsg;
 
@@ -134,41 +120,6 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
   const auto cellIDstr = cellIDHandle.get();
   const BitFieldCoder bf(cellIDstr);
   cleanTrees();
-
-  // get simhit to rechit associators and build cluster to MC particle ones
-  auto relationHitLink = relationHitLink_handle.get();
-  std::vector<std::unordered_map<int32_t, float>> simToRecoByHitsLink(mcps->size());
-  std::vector<std::unordered_map<int32_t, float>> recoToSimByHitsLink(
-      cluster_coll->size());
-  for (const auto& link : *relationHitLink) {
-    const auto& caloHit = link.getFrom();
-    const auto& simHit = link.getTo();
-
-    // get the CLUE cluster ID
-    uint32_t index;
-    if (caloHit.getObjectID().collectionID == EB_collID)
-      index = link.getFrom().getObjectID().index;
-    else if (caloHit.getObjectID().collectionID == EE_collID)
-      index = link.getFrom().getObjectID().index + EB_calo_coll->size();
-    else
-      continue;
-    const auto& clueHit = (clue_calo_coll->vect)[index];
-    const auto clusId = clueHit.getClusterIndex();
-    if (clusId == -1)
-      continue;
-
-    // get the MC Particle(s)
-    std::unordered_map<int32_t, float> mcpContrib;
-    const auto& contributions = simHit.getContributions();
-    for (const auto& contr : contributions) {
-      const auto mcpIdx = contr.getParticle().getObjectID().index;
-      mcpContrib[mcpIdx] += contr.getEnergy();
-    }
-    for (const auto& [mcpIdx, energy] : mcpContrib) {
-      simToRecoByHitsLink[mcpIdx][clusId] += energy;
-      recoToSimByHitsLink[clusId][mcpIdx] += caloHit.getEnergy();
-    }
-  }
 
   // get the already built cluster to MC particle associators
   auto linksClus = clustersLink_handle.get();
@@ -200,6 +151,7 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
       m_sim_momentum_z.push_back(mcp.getMomentum().z);
       m_sim_time.push_back(mcp.getTime());
       m_sim_energy.push_back(mcp.getEnergy());
+      m_sim_primary.push_back(mcp.getGeneratorStatus() == 1);
       std::vector<int> ids;
       std::vector<float> shEn;
       const auto size = simToRecoLink.count(simId);
@@ -224,8 +176,7 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
     auto range = recoToSimLink.equal_range(recoId);
     std::for_each(range.first, range.second, [&](const auto& pair) {
       if (simIdMapping[pair.second.first] == -1)
-        throw error() << "No SimToReco but RecoToSim for simparticle " << pair.first
-                      << endmsg;
+        throw error() << "No SimToReco but RecoToSim for simparticle " << pair.first << endmsg;
       ids.push_back(simIdMapping[pair.second.first]);
       shEn.push_back(pair.second.second);
     });
@@ -258,9 +209,8 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
     for (const auto& hit : cl.getHits()) {
       ch_layer = bf.get(hit.getCellID(), "layer");
       maxLayer = std::max(int(ch_layer), maxLayer);
-      verbose() << "  ch cellID : " << hit.getCellID()
-             << ", layer : " << ch_layer
-             << ", energy : " << hit.getEnergy() << endmsg;
+      verbose() << "  ch cellID : " << hit.getCellID() << ", layer : " << ch_layer << ", energy : " << hit.getEnergy()
+                << endmsg;
       m_clhits_event.push_back(evNum);
       m_clhits_layer.push_back(ch_layer);
       m_clhits_x.push_back(hit.getPosition().x);
@@ -278,8 +228,7 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
       totEnergy += cl.getEnergy();
     }
     m_clusters_maxLayer.push_back(maxLayer);
-    m_clusters_time.push_back(std::accumulate(hits_time.begin(), hits_time.end(), 0.f) /
-                              hits_time.size());
+    m_clusters_time.push_back(std::accumulate(hits_time.begin(), hits_time.end(), 0.f) / hits_time.size());
   }
   m_clusters.push_back(nClusters);
   m_clusters_totEnergy.push_back(totEnergy);
@@ -387,6 +336,7 @@ void CLUENtuplizer::initializeTrees() {
   t_MCParticles->Branch("p_z", &m_sim_momentum_z);
   t_MCParticles->Branch("time", &m_sim_time);
   t_MCParticles->Branch("energy", &m_sim_energy);
+  t_MCParticles->Branch("primary", &m_sim_primary);
 
   t_links->Branch("simToRecoIndex", &m_simToReco_index);
   t_links->Branch("simToRecoEnergy", &m_simToReco_sharedEnergy);
@@ -445,6 +395,7 @@ void CLUENtuplizer::cleanTrees() const {
   m_sim_momentum_z.clear();
   m_sim_time.clear();
   m_sim_energy.clear();
+  m_sim_primary.clear();
 
   m_simToReco_index.clear();
   m_simToReco_sharedEnergy.clear();
