@@ -121,25 +121,25 @@ PointsSoA<nDim> ClueGaudiAlgorithmWrapper<nDim>::fillCLUEPoints(const std::vecto
   size_t nPoints = clue_hits.size();
 
   for (size_t i = 0; i < nPoints; ++i) {
-    if (isBarrel) {
-      floatBuffer[i] = clue_hits[i].getPhi();                  // Fill phi coordinates
-      floatBuffer[nPoints + i] = clue_hits[i].getPosition().z; // Fill z coordinates
-      if constexpr (nDim == 3)
-        floatBuffer[nPoints * 2 + i] = clue_hits[i].getEta();     // Fill eta coordinates
-      floatBuffer[nPoints * nDim + i] = clue_hits[i].getEnergy(); // Fill weights
-    } else {
+    //if (isBarrel) {
+    //  floatBuffer[i] = clue_hits[i].getPhi();                  // Fill phi coordinates
+    //  floatBuffer[nPoints + i] = clue_hits[i].getPosition().z; // Fill z coordinates
+    //  if constexpr (nDim == 3)
+    //    floatBuffer[nPoints * 2 + i] = clue_hits[i].getEta();     // Fill eta coordinates
+    //  floatBuffer[nPoints * nDim + i] = clue_hits[i].getEnergy(); // Fill weights
+    //} else {
       floatBuffer[i] = clue_hits[i].getPosition().x;           // Fill x coordinates
       floatBuffer[nPoints + i] = clue_hits[i].getPosition().y; // Fill y coordinates
       if constexpr (nDim == 3)
         floatBuffer[nPoints * 2 + i] = clue_hits[i].getPosition().z; // Fill z coordinates
       floatBuffer[nPoints * nDim + i] = clue_hits[i].getEnergy();    // Fill weights
-    }
+    //}
   }
 
   // Define the info for PointsSoA
   PointInfo<nDim> info;
   info.nPoints = nPoints;
-  info.wrapping[0] = isBarrel ? 1 : 0;
+  info.wrapping[0] = 0; //isBarrel ? 1 : 0;
   info.wrapping[1] = 0;
   if constexpr (nDim == 3)
     info.wrapping[2] = 0;
