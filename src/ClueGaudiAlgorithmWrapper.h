@@ -45,7 +45,7 @@ public:
   std::pair<float, float> stats(const std::vector<float>& v);
   void printTimingReport(std::vector<float>& vals, int repeats, const std::string label);
 
-  PointsSoA<nDim> fillCLUEPoints(const std::vector<clue::CLUECalorimeterHit>& clue_hits, float* floatBuffer,
+  clue::PointsHost<nDim> fillCLUEPoints(const std::vector<clue::CLUECalorimeterHit>& clue_hits, float* floatBuffer,
                                  int* intBuffer, const bool isBarrel) const;
   std::vector<std::vector<int>> runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, const bool isBarrel = true,
                                         const uint32_t offset = 0) const;
@@ -77,7 +77,7 @@ private:
                                                      Gaudi::DataHandle::Reader};
 
   // CLUE Algo
-  mutable std::optional<ALPAKA_ACCELERATOR_NAMESPACE_CLUE::CLUEAlgoAlpaka<nDim>> clueAlgo_;
+  mutable std::optional<clue::Clusterer<nDim>> clueAlgo_;
   mutable std::optional<ALPAKA_ACCELERATOR_NAMESPACE_CLUE::Queue> queue_;
 
   // Collections in output

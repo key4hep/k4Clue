@@ -63,7 +63,7 @@ StatusCode ClueGaudiAlgorithmWrapper<nDim>::initialize() {
 
   auto start = std::chrono::high_resolution_clock::now();
   clueAlgo_ =
-      std::make_optional<ALPAKA_ACCELERATOR_NAMESPACE_CLUE::CLUEAlgoAlpaka<nDim>>(dc, rhoc, dm, pointsPerBin, *queue_);
+      std::make_optional<clue::Clusterer<nDim>>(*queue_, dc, rhoc, dm, -1, pointsPerBin);
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
   info() << "ClueGaudiAlgorithmWrapper: Set up time: " << elapsed.count() * 1000 << " ms" << endmsg;
@@ -115,9 +115,9 @@ void ClueGaudiAlgorithmWrapper<nDim>::printTimingReport(std::vector<float>& vals
 }
 
 template <uint8_t nDim>
-PointsSoA<nDim> ClueGaudiAlgorithmWrapper<nDim>::fillCLUEPoints(const std::vector<clue::CLUECalorimeterHit>& clue_hits,
+clue::PointsHost<nDim> ClueGaudiAlgorithmWrapper<nDim>::fillCLUEPoints(const std::vector<clue::CLUECalorimeterHit>& clue_hits,
                                                                 float* floatBuffer, int* intBuffer,
-                                                                const bool isBarrel) const {
+                                                                const bool /*isBarrel*/) const {
   size_t nPoints = clue_hits.size();
 
   for (size_t i = 0; i < nPoints; ++i) {
@@ -136,16 +136,8 @@ PointsSoA<nDim> ClueGaudiAlgorithmWrapper<nDim>::fillCLUEPoints(const std::vecto
     //}
   }
 
-  // Define the info for PointsSoA
-  PointInfo<nDim> info;
-  info.nPoints = nPoints;
-  info.wrapping[0] = 0; //isBarrel ? 1 : 0;
-  info.wrapping[1] = 0;
-  if constexpr (nDim == 3)
-    info.wrapping[2] = 0;
-
   // Construct and return the PointsSoA object
-  return PointsSoA<nDim>(floatBuffer, intBuffer, info);
+  return clue::PointsHost<nDim>(*queue_, nPoints, floatBuffer, intBuffer);
 }
 
 template <uint8_t nDim>
@@ -166,7 +158,7 @@ std::vector<std::vector<int>> ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vect
   // measure excution time of make_clusters
   FlatKernel kernel(0.5f);
   auto start = std::chrono::high_resolution_clock::now();
-  clueAlgo_->make_clusters(cluePoints, kernel, *queue_, 256);
+  clueAlgo_->make_clusters(cluePoints, kernel, *queue_, 512);
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
   info() << "ClueGaudiAlgorithmWrapper: Elapsed time: " << elapsed.count() * 1000 << " ms" << endmsg;
@@ -176,7 +168,7 @@ std::vector<std::vector<int>> ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vect
   info() << "Finished running CLUE algorithm" << endmsg;
 
   // Including CLUE info in cluePoints
-  for (size_t i = 0; i < cluePoints.nPoints(); i++) {
+  for (size_t i = 0; i < cluePoints.size(); i++) {
     // offset is 0 for the barrel and is the number of clusters in the barrel for the endcap
     clue_hits[i].setClusterIndex(cluePoints.clusterIndexes()[i] + offset);
     verbose() << "CLUE Point #" << i << " : (x,y,z) = (" << clue_hits[i].getPosition().x << ","
