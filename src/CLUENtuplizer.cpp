@@ -108,8 +108,8 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
   // Read cluster collection
   // This should be fixed, for now the const cast is added to be able to create the handle
   // as it was done before https://github.com/key4hep/k4Clue/pull/60
-  DataHandle<edm4hep::ClusterCollection> cluster_handle{ClusterCollectionName, Gaudi::DataHandle::Reader,
-                                                        const_cast<CLUENtuplizer*>(this)};
+  k4FWCore::DataHandle<edm4hep::ClusterCollection> cluster_handle{ClusterCollectionName, Gaudi::DataHandle::Reader,
+                                                                  const_cast<CLUENtuplizer*>(this)};
   cluster_coll = cluster_handle.get();
 
   // Get collection metadata cellID which is valid for both EB, EE and Clusters
