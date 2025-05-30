@@ -17,7 +17,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ]]
 cmake_minimum_required(VERSION 3.8)
-cmake_policy(SET CMP0074 NEW) # use package_ROOT env var to find packages
+cmake_policy(SET CMP0074 NEW) # Use package_ROOT env var to find packages
 
 project(
   k4CLUE
@@ -26,8 +26,8 @@ project(
   LANGUAGES CXX)
 
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-      set (CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/install" CACHE PATH "default install path" FORCE )
-      endif()
+  set (CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/install" CACHE PATH "default install path" FORCE)
+endif()
 
 include(cmake/Key4hepConfig.cmake)
 
@@ -41,4 +41,40 @@ find_package(Gaudi REQUIRED)
 
 include(CTest)
 
-add_subdirectory(src)
+find_package(Boost 1.75.0 REQUIRED)
+
+# Alpaka (Fetched only if not found)
+include(FetchContent)
+FetchContent_Declare(
+  alpaka
+  GIT_REPOSITORY https://github.com/alpaka-group/alpaka.git
+  GIT_TAG fe9436d57e25b07dc73b8b042a0b3eec499956d0 # 1.2.0
+  GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(alpaka)
+
+#will become this when alpaka will be in cvmfs in key4hep
+#find_package(alpaka REQUIRED)
+
+# GPU Dependencies
+include(CheckLanguage)
+check_language(CUDA)
+check_language(HIP)
+
+# Enable CUDA if available
+if(CMAKE_CUDA_COMPILER)
+  enable_language(CUDA)
+  set(CMAKE_CUDA_STANDARD 20)
+  set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+endif()
+
+# Enable HIP if available
+if(CMAKE_HIP_COMPILER)
+  enable_language(HIP)
+  find_package(hip REQUIRED)
+endif()
+
+# CLUE as Gaudi algorithm
+add_subdirectory(src/k4clue)
+add_subdirectory(src/k4clueCUDA)
+add_subdirectory(src/k4clueHIP)

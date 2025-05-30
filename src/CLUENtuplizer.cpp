@@ -30,8 +30,7 @@ CLUENtuplizer::CLUENtuplizer(const std::string& name, ISvcLocator* svcLoc) : Gau
   declareProperty("ClusterCollection", ClusterCollectionName, "Collection of clusters in input");
   declareProperty("BarrelCaloHitsCollection", EB_calo_handle, "Collection for Barrel Calo Hits used in input");
   declareProperty("EndcapCaloHitsCollection", EE_calo_handle, "Collection for Endcap Calo Hits used in input");
-  declareProperty("SingleMCParticle", singleMCParticle,
-                  "If this is True, the analysis is run only if one MCParticle is present in the event");
+  declareProperty("ClusterMCTruthLink", clustersLink_handle, "Association between MCParticles and Clusters");
 }
 
 StatusCode CLUENtuplizer::initialize() {
@@ -63,6 +62,18 @@ StatusCode CLUENtuplizer::initialize() {
     return StatusCode::FAILURE;
   }
 
+  t_MCParticles = new TTree("MCParticles", "Monte Carlo Particles ntuple");
+  if (m_ths->regTree("/rec/MCParticles", t_MCParticles).isFailure()) {
+    error() << "Couldn't register MC Particles tree" << endmsg;
+    return StatusCode::FAILURE;
+  }
+
+  t_links = new TTree("associations", "associations ntuple");
+  if (m_ths->regTree("/rec/associations", t_links).isFailure()) {
+    error() << "Couldn't register associations tree" << endmsg;
+    return StatusCode::FAILURE;
+  }
+
   initializeTrees();
 
   return StatusCode::SUCCESS;
@@ -77,19 +88,12 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
 
   auto mcps = mcp_handle.get();
   int mcps_primary = 0;
-  float mcp_primary_energy = 0.f;
-  std::for_each((*mcps).begin(), (*mcps).end(), [&mcps_primary, &mcp_primary_energy](edm4hep::MCParticle mcp) {
+  std::for_each((*mcps).begin(), (*mcps).end(), [&mcps_primary](edm4hep::MCParticle mcp) {
     if (mcp.getGeneratorStatus() == 1) {
       mcps_primary += 1;
-      mcp_primary_energy = mcp.getEnergy();
     }
   });
   info() << "MC Particles = " << mcps->size() << " (of which primaries = " << mcps_primary << ")" << endmsg;
-  // If there is more than one primary, skip event
-  if (singleMCParticle && mcps_primary > 1) {
-    warning() << "This event is skipped because there are " << mcps_primary << " primary MC particles." << endmsg;
-    return StatusCode::SUCCESS;
-  }
 
   DataObject* pStatus = nullptr;
   StatusCode scStatus = eventSvc()->retrieveObject("/Event/CLUECalorimeterHitCollection", pStatus);
@@ -117,12 +121,77 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
   const BitFieldCoder bf(cellIDstr);
   cleanTrees();
 
+  // get the already built cluster to MC particle associators
+  auto linksClus = clustersLink_handle.get();
+  std::multimap<uint32_t, std::pair<uint32_t, float>> simToRecoLink;
+  std::multimap<uint32_t, std::pair<uint32_t, float>> recoToSimLink;
+  for (const auto& link : *linksClus) {
+    const auto recIdx = link.getFrom().getObjectID().index;
+    const auto simIdx = link.getTo().getObjectID().index;
+    const auto weight = link.getWeight();
+    simToRecoLink.emplace(simIdx, std::make_pair(recIdx, weight));
+    recoToSimLink.emplace(recIdx, std::make_pair(simIdx, weight));
+  }
+
+  std::vector<int> simIdMapping(mcps->size(), -1);
+  int id = 0;
+  for (std::size_t simId = 0; simId < mcps->size(); ++simId) {
+    if (simToRecoLink.contains(simId)) {
+      simIdMapping[simId] = id;
+      ++id;
+      const auto& mcp = (*mcps)[simId];
+      m_sim_event.push_back(evNum);
+      m_sim_pdg.push_back(mcp.getPDG());
+      m_sim_charge.push_back(mcp.getCharge());
+      m_sim_vtx_x.push_back(mcp.getVertex().x);
+      m_sim_vtx_y.push_back(mcp.getVertex().y);
+      m_sim_vtx_z.push_back(mcp.getVertex().z);
+      m_sim_momentum_x.push_back(mcp.getMomentum().x);
+      m_sim_momentum_y.push_back(mcp.getMomentum().y);
+      m_sim_momentum_z.push_back(mcp.getMomentum().z);
+      m_sim_time.push_back(mcp.getTime());
+      m_sim_energy.push_back(mcp.getEnergy());
+      m_sim_primary.push_back(mcp.getGeneratorStatus() == 1);
+      std::vector<int> ids;
+      std::vector<float> shEn;
+      const auto size = simToRecoLink.count(simId);
+      ids.reserve(size);
+      shEn.reserve(size);
+      auto range = simToRecoLink.equal_range(simId);
+      std::for_each(range.first, range.second, [&ids, &shEn](const auto& pair) {
+        ids.push_back(pair.second.first);
+        shEn.push_back(pair.second.second);
+      });
+      m_simToReco_index.push_back(ids);
+      m_simToReco_sharedEnergy.push_back(shEn);
+    }
+  }
+
+  for (std::size_t recoId = 0; recoId < cluster_coll->size(); ++recoId) {
+    std::vector<int> ids;
+    std::vector<float> shEn;
+    const auto size = recoToSimLink.count(recoId);
+    ids.reserve(size);
+    shEn.reserve(size);
+    auto range = recoToSimLink.equal_range(recoId);
+    std::for_each(range.first, range.second, [&](const auto& pair) {
+      if (simIdMapping[pair.second.first] == -1)
+        throw error() << "No SimToReco but RecoToSim for simparticle " << pair.first << endmsg;
+      ids.push_back(simIdMapping[pair.second.first]);
+      shEn.push_back(pair.second.second);
+    });
+    m_recoToSim_index.push_back(ids);
+    m_recoToSim_sharedEnergy.push_back(shEn);
+  }
+
+  t_MCParticles->Fill();
+  t_links->Fill();
+
   std::uint64_t ch_layer = 0;
   std::uint64_t nClusters = 0;
   float totEnergy = 0;
   float totEnergyHits = 0;
   std::uint64_t totSize = 0;
-  // bool foundInECAL = false;
 
   info() << ClusterCollectionName << " : Total number of clusters =  " << int(cluster_coll->size()) << endmsg;
   for (const auto& cl : *cluster_coll) {
@@ -135,68 +204,35 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
     m_clusters_z.push_back(cl.getPosition().z);
 
     // Sum up energy of cluster hits and save info
-    // Printout the hits that are in Ecal but not included in the clusters
     int maxLayer = 0;
+    std::vector<float> hits_time;
     for (const auto& hit : cl.getHits()) {
-      // foundInECAL = false;
-      /*
-            for (const auto& clEB : *EB_calo_coll) {
-              if( clEB.getCellID() == hit.getCellID()){
-                foundInECAL = true;
-                break;  // Found in EB, break the loop
-              }
-              if(foundInECAL) {
-                // Found in EB, break the loop
-                break;
-              }
-            }
-
-            if(!foundInECAL){
-              for (const auto& clEE : *EE_calo_coll) {
-                if( clEE.getCellID() == hit.getCellID()){
-                  foundInECAL = true;
-                  break;  // Found in EE, break the loop
-                }
-                if(foundInECAL) {
-                  // Found in EE, break the loop
-                  break;
-                }
-              }
-            }
-            if(foundInECAL){
-      */
       ch_layer = bf.get(hit.getCellID(), "layer");
       maxLayer = std::max(int(ch_layer), maxLayer);
-      // info() << "  ch cellID : " << hit.getCellID()
-      //        << ", layer : " << ch_layer
-      //        << ", energy : " << hit.getEnergy() << endmsg;
+      verbose() << "  ch cellID : " << hit.getCellID() << ", layer : " << ch_layer << ", energy : " << hit.getEnergy()
+                << endmsg;
       m_clhits_event.push_back(evNum);
       m_clhits_layer.push_back(ch_layer);
       m_clhits_x.push_back(hit.getPosition().x);
       m_clhits_y.push_back(hit.getPosition().y);
       m_clhits_z.push_back(hit.getPosition().z);
+      m_clhits_time.push_back(hit.getTime());
+      hits_time.push_back(hit.getTime());
       m_clhits_energy.push_back(hit.getEnergy());
       m_clhits_id.push_back(nClusters);
       totEnergyHits += hit.getEnergy();
       totSize += 1;
-      /*
-            } else {
-              debug() << "  This calo hit was NOT found among ECAL hits (cellID : " << hit.getCellID()
-                     << ", layer : " << ch_layer
-                     << ", energy : " << hit.getEnergy() << " )" << endmsg;
-            }
-      */
     }
     nClusters++;
     if (!std::isnan(cl.getEnergy())) {
       totEnergy += cl.getEnergy();
     }
     m_clusters_maxLayer.push_back(maxLayer);
+    m_clusters_time.push_back(std::accumulate(hits_time.begin(), hits_time.end(), 0.f) / hits_time.size());
   }
   m_clusters.push_back(nClusters);
   m_clusters_totEnergy.push_back(totEnergy);
   m_clusters_totEnergyHits.push_back(totEnergyHits);
-  m_clusters_MCEnergy.push_back(mcp_primary_energy);
   m_clusters_totSize.push_back(totSize);
   t_clusters->Fill();
   t_clhits->Fill();
@@ -226,8 +262,8 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
     m_hits_phi.push_back(clue_hit.getPhi());
     m_hits_rho.push_back(clue_hit.getRho());
     m_hits_delta.push_back(clue_hit.getDelta());
+    m_hits_time.push_back(clue_hit.getTime());
     m_hits_energy.push_back(clue_hit.getEnergy());
-    m_hits_MCEnergy.push_back(mcp_primary_energy);
 
     if (clue_hit.isFollower()) {
       m_hits_status.push_back(1);
@@ -264,8 +300,8 @@ void CLUENtuplizer::initializeTrees() {
   t_hits->Branch("phi", &m_hits_phi);
   t_hits->Branch("rho", &m_hits_rho);
   t_hits->Branch("delta", &m_hits_delta);
+  t_hits->Branch("time", &m_hits_time);
   t_hits->Branch("energy", &m_hits_energy);
-  t_hits->Branch("MCEnergy", &m_hits_MCEnergy);
 
   t_clusters->Branch("clusters", &m_clusters);
   t_clusters->Branch("event", &m_clusters_event);
@@ -275,18 +311,37 @@ void CLUENtuplizer::initializeTrees() {
   t_clusters->Branch("x", &m_clusters_x);
   t_clusters->Branch("y", &m_clusters_y);
   t_clusters->Branch("z", &m_clusters_z);
+  t_clusters->Branch("time", &m_clusters_time);
   t_clusters->Branch("energy", &m_clusters_energy);
   t_clusters->Branch("totEnergy", &m_clusters_totEnergy);
   t_clusters->Branch("totEnergyHits", &m_clusters_totEnergyHits);
-  t_clusters->Branch("MCEnergy", &m_clusters_MCEnergy);
 
   t_clhits->Branch("event", &m_clhits_event);
   t_clhits->Branch("layer", &m_clhits_layer);
   t_clhits->Branch("x", &m_clhits_x);
   t_clhits->Branch("y", &m_clhits_y);
   t_clhits->Branch("z", &m_clhits_z);
+  t_clhits->Branch("time", &m_clhits_time);
   t_clhits->Branch("energy", &m_clhits_energy);
   t_clhits->Branch("clusterId", &m_clhits_id);
+
+  t_MCParticles->Branch("event", &m_sim_event);
+  t_MCParticles->Branch("pdg", &m_sim_pdg);
+  t_MCParticles->Branch("charge", &m_sim_charge);
+  t_MCParticles->Branch("vertex_x", &m_sim_vtx_x);
+  t_MCParticles->Branch("vertex_y", &m_sim_vtx_y);
+  t_MCParticles->Branch("vertex_z", &m_sim_vtx_z);
+  t_MCParticles->Branch("p_x", &m_sim_momentum_x);
+  t_MCParticles->Branch("p_y", &m_sim_momentum_y);
+  t_MCParticles->Branch("p_z", &m_sim_momentum_z);
+  t_MCParticles->Branch("time", &m_sim_time);
+  t_MCParticles->Branch("energy", &m_sim_energy);
+  t_MCParticles->Branch("primary", &m_sim_primary);
+
+  t_links->Branch("simToRecoIndex", &m_simToReco_index);
+  t_links->Branch("simToRecoEnergy", &m_simToReco_sharedEnergy);
+  t_links->Branch("recoToSimIndex", &m_recoToSim_index);
+  t_links->Branch("recoToSimEnergy", &m_recoToSim_sharedEnergy);
 
   return;
 }
@@ -304,8 +359,8 @@ void CLUENtuplizer::cleanTrees() const {
   m_hits_phi.clear();
   m_hits_rho.clear();
   m_hits_delta.clear();
+  m_hits_time.clear();
   m_hits_energy.clear();
-  m_hits_MCEnergy.clear();
 
   m_clusters.clear();
   m_clusters_event.clear();
@@ -315,18 +370,37 @@ void CLUENtuplizer::cleanTrees() const {
   m_clusters_x.clear();
   m_clusters_y.clear();
   m_clusters_z.clear();
+  m_clusters_time.clear();
   m_clusters_energy.clear();
   m_clusters_totEnergy.clear();
   m_clusters_totEnergyHits.clear();
-  m_clusters_MCEnergy.clear();
 
   m_clhits_event.clear();
   m_clhits_layer.clear();
   m_clhits_x.clear();
   m_clhits_y.clear();
   m_clhits_z.clear();
+  m_clhits_time.clear();
   m_clhits_energy.clear();
   m_clhits_id.clear();
+
+  m_sim_event.clear();
+  m_sim_pdg.clear();
+  m_sim_charge.clear();
+  m_sim_vtx_x.clear();
+  m_sim_vtx_y.clear();
+  m_sim_vtx_z.clear();
+  m_sim_momentum_x.clear();
+  m_sim_momentum_y.clear();
+  m_sim_momentum_z.clear();
+  m_sim_time.clear();
+  m_sim_energy.clear();
+  m_sim_primary.clear();
+
+  m_simToReco_index.clear();
+  m_simToReco_sharedEnergy.clear();
+  m_recoToSim_index.clear();
+  m_recoToSim_sharedEnergy.clear();
 
   return;
 }
