@@ -46,7 +46,7 @@ public:
   void printTimingReport(std::vector<float>& vals, int repeats, const std::string label);
 
   clue::PointsHost<nDim> fillCLUEPoints(const std::vector<clue::CLUECalorimeterHit>& clue_hits, float* floatBuffer,
-                                 int* intBuffer, const bool isBarrel) const;
+                                        int* intBuffer, const bool isBarrel) const;
   std::vector<std::vector<int>> runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, const bool isBarrel = true,
                                         const uint32_t offset = 0) const;
 

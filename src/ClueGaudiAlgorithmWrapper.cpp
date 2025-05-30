@@ -62,8 +62,7 @@ StatusCode ClueGaudiAlgorithmWrapper<nDim>::initialize() {
   queue_ = std::make_optional<Queue>(devAcc);
 
   auto start = std::chrono::high_resolution_clock::now();
-  clueAlgo_ =
-      std::make_optional<clue::Clusterer<nDim>>(*queue_, dc, rhoc, dm, -1, pointsPerBin);
+  clueAlgo_ = std::make_optional<clue::Clusterer<nDim>>(*queue_, dc, rhoc, dm, -1, pointsPerBin);
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
   info() << "ClueGaudiAlgorithmWrapper: Set up time: " << elapsed.count() * 1000 << " ms" << endmsg;
@@ -115,24 +114,24 @@ void ClueGaudiAlgorithmWrapper<nDim>::printTimingReport(std::vector<float>& vals
 }
 
 template <uint8_t nDim>
-clue::PointsHost<nDim> ClueGaudiAlgorithmWrapper<nDim>::fillCLUEPoints(const std::vector<clue::CLUECalorimeterHit>& clue_hits,
-                                                                float* floatBuffer, int* intBuffer,
-                                                                const bool /*isBarrel*/) const {
+clue::PointsHost<nDim>
+ClueGaudiAlgorithmWrapper<nDim>::fillCLUEPoints(const std::vector<clue::CLUECalorimeterHit>& clue_hits,
+                                                float* floatBuffer, int* intBuffer, const bool /*isBarrel*/) const {
   size_t nPoints = clue_hits.size();
 
   for (size_t i = 0; i < nPoints; ++i) {
-    //if (isBarrel) {
-    //  floatBuffer[i] = clue_hits[i].getPhi();                  // Fill phi coordinates
-    //  floatBuffer[nPoints + i] = clue_hits[i].getPosition().z; // Fill z coordinates
-    //  if constexpr (nDim == 3)
-    //    floatBuffer[nPoints * 2 + i] = clue_hits[i].getEta();     // Fill eta coordinates
-    //  floatBuffer[nPoints * nDim + i] = clue_hits[i].getEnergy(); // Fill weights
-    //} else {
-      floatBuffer[i] = clue_hits[i].getPosition().x;           // Fill x coordinates
-      floatBuffer[nPoints + i] = clue_hits[i].getPosition().y; // Fill y coordinates
-      if constexpr (nDim == 3)
-        floatBuffer[nPoints * 2 + i] = clue_hits[i].getPosition().z; // Fill z coordinates
-      floatBuffer[nPoints * nDim + i] = clue_hits[i].getEnergy();    // Fill weights
+    // if (isBarrel) {
+    //   floatBuffer[i] = clue_hits[i].getPhi();                  // Fill phi coordinates
+    //   floatBuffer[nPoints + i] = clue_hits[i].getPosition().z; // Fill z coordinates
+    //   if constexpr (nDim == 3)
+    //     floatBuffer[nPoints * 2 + i] = clue_hits[i].getEta();     // Fill eta coordinates
+    //   floatBuffer[nPoints * nDim + i] = clue_hits[i].getEnergy(); // Fill weights
+    // } else {
+    floatBuffer[i] = clue_hits[i].getPosition().x;           // Fill x coordinates
+    floatBuffer[nPoints + i] = clue_hits[i].getPosition().y; // Fill y coordinates
+    if constexpr (nDim == 3)
+      floatBuffer[nPoints * 2 + i] = clue_hits[i].getPosition().z; // Fill z coordinates
+    floatBuffer[nPoints * nDim + i] = clue_hits[i].getEnergy();    // Fill weights
     //}
   }
 
@@ -226,17 +225,18 @@ void ClueGaudiAlgorithmWrapper<nDim>::fillFinalClusters(std::vector<clue::CLUECa
   return;
 }
 
-template<>
+template <>
 void ClueGaudiAlgorithmWrapper<2>::fillFinalClusters(std::vector<clue::CLUECalorimeterHit> const& clue_hits,
-                                                        std::vector<std::vector<int>> const& clusterMap,
-                                                        edm4hep::ClusterCollection* clusters) const {
+                                                     std::vector<std::vector<int>> const& clusterMap,
+                                                     edm4hep::ClusterCollection* clusters) const {
   for (auto cl : clusterMap) {
     std::vector<std::vector<int>> clustersLayer(maxLayerPerSide * 2);
     for (auto index : cl) {
       clustersLayer[clue_hits[index].getLayer()].push_back(index);
     }
     for (auto clLay : clustersLayer) {
-      if (clLay.empty()) continue;
+      if (clLay.empty())
+        continue;
       auto cluster = clusters->create();
       unsigned int maxEnergyIndex = 0;
       float maxEnergyValue = 0.f;
@@ -291,7 +291,7 @@ void ClueGaudiAlgorithmWrapper<nDim>::calculatePosition(edm4hep::MutableCluster*
     y_log += cluster->getHits(i).getPosition().y * Wi;
     z_log += cluster->getHits(i).getPosition().z * Wi;
     total_weight_log += Wi;
-    error =+ 1.f / Wi;
+    error = +1.f / Wi;
   }
 
   if (total_weight_log != 0.) {
