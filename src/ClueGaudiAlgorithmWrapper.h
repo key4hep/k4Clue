@@ -70,20 +70,22 @@ private:
   mutable std::vector<float> weight;
 
   // Handle to read the calo cells and their cellID
-  mutable DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle{"BarrelInputHits", Gaudi::DataHandle::Reader,
-                                                                       this};
-  mutable DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle{"EndcapInputHits", Gaudi::DataHandle::Reader,
-                                                                       this};
-  MetaDataHandle<std::string> cellIDHandle{EB_calo_handle, edm4hep::labels::CellIDEncoding, Gaudi::DataHandle::Reader};
+  mutable k4FWCore::DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle{"BarrelInputHits",
+                                                                                 Gaudi::DataHandle::Reader, this};
+  mutable k4FWCore::DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle{"EndcapInputHits",
+                                                                                 Gaudi::DataHandle::Reader, this};
+  k4FWCore::MetaDataHandle<std::string> cellIDHandle{EB_calo_handle, edm4hep::labels::CellIDEncoding,
+                                                     Gaudi::DataHandle::Reader};
 
   // CLUE Algo
   mutable CLICdetBarrelCLUEAlgo clueAlgoBarrel_;
   mutable CLICdetEndcapCLUEAlgo clueAlgoEndcap_;
 
   // Collections in output
-  mutable DataHandle<edm4hep::CalorimeterHitCollection> caloHitsHandle{"CLUEClustersAsHits", Gaudi::DataHandle::Writer,
-                                                                       this};
-  mutable DataHandle<edm4hep::ClusterCollection> clustersHandle{"CLUEClusters", Gaudi::DataHandle::Writer, this};
+  mutable k4FWCore::DataHandle<edm4hep::CalorimeterHitCollection> caloHitsHandle{"CLUEClustersAsHits",
+                                                                                 Gaudi::DataHandle::Writer, this};
+  mutable k4FWCore::DataHandle<edm4hep::ClusterCollection> clustersHandle{"CLUEClusters", Gaudi::DataHandle::Writer,
+                                                                          this};
 };
 
 #endif
