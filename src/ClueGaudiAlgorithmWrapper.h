@@ -64,6 +64,8 @@ private:
   float rhoc;
   float dm;
   int pointsPerBin = 10;
+  // Total amount of EE+ and EE- layers (80)
+  int maxLayerPerSide = 40;
 
   // CLUE points
   mutable clue::CLUECalorimeterHitCollection clue_hit_coll;

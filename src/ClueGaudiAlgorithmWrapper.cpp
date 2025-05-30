@@ -223,7 +223,51 @@ void ClueGaudiAlgorithmWrapper<nDim>::fillFinalClusters(std::vector<clue::CLUECa
 
     cluster.setType(clue_hits[maxEnergyIndex].getType());
   }
+  return;
+}
 
+template<>
+void ClueGaudiAlgorithmWrapper<2>::fillFinalClusters(std::vector<clue::CLUECalorimeterHit> const& clue_hits,
+                                                        std::vector<std::vector<int>> const& clusterMap,
+                                                        edm4hep::ClusterCollection* clusters) const {
+  for (auto cl : clusterMap) {
+    std::vector<std::vector<int>> clustersLayer(maxLayerPerSide * 2);
+    for (auto index : cl) {
+      clustersLayer[clue_hits[index].getLayer()].push_back(index);
+    }
+    for (auto clLay : clustersLayer) {
+      if (clLay.empty()) continue;
+      auto cluster = clusters->create();
+      unsigned int maxEnergyIndex = 0;
+      float maxEnergyValue = 0.f;
+      for (auto index : cl) {
+        if (clue_hits[index].inBarrel()) {
+          cluster.addToHits(EB_calo_coll->at(index));
+        }
+        if (clue_hits[index].inEndcap()) {
+          cluster.addToHits(EE_calo_coll->at(index));
+        }
+
+        if (clue_hits[index].getEnergy() > maxEnergyValue) {
+          maxEnergyValue = clue_hits[index].getEnergy();
+          maxEnergyIndex = index;
+        }
+      }
+      float energy = 0.f;
+      float sumEnergyErrSquared = 0.f;
+      std::for_each(cluster.getHits().begin(), cluster.getHits().end(),
+                    [&energy, &sumEnergyErrSquared](edm4hep::CalorimeterHit elem) {
+                      energy += elem.getEnergy();
+                      sumEnergyErrSquared += pow(elem.getEnergyError() / (1. * elem.getEnergy()), 2);
+                    });
+      cluster.setEnergy(energy);
+      cluster.setEnergyError(sqrt(sumEnergyErrSquared));
+
+      calculatePosition(&cluster);
+
+      cluster.setType(clue_hits[maxEnergyIndex].getType());
+    }
+  }
   return;
 }
 
@@ -337,9 +381,6 @@ StatusCode ClueGaudiAlgorithmWrapper<nDim>::execute(const EventContext&) const {
   }
   uint32_t barrelOffset = finalClusters->size();
 
-  // Total amount of EE+ and EE- layers (80)
-  int maxLayerPerSide = 40;
-
   info() << "Processing " << EE_calo_coll->size() << " caloHits in ECAL Endcap." << endmsg;
 
   // Fill CLUECaloHits in the endcap
@@ -367,7 +408,7 @@ StatusCode ClueGaudiAlgorithmWrapper<nDim>::execute(const EventContext&) const {
                               clue_hit_coll_endcap.vect.end());
 
     fillFinalClusters(clue_hit_coll_endcap.vect, clueClustersEndcap, finalClusters.get());
-    debug() << "Saved " << finalClusters->size() << " clusters using ECAL Endcap hits" << endmsg;
+    debug() << "Saved " << finalClusters->size() - barrelOffset << " clusters using ECAL Endcap hits" << endmsg;
   }
 
   info() << "Saved " << finalClusters->size() << " CLUE clusters in total." << endmsg;
