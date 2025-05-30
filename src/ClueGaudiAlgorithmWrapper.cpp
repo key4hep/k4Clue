@@ -221,8 +221,6 @@ void ClueGaudiAlgorithmWrapper<nDim>::fillFinalClusters(std::vector<clue::CLUECa
 
     calculatePosition(&cluster);
 
-    // JUST A PLACEHOLDER FOR NOW: TO BE FIXED
-    cluster.setPositionError({0.00, 0.00, 0.00, 0.00, 0.00, 0.00});
     cluster.setType(clue_hits[maxEnergyIndex].getType());
   }
 
@@ -239,20 +237,23 @@ void ClueGaudiAlgorithmWrapper<nDim>::calculatePosition(edm4hep::MutableCluster*
   float x_log = 0.f;
   float y_log = 0.f;
   float z_log = 0.f;
-  double thresholdW0_ = 2.9; // Min percentage of energy to contribute to the log-reweight position
+  float error = 0.f;
+  float thresholdW0_ = 2.9f; // Min percentage of energy to contribute to the log-reweight position
 
   for (size_t i = 0; i < cluster->hits_size(); i++) {
     float rhEnergy = cluster->getHits(i).getEnergy();
-    float Wi = std::max(thresholdW0_ - std::log(rhEnergy / total_weight), 0.);
+    float Wi = std::max(thresholdW0_ - std::log(rhEnergy / total_weight), 0.f);
     x_log += cluster->getHits(i).getPosition().x * Wi;
     y_log += cluster->getHits(i).getPosition().y * Wi;
     z_log += cluster->getHits(i).getPosition().z * Wi;
     total_weight_log += Wi;
+    error =+ 1.f / Wi;
   }
 
   if (total_weight_log != 0.) {
     float inv_tot_weight_log = 1.f / total_weight_log;
     cluster->setPosition({x_log * inv_tot_weight_log, y_log * inv_tot_weight_log, z_log * inv_tot_weight_log});
+    cluster->setPositionError({error, 0.f, error, 0.f, 0.f, error});
   }
 
   return;
