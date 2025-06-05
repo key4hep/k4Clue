@@ -1,3 +1,21 @@
+<!--
+Copyright (c) 2020-2024 Key4hep-Project.
+
+This file is part of Key4hep.
+See https://key4hep.github.io/key4hep-doc/ for further info.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
 [![linux](https://github.com/key4hep/k4Clue/actions/workflows/test.yml/badge.svg)](https://github.com/key4hep/k4Clue/actions/workflows/test.yml)
 
 ![Logo](plots/k4Clue_logo.png)
@@ -31,7 +49,7 @@ source /cvmfs/sw.hsf.org/key4hep/setup.sh
 # then setup this project
 git clone --recurse-submodules https://github.com/key4hep/k4Clue.git
 cd k4Clue
-cmake -S . -B build # -DCMAKE_PREFIX_PATH=/opt/rocm-6.2.2
+cmake -S . -B build
 cmake --build build
 # if installation is needed
 mkdir install
@@ -42,18 +60,19 @@ cd build/ ; cmake .. -DCMAKE_INSTALL_PREFIX=../install; make install
 
 ### Input parameters
 
-CLUEstering needs three parameters as input:
+CLUEstering needs four parameters as input:
 
 * `dc` is the critical distance used to compute the local density;
 * `rhoc` is the minimum local density for a point to be promoted as a seed;
 * `dm` is the maximum distance considered to search for followers.
+* (optional) `seed_dc` is the critical distance used to promote a high density point as a seed (if -1 is set equal to `dc`);
 
 (
 In the original [article](https://www.frontiersin.org/journals/big-data/articles/10.3389/fdata.2020.591315/full) and implementation, four parameters were needed (`dc`, `rhoc`, `deltao` and `deltac`):
 * `deltao` is the maximum distance for a point to be linked to a nearest higher
-point.
+point (now `dm`).
 * `deltac` is the minimum distance for a local high density point to be promoted
-as a Seed.
+as a Seed (now `seed_dc`).
 )
 
 ### Detector layout
