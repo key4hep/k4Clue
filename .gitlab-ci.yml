@@ -15,7 +15,7 @@ compile_and_test:
     script:
         - source /cvmfs/sw-nightlies.hsf.org/key4hep/setup.sh
         - source /cvmfs/sft.cern.ch/lcg/contrib/cuda/11.4/x86_64-centos8/setup.sh
-        - git submodule init; git submodule update
+        - git submodule update --init --recursive
         - mkdir build; cd build
         - cmake .. -G Ninja
         - ninja -j 4
