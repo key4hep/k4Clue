@@ -46,6 +46,7 @@ ClueGaudiAlgorithmWrapper<nDim>::ClueGaudiAlgorithmWrapper(const std::string& na
   declareProperty("CriticalDistance", dc, "Distance used to compute the local density of a point");
   declareProperty("MinLocalDensity", rhoc, "Minimum energy density of a point to not be considered an outlier");
   declareProperty("FollowerDistance", dm, "Critical distance for follower search and cluster expansion");
+  declareProperty("SeedCriticalDistance", seed_dc, "Distance used to compute the local density of a point");
   declareProperty("PointsPerBin", pointsPerBin, "Average number of points that are to be found inside a bin");
   declareProperty("OutClusters", clustersHandle, "Clusters collection (output)");
   declareProperty("OutCaloHits", caloHitsHandle, "Calo hits collection created from Clusters (output)");
@@ -62,7 +63,7 @@ StatusCode ClueGaudiAlgorithmWrapper<nDim>::initialize() {
   queue_ = std::make_optional<Queue>(devAcc);
 
   auto start = std::chrono::high_resolution_clock::now();
-  clueAlgo_ = std::make_optional<clue::Clusterer<nDim>>(*queue_, dc, rhoc, dm, -1, pointsPerBin);
+  clueAlgo_ = std::make_optional<clue::Clusterer<nDim>>(*queue_, dc, rhoc, dm, seed_dc, pointsPerBin);
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
   info() << "ClueGaudiAlgorithmWrapper: Set up time: " << elapsed.count() * 1000 << " ms" << endmsg;

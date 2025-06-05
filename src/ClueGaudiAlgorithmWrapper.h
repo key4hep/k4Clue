@@ -63,6 +63,7 @@ private:
   float dc;
   float rhoc;
   float dm;
+  float seed_dc = -1;
   int pointsPerBin = 10;
   // Total amount of EE+ and EE- layers (80)
   int maxLayerPerSide = 40;
