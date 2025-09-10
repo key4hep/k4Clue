@@ -81,7 +81,7 @@ private:
 
   // CLUE Algo
   mutable std::optional<clue::Clusterer<nDim>> clueAlgo_;
-  mutable std::optional<ALPAKA_ACCELERATOR_NAMESPACE_CLUE::Queue> queue_;
+  mutable std::optional<clue::Queue> queue_;
 
   // Collections in output
   mutable k4FWCore::DataHandle<edm4hep::CalorimeterHitCollection> caloHitsHandle{"CLUEClustersAsHits",

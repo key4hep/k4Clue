@@ -54,9 +54,9 @@ ClueGaudiAlgorithmWrapper<nDim>::ClueGaudiAlgorithmWrapper(const std::string& na
 
 template <uint8_t nDim>
 StatusCode ClueGaudiAlgorithmWrapper<nDim>::initialize() {
-  using Acc = ALPAKA_ACCELERATOR_NAMESPACE_CLUE::Acc1D;
-  using Dev = alpaka::Dev<Acc>;
-  using Queue = ALPAKA_ACCELERATOR_NAMESPACE_CLUE::Queue;
+  using Acc = clue::internal::Acc;
+  using Dev = clue::Device;
+  using Queue = clue::Queue;
 
   auto const platform = alpaka::Platform<Acc>{};
   Dev const devAcc(alpaka::getDevByIdx(platform, 0u));
@@ -156,9 +156,9 @@ std::vector<std::vector<int>> ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vect
   info() << "Running CLUEAlgo on device " << alpaka::getName(alpaka::getDev(*queue_)) << endmsg;
 
   // measure excution time of make_clusters
-  FlatKernel kernel(0.5f);
+  clue::FlatKernel kernel(0.5f);
   auto start = std::chrono::high_resolution_clock::now();
-  clueAlgo_->make_clusters(cluePoints, kernel, *queue_, 512);
+  clueAlgo_->make_clusters(*queue_, cluePoints, kernel, 512);
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
   info() << "ClueGaudiAlgorithmWrapper: Elapsed time: " << elapsed.count() * 1000 << " ms" << endmsg;
@@ -168,7 +168,7 @@ std::vector<std::vector<int>> ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vect
   info() << "Finished running CLUE algorithm" << endmsg;
 
   // Including CLUE info in cluePoints
-  for (size_t i = 0; i < cluePoints.size(); i++) {
+  for (int32_t i = 0; i < cluePoints.size(); i++) {
     // offset is 0 for the barrel and is the number of clusters in the barrel for the endcap
     clue_hits[i].setClusterIndex(cluePoints.clusterIndexes()[i] + offset);
     verbose() << "CLUE Point #" << i << " : (x,y,z) = (" << clue_hits[i].getPosition().x << ","
