@@ -43,18 +43,9 @@ include(CTest)
 
 find_package(Boost 1.75.0 REQUIRED)
 
-# Alpaka (Fetched only if not found)
-include(FetchContent)
-FetchContent_Declare(
-  alpaka
-  GIT_REPOSITORY https://github.com/alpaka-group/alpaka.git
-  GIT_TAG fe9436d57e25b07dc73b8b042a0b3eec499956d0 # 1.2.0
-  GIT_SHALLOW TRUE
-)
-FetchContent_MakeAvailable(alpaka)
+find_package(alpaka REQUIRED)
 
-#will become this when alpaka will be in cvmfs in key4hep
-#find_package(alpaka REQUIRED)
+find_package(CLUEstering REQUIRED)
 
 # GPU Dependencies
 include(CheckLanguage)

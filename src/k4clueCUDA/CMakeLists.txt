@@ -38,15 +38,14 @@ if(CMAKE_CUDA_COMPILER)
 
   gaudi_add_module(ClueGaudiAlgorithmWrapperCUDA
     SOURCES ${SOURCES}
-    LINK Gaudi::GaudiKernel k4FWCore::k4FWCore DD4hep::DDCore EDM4HEP::edm4hep
+    LINK Gaudi::GaudiKernel k4FWCore::k4FWCore DD4hep::DDCore EDM4HEP::edm4hep alpaka
   )
 
   target_include_directories(ClueGaudiAlgorithmWrapperCUDA PUBLIC
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/CLUEstering/include>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${alpaka_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${Boost_INCLUDE_DIR}>
   )
+
+  target_link_libraries(ClueGaudiAlgorithmWrapperCUDA PUBLIC clue::CLUEstering)
 
   set_target_properties(ClueGaudiAlgorithmWrapperCUDA PROPERTIES
     CUDA_STANDARD 20

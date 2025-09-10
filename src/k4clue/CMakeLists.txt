@@ -35,14 +35,14 @@ gaudi_add_module(ClueGaudiAlgorithmWrapper
   k4FWCore::k4FWCore
   DD4hep::DDCore
   EDM4HEP::edm4hep
+  alpaka
 )
 
 target_include_directories(ClueGaudiAlgorithmWrapper PUBLIC
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/CLUEstering/include>
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-  $<BUILD_INTERFACE:${alpaka_SOURCE_DIR}/include>
-  $<BUILD_INTERFACE:${Boost_INCLUDE_DIR}>
 )
+
+target_link_libraries(ClueGaudiAlgorithmWrapper PUBLIC clue::CLUEstering)
 
 target_compile_options(ClueGaudiAlgorithmWrapper PRIVATE
   -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED

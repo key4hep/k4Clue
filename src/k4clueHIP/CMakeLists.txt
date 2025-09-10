@@ -38,16 +38,15 @@ if(CMAKE_HIP_COMPILER)
 
   gaudi_add_module(ClueGaudiAlgorithmWrapperHIP
     SOURCES ${SOURCES}
-    LINK Gaudi::GaudiKernel k4FWCore::k4FWCore DD4hep::DDCore EDM4HEP::edm4hep
+    LINK Gaudi::GaudiKernel k4FWCore::k4FWCore DD4hep::DDCore EDM4HEP::edm4hep alpaka
   )
 
   target_include_directories(ClueGaudiAlgorithmWrapperHIP PUBLIC
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/CLUEstering/include>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${alpaka_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${Boost_INCLUDE_DIR}>
     $<$<COMPILE_LANGUAGE:HIP>:${hip_INCLUDE_DIRS}>
   )
+
+  target_link_libraries(ClueGaudiAlgorithmWrapperHIP PUBLIC clue::CLUEstering)
 
   set_source_files_properties(${SOURCES_GPU} PROPERTIES LANGUAGE HIP)
 
