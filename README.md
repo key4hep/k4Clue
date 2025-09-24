@@ -40,14 +40,14 @@ CLUEstering is able to perform the clustering in different number of dimensions,
 
 ## Setup the environment
 
-The following setup is considering a machine with `cvmfs` and OS compatible with the key4hep environment.
+The following setup is considering a machine with `cvmfs` and OS compatible with the Key4hep environment.
 
 ```bash
 # source key4hep environment
 source /cvmfs/sw.hsf.org/key4hep/setup.sh
 
 # then setup this project
-git clone --recurse-submodules https://github.com/key4hep/k4Clue.git
+git clone https://github.com/key4hep/k4Clue.git
 cd k4Clue
 cmake -S . -B build
 cmake --build build
@@ -99,7 +99,7 @@ The output file `output.root` contains `CLUEClusters` (currently also transforme
 
 A simple recipe to run k4CLUE as part of the CLIC reconstruction chain can be found [here](docs/clic-recipe.md).
 
-## Package maintainer
+## Package maintainers
 
 If you encounter any error when compiling or running this project, please contact:
 * Marco Rovere, marco.rovere@cern.ch

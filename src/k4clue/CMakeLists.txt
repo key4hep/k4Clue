@@ -44,7 +44,7 @@ target_include_directories(ClueGaudiAlgorithmWrapper PUBLIC
 
 target_link_libraries(ClueGaudiAlgorithmWrapper PUBLIC clue::CLUEstering)
 
-target_compile_options(ClueGaudiAlgorithmWrapper PRIVATE
+target_compile_options(ClueGaudiAlgorithmWrapper PUBLIC
   -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED
   -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_SYNC_BACKEND
 )
