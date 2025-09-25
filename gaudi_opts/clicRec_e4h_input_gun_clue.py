@@ -1788,9 +1788,9 @@ VertexFinderUnconstrained.Parameters = {
                                         }
 
 
-from Configurables import ClueGaudiAlgorithmWrapper3
+from Configurables import ClueGaudiAlgorithmWrapper3D
 
-MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper3("ClueGaudiAlgorithmWrapperName")
+MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper3D("ClueGaudiAlgorithmWrapperName")
 MyClueGaudiAlgorithmWrapper.OutputLevel = INFO
 MyClueGaudiAlgorithmWrapper.BarrelCaloHitsCollection = "ECALBarrel"
 MyClueGaudiAlgorithmWrapper.EndcapCaloHitsCollection = "ECALEndcap"
