@@ -25,8 +25,10 @@
 #include "k4FWCore/MetaDataHandle.h"
 
 #include "CLUECalorimeterHit.h"
+#include <edm4hep/CaloHitSimCaloHitLinkCollection.h>
 #include <edm4hep/CalorimeterHitCollection.h>
 #include <edm4hep/ClusterCollection.h>
+#include <edm4hep/ClusterMCParticleLinkCollection.h>
 #include <edm4hep/Constants.h>
 #include <edm4hep/EventHeaderCollection.h>
 #include <edm4hep/MCParticleCollection.h>
@@ -64,10 +66,10 @@ private:
                                                                          this};
   mutable k4FWCore::DataHandle<edm4hep::MCParticleCollection> mcp_handle{"MCParticles", Gaudi::DataHandle::Reader,
                                                                          this};
+  mutable k4FWCore::DataHandle<edm4hep::ClusterMCParticleLinkCollection> clustersLink_handle{"ClusterMCTruthLink",
+                                                                                     Gaudi::DataHandle::Reader, this};
   k4FWCore::MetaDataHandle<std::string> cellIDHandle{EB_calo_handle, edm4hep::labels::CellIDEncoding,
                                                      Gaudi::DataHandle::Reader};
-
-  bool singleMCParticle = false;
 
   SmartIF<ITHistSvc> m_ths; ///< THistogram service
 
@@ -84,8 +86,8 @@ private:
   mutable std::vector<float> m_hits_phi;
   mutable std::vector<float> m_hits_rho;
   mutable std::vector<float> m_hits_delta;
+  mutable std::vector<float> m_hits_time;
   mutable std::vector<float> m_hits_energy;
-  mutable std::vector<float> m_hits_MCEnergy;
 
   mutable TTree* t_clusters{nullptr};
   mutable std::vector<int> m_clusters;
@@ -96,10 +98,10 @@ private:
   mutable std::vector<float> m_clusters_x;
   mutable std::vector<float> m_clusters_y;
   mutable std::vector<float> m_clusters_z;
+  mutable std::vector<float> m_clusters_time;
   mutable std::vector<float> m_clusters_energy;
   mutable std::vector<float> m_clusters_totEnergy;
   mutable std::vector<float> m_clusters_totEnergyHits;
-  mutable std::vector<float> m_clusters_MCEnergy;
 
   mutable TTree* t_clhits{nullptr};
   mutable std::vector<int> m_clhits_event;
@@ -108,7 +110,28 @@ private:
   mutable std::vector<float> m_clhits_x;
   mutable std::vector<float> m_clhits_y;
   mutable std::vector<float> m_clhits_z;
+  mutable std::vector<float> m_clhits_time;
   mutable std::vector<float> m_clhits_energy;
+
+  mutable TTree* t_MCParticles{nullptr};
+  mutable std::vector<int> m_sim_event;
+  mutable std::vector<int> m_sim_pdg;
+  mutable std::vector<int> m_sim_charge;
+  mutable std::vector<float> m_sim_vtx_x;
+  mutable std::vector<float> m_sim_vtx_y;
+  mutable std::vector<float> m_sim_vtx_z;
+  mutable std::vector<float> m_sim_momentum_x;
+  mutable std::vector<float> m_sim_momentum_y;
+  mutable std::vector<float> m_sim_momentum_z;
+  mutable std::vector<float> m_sim_time;
+  mutable std::vector<float> m_sim_energy;
+  mutable std::vector<bool> m_sim_primary;
+
+  mutable TTree* t_links{nullptr};
+  mutable std::vector<std::vector<int>> m_simToReco_index;
+  mutable std::vector<std::vector<float>> m_simToReco_sharedEnergy;
+  mutable std::vector<std::vector<int>> m_recoToSim_index;
+  mutable std::vector<std::vector<float>> m_recoToSim_sharedEnergy;
 
   mutable std::int32_t evNum;
 };

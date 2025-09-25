@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-import os 
+import os
 
 from Gaudi.Configuration import *
 
@@ -47,7 +47,6 @@ from Configurables import ToolSvc, Lcio2EDM4hepTool, EDM4hep2LcioTool
 from Configurables import k4DataSvc, PodioInput
 evtsvc = k4DataSvc('EventDataSvc')
 evtsvc.input = os.path.join('$TEST_DIR/inputFiles/', os.environ.get("INPUTFILE", "ttbar_edm4hep_frame.root"))
-
 
 inp = PodioInput('InputReader')
 inp.collections = [
@@ -460,12 +459,12 @@ MyDDCaloDigi.Parameters = {
                            "CalibrHCALBarrel": ["49.2031079063"],
                            "CalibrHCALEndcap": ["53.6263377733"],
                            "CalibrHCALOther": ["62.2125698179"],
-                           "ECALBarrelTimeWindowMax": ["10"],
+                           "ECALBarrelTimeWindowMax": ["20"],
                            "ECALCollections": ["ECalBarrelCollection", "ECalEndcapCollection", "ECalPlugCollection"],
-                           "ECALCorrectTimesForPropagation": ["1"],
+                           "ECALCorrectTimesForPropagation": ["0"],
                            "ECALDeltaTimeHitResolution": ["10"],
                            "ECALEndcapCorrectionFactor": ["1.0672142727"],
-                           "ECALEndcapTimeWindowMax": ["10"],
+                           "ECALEndcapTimeWindowMax": ["20"],
                            "ECALGapCorrection": ["1"],
                            "ECALGapCorrectionFactor": ["1"],
                            "ECALLayers": ["41", "100"],
@@ -492,12 +491,12 @@ MyDDCaloDigi.Parameters = {
                            "ECAL_miscalibration_uncorrel_memorise": ["false"],
                            "ECAL_pixel_spread": ["0.05"],
                            "ECAL_strip_absorbtionLength": ["1e+06"],
-                           "HCALBarrelTimeWindowMax": ["10"],
+                           "HCALBarrelTimeWindowMax": ["20"],
                            "HCALCollections": ["HCalBarrelCollection", "HCalEndcapCollection", "HCalRingCollection"],
-                           "HCALCorrectTimesForPropagation": ["1"],
+                           "HCALCorrectTimesForPropagation": ["0"],
                            "HCALDeltaTimeHitResolution": ["10"],
                            "HCALEndcapCorrectionFactor": ["1.000"],
-                           "HCALEndcapTimeWindowMax": ["10"],
+                           "HCALEndcapTimeWindowMax": ["20"],
                            "HCALGapCorrection": ["1"],
                            "HCALLayers": ["100"],
                            "HCALModuleGapCorrectionFactor": ["0.5"],
@@ -700,7 +699,7 @@ MyRecoMCTruthLinker.ProcessorType = "RecoMCTruthLinker"
 MyRecoMCTruthLinker.Parameters = {
                                   "BremsstrahlungEnergyCut": ["1"],
                                   "CalohitMCTruthLinkName": ["CalohitMCTruthLink"],
-                                  "ClusterCollection": ["MergedClusters"],
+                                  "ClusterCollection": ["CLUEClusters"],
                                   "ClusterMCTruthLinkName": ["ClusterMCTruthLink"],
                                   "FullRecoRelation": ["false"],
                                   "InvertedNonDestructiveInteractionLogic": ["false"],
@@ -1789,22 +1788,22 @@ VertexFinderUnconstrained.Parameters = {
                                         }
 
 
-from Configurables import ClueGaudiAlgorithmWrapper
+from Configurables import ClueGaudiAlgorithmWrapper3D
 
-MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper("ClueGaudiAlgorithmWrapperName")
+MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper3D("ClueGaudiAlgorithmWrapperName")
 MyClueGaudiAlgorithmWrapper.OutputLevel = INFO
 MyClueGaudiAlgorithmWrapper.BarrelCaloHitsCollection = "ECALBarrel"
 MyClueGaudiAlgorithmWrapper.EndcapCaloHitsCollection = "ECALEndcap"
-MyClueGaudiAlgorithmWrapper.CriticalDistance = 15.00
-MyClueGaudiAlgorithmWrapper.MinLocalDensity = 0.02
-MyClueGaudiAlgorithmWrapper.OutlierDeltaFactor = 3.00
+MyClueGaudiAlgorithmWrapper.CriticalDistance = 30
+MyClueGaudiAlgorithmWrapper.MinLocalDensity = 0.1
+MyClueGaudiAlgorithmWrapper.FollowerDistance = 120
 
 # EDM4hep to LCIO converter
 ClueAlgorithmEDM4hepConv = EDM4hep2LcioTool("MyDDMarlinPandoraEDM4hep2lcioConv")
 ClueAlgorithmEDM4hepConv.convertAll = False
 ClueAlgorithmEDM4hepConv.collNameMapping = {
   "CLUEClusters": "CLUEClusters",
-  "CLUEClustersAsHits": "CLUEClustersAsHits"
+#  "CLUEClustersAsHits": "CLUEClustersAsHits" does not work and prevents associators from being created
 }
 ClueAlgorithmEDM4hepConv.OutputLevel = DEBUG
 ## Add it to MyDDCaloDigi
@@ -1816,7 +1815,6 @@ MyCLUENtuplizer.OutputLevel = DEBUG
 MyCLUENtuplizer.ClusterCollection = "CLUEClusters"
 MyCLUENtuplizer.BarrelCaloHitsCollection = "ECALBarrel"
 MyCLUENtuplizer.EndcapCaloHitsCollection = "ECALEndcap"
-MyCLUENtuplizer.SingleMCParticle = True
 
 from Configurables import THistSvc
 THistSvc().Output = ["rec DATAFILE='k4clue_analysis_output.root' TYP='ROOT' OPT='RECREATE'"]
