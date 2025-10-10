@@ -357,16 +357,12 @@ StatusCode ClueGaudiAlgorithmWrapper<nDim>::execute(const EventContext&) const {
   info() << "Processing " << EB_calo_coll->size() << " caloHits in ECAL Barrel." << endmsg;
 
   // Fill CLUECaloHits in the barrel
-  if (EB_calo_coll->isValid()) {
-    for (const auto& calo_hit : (*EB_calo_coll)) {
-      // Cut on a specific layer for noise studies
-      // if(bf.get( calo_hit.getCellID(), "layer") == 6){
-      clue_hit_coll_barrel.vect.push_back(clue::CLUECalorimeterHit(
-          calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::barrel, bf.get(calo_hit.getCellID(), "layer")));
-      //}
-    }
-  } else {
-    throw std::runtime_error("Collection not found.");
+  for (const auto& calo_hit : (*EB_calo_coll)) {
+    // Cut on a specific layer for noise studies
+    // if(bf.get( calo_hit.getCellID(), "layer") == 6){
+    clue_hit_coll_barrel.vect.push_back(clue::CLUECalorimeterHit(
+        calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::barrel, bf.get(calo_hit.getCellID(), "layer")));
+    //}
   }
 
   // Run CLUE in the barrel
@@ -385,19 +381,15 @@ StatusCode ClueGaudiAlgorithmWrapper<nDim>::execute(const EventContext&) const {
   info() << "Processing " << EE_calo_coll->size() << " caloHits in ECAL Endcap." << endmsg;
 
   // Fill CLUECaloHits in the endcap
-  if (EE_calo_coll->isValid()) {
-    for (const auto& calo_hit : (*EE_calo_coll)) {
-      if (bf.get(calo_hit.getCellID(), "side") < 0 || bf.get(calo_hit.getCellID(), "side") > 1) {
-        clue_hit_coll_endcap.vect.push_back(clue::CLUECalorimeterHit(
-            calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::endcap, bf.get(calo_hit.getCellID(), "layer")));
-      } else {
-        clue_hit_coll_endcap.vect.push_back(
-            clue::CLUECalorimeterHit(calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::endcap,
-                                     bf.get(calo_hit.getCellID(), "layer") + maxLayerPerSide));
-      }
+  for (const auto& calo_hit : (*EE_calo_coll)) {
+    if (bf.get(calo_hit.getCellID(), "side") < 0 || bf.get(calo_hit.getCellID(), "side") > 1) {
+      clue_hit_coll_endcap.vect.push_back(clue::CLUECalorimeterHit(
+          calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::endcap, bf.get(calo_hit.getCellID(), "layer")));
+    } else {
+      clue_hit_coll_endcap.vect.push_back(
+          clue::CLUECalorimeterHit(calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::endcap,
+                                   bf.get(calo_hit.getCellID(), "layer") + maxLayerPerSide));
     }
-  } else {
-    throw std::runtime_error("Collection not found.");
   }
 
   // Run CLUE in the endcap
