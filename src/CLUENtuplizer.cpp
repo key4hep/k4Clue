@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 #include "CLUENtuplizer.h"
+#include "k4FWCore/MetadataUtils.h"
 
 // podio specific includes
 #include "DDSegmentation/BitFieldCoder.h"
@@ -25,13 +26,6 @@ using namespace dd4hep;
 using namespace DDSegmentation;
 
 DECLARE_COMPONENT(CLUENtuplizer)
-
-CLUENtuplizer::CLUENtuplizer(const std::string& name, ISvcLocator* svcLoc) : Gaudi::Algorithm(name, svcLoc) {
-  declareProperty("ClusterCollection", ClusterCollectionName, "Collection of clusters in input");
-  declareProperty("BarrelCaloHitsCollection", EB_calo_handle, "Collection for Barrel Calo Hits used in input");
-  declareProperty("EndcapCaloHitsCollection", EE_calo_handle, "Collection for Endcap Calo Hits used in input");
-  declareProperty("ClusterMCTruthLink", clustersLink_handle, "Association between MCParticles and Clusters");
-}
 
 StatusCode CLUENtuplizer::initialize() {
   if (Gaudi::Algorithm::initialize().isFailure())
@@ -49,7 +43,7 @@ StatusCode CLUENtuplizer::initialize() {
     return StatusCode::FAILURE;
   }
 
-  t_clusters = new TTree(TString(ClusterCollectionName), "Clusters ntuple");
+  t_clusters = new TTree(TString((std::string)ClusterCollectionName), "Clusters ntuple");
   if (m_ths->regTree("/rec/" + ClusterCollectionName, t_clusters).isFailure()) {
     error() << "Couldn't register clusters tree" << endmsg;
     return StatusCode::FAILURE;
@@ -79,53 +73,43 @@ StatusCode CLUENtuplizer::initialize() {
   return StatusCode::SUCCESS;
 }
 
-StatusCode CLUENtuplizer::execute(const EventContext&) const {
-
-  auto evs = ev_handle.get();
-  evNum = (*evs)[0].getEventNumber();
+void CLUENtuplizer::operator()(const CaloHitColl& EB_calo_coll, const CaloHitColl& EE_calo_coll,
+                               const ClusterColl& cluster_coll, /*const ClueHitColl& clue_calo_coll,*/
+                               const edm4hep::EventHeaderCollection& evs, const MCPartColl& mcps,
+                               const ClusterMCLinkColl& linksClus) const {
+  evNum = evs[0].getEventNumber();
   // evNum = 0;
   info() << "Event number = " << evNum << endmsg;
 
-  auto mcps = mcp_handle.get();
   int mcps_primary = 0;
-  std::for_each((*mcps).begin(), (*mcps).end(), [&mcps_primary](edm4hep::MCParticle mcp) {
+  std::for_each(mcps.begin(), mcps.end(), [&mcps_primary](edm4hep::MCParticle mcp) {
     if (mcp.getGeneratorStatus() == 1) {
       mcps_primary += 1;
     }
   });
-  info() << "MC Particles = " << mcps->size() << " (of which primaries = " << mcps_primary << ")" << endmsg;
+  info() << "MC Particles = " << mcps.size() << " (of which primaries = " << mcps_primary << ")" << endmsg;
 
   DataObject* pStatus = nullptr;
   StatusCode scStatus = eventSvc()->retrieveObject("/Event/CLUECalorimeterHitCollection", pStatus);
+  clue::CLUECalorimeterHitCollection* clue_calo_coll;
   if (scStatus.isSuccess()) {
     clue_calo_coll = static_cast<clue::CLUECalorimeterHitCollection*>(pStatus);
   } else {
     throw std::runtime_error("CLUE hits collection not available");
   }
 
-  // Read EB and EE collection
-  EB_calo_coll = EB_calo_handle.get();
-  EE_calo_coll = EE_calo_handle.get();
-
-  debug() << "ECAL Calorimeter Hits Size = " << (*EB_calo_coll).size() + (*EE_calo_coll).size() << endmsg;
-
-  // Read cluster collection
-  // This should be fixed, for now the const cast is added to be able to create the handle
-  // as it was done before https://github.com/key4hep/k4Clue/pull/60
-  k4FWCore::DataHandle<edm4hep::ClusterCollection> cluster_handle{ClusterCollectionName, Gaudi::DataHandle::Reader,
-                                                                  const_cast<CLUENtuplizer*>(this)};
-  cluster_coll = cluster_handle.get();
+  debug() << "ECAL Calorimeter Hits Size = " << EB_calo_coll.size() + EE_calo_coll.size() << endmsg;
 
   // Get collection metadata cellID which is valid for both EB, EE and Clusters
-  const auto cellIDstr = cellIDHandle.get();
+  const std::string cellIDstr = k4FWCore::getParameter<std::string>("ECalBarrel__CellIDEncoding", this).value_or("");
+  std::cout << "cellIDstr " << cellIDstr << std::endl;
   const BitFieldCoder bf(cellIDstr);
   cleanTrees();
 
-  // get the already built cluster to MC particle associators
-  auto linksClus = clustersLink_handle.get();
+  // use the already built cluster to MC particle associators
   std::multimap<uint32_t, std::pair<uint32_t, float>> simToRecoLink;
   std::multimap<uint32_t, std::pair<uint32_t, float>> recoToSimLink;
-  for (const auto& link : *linksClus) {
+  for (const auto& link : linksClus) {
     const auto recIdx = link.getFrom().getObjectID().index;
     const auto simIdx = link.getTo().getObjectID().index;
     const auto weight = link.getWeight();
@@ -133,13 +117,13 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
     recoToSimLink.emplace(recIdx, std::make_pair(simIdx, weight));
   }
 
-  std::vector<int> simIdMapping(mcps->size(), -1);
+  std::vector<int> simIdMapping(mcps.size(), -1);
   int id = 0;
-  for (std::size_t simId = 0; simId < mcps->size(); ++simId) {
+  for (std::size_t simId = 0; simId < mcps.size(); ++simId) {
     if (simToRecoLink.contains(simId)) {
       simIdMapping[simId] = id;
       ++id;
-      const auto& mcp = (*mcps)[simId];
+      const auto& mcp = mcps[simId];
       m_sim_event.push_back(evNum);
       m_sim_pdg.push_back(mcp.getPDG());
       m_sim_charge.push_back(mcp.getCharge());
@@ -167,7 +151,7 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
     }
   }
 
-  for (std::size_t recoId = 0; recoId < cluster_coll->size(); ++recoId) {
+  for (std::size_t recoId = 0; recoId < cluster_coll.size(); ++recoId) {
     std::vector<int> ids;
     std::vector<float> shEn;
     const auto size = recoToSimLink.count(recoId);
@@ -193,8 +177,8 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
   float totEnergyHits = 0;
   std::uint64_t totSize = 0;
 
-  info() << ClusterCollectionName << " : Total number of clusters =  " << int(cluster_coll->size()) << endmsg;
-  for (const auto& cl : *cluster_coll) {
+  info() << ClusterCollectionName << " : Total number of clusters =  " << int(cluster_coll.size()) << endmsg;
+  for (const auto& cl : cluster_coll) {
     m_clusters_event.push_back(evNum);
     m_clusters_energy.push_back(cl.getEnergy());
     m_clusters_size.push_back(cl.hits_size());
@@ -284,7 +268,6 @@ StatusCode CLUENtuplizer::execute(const EventContext&) const {
   debug() << "Found: " << nSeeds << " seeds, " << nOutliers << " outliers, " << nFollowers << " followers."
           << " Total energy clusterized: " << totEnergy << " GeV" << endmsg;
   t_hits->Fill();
-  return StatusCode::SUCCESS;
 }
 
 void CLUENtuplizer::initializeTrees() {

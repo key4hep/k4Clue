@@ -19,11 +19,9 @@
 #ifndef CLUE_GAUDI_ALGORITHM_WRAPPER_H
 #define CLUE_GAUDI_ALGORITHM_WRAPPER_H
 
-#include <Gaudi/Algorithm.h>
-
-// FWCore
-#include "k4FWCore/DataHandle.h"
-#include "k4FWCore/MetaDataHandle.h"
+#include "Gaudi/Property.h"
+#include "k4FWCore/MetadataUtils.h"
+#include "k4FWCore/Transformer.h"
 
 #include "CLUECalorimeterHit.h"
 #include "CLUEstering/CLUEstering.hpp"
@@ -31,14 +29,32 @@
 #include <edm4hep/ClusterCollection.h>
 #include <edm4hep/Constants.h>
 
+#include <string>
+
+using CaloHitColl = edm4hep::CalorimeterHitCollection;
+using ClusterColl = edm4hep::ClusterCollection;
+
+using retType = std::tuple<ClusterColl, CaloHitColl>;
+
 template <uint8_t nDim>
-class ClueGaudiAlgorithmWrapper : public Gaudi::Algorithm {
-public:
-  explicit ClueGaudiAlgorithmWrapper(const std::string& name, ISvcLocator* svcLoc);
-  virtual ~ClueGaudiAlgorithmWrapper() = default;
-  virtual StatusCode execute(const EventContext&) const override final;
-  virtual StatusCode finalize() override final;
-  virtual StatusCode initialize() override final;
+struct ClueGaudiAlgorithmWrapper final
+    : k4FWCore::MultiTransformer<retType(const CaloHitColl& EB_calo_coll, const CaloHitColl& EE_calo_coll)> {
+
+  ClueGaudiAlgorithmWrapper(const std::string& name, ISvcLocator* svcLoc)
+      : MultiTransformer(name, svcLoc,
+                         {
+                             KeyValues("BarrelCaloHitsCollection", {"ECALBarrel"}),
+                             KeyValues("EndcapCaloHitsCollection", {"ECALEndcap"}),
+                         },
+                         {
+                             KeyValues("OutputClusters", {"CLUEClusters"}),
+                             KeyValues("OutputClustersAsHits", {"CLUEClustersAsHits"}),
+                         }) {}
+
+  retType operator()(const CaloHitColl& EB_calo_coll, const CaloHitColl& EE_calo_coll) const override;
+
+  StatusCode initialize() override;
+  StatusCode finalize() override;
 
   // Timing analysis
   void exclude_stats_outliers(std::vector<float>& v);
@@ -51,43 +67,32 @@ public:
                                         const uint32_t offset = 0) const;
 
   void fillFinalClusters(std::vector<clue::CLUECalorimeterHit> const& clue_hits,
-                         std::vector<std::vector<int>> const& clusterMap, edm4hep::ClusterCollection* clusters) const;
+                         std::vector<std::vector<int>> const& clusterMap, ClusterColl& clusters,
+                         const CaloHitColl& EB_calo_coll, const CaloHitColl& EE_calo_coll) const;
   void calculatePosition(edm4hep::MutableCluster* cluster) const;
-  void transformClustersInCaloHits(edm4hep::ClusterCollection* clusters,
-                                   edm4hep::CalorimeterHitCollection* caloHits) const;
+  void transformClustersInCaloHits(ClusterColl& clusters, CaloHitColl& caloHits) const;
 
 private:
-  // Parameters in input
-  mutable const edm4hep::CalorimeterHitCollection* EB_calo_coll;
-  mutable const edm4hep::CalorimeterHitCollection* EE_calo_coll;
-  float dc;
-  float rhoc;
-  float dm;
-  float seed_dc = -1;
-  int pointsPerBin = 10;
   // Total amount of EE+ and EE- layers (80)
   int maxLayerPerSide = 40;
-
-  // CLUE points
-  mutable clue::CLUECalorimeterHitCollection clue_hit_coll;
-
-  // Handle to read the calo cells and their cellID
-  mutable k4FWCore::DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle{"BarrelInputHits",
-                                                                                 Gaudi::DataHandle::Reader, this};
-  mutable k4FWCore::DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle{"EndcapInputHits",
-                                                                                 Gaudi::DataHandle::Reader, this};
-  k4FWCore::MetaDataHandle<std::string> cellIDHandle{EB_calo_handle, edm4hep::labels::CellIDEncoding,
-                                                     Gaudi::DataHandle::Reader};
 
   // CLUE Algo
   mutable std::optional<clue::Clusterer<nDim>> clueAlgo_;
   mutable std::optional<clue::Queue> queue_;
 
-  // Collections in output
-  mutable k4FWCore::DataHandle<edm4hep::CalorimeterHitCollection> caloHitsHandle{"CLUEClustersAsHits",
-                                                                                 Gaudi::DataHandle::Writer, this};
-  mutable k4FWCore::DataHandle<edm4hep::ClusterCollection> clustersHandle{"CLUEClusters", Gaudi::DataHandle::Writer,
-                                                                          this};
+  Gaudi::Property<float> dc{this, "CriticalDistance", 1.0f, "Distance used to compute the local density of a point"};
+
+  Gaudi::Property<float> rhoc{this, "MinLocalDensity", 1.0f,
+                              "Minimum energy density of a point to not be considered an outlier"};
+
+  Gaudi::Property<float> dm{this, "FollowerDistance", 1.0f,
+                            "Critical distance for follower search and cluster expansion"};
+
+  Gaudi::Property<float> seed_dc{this, "SeedCriticalDistance", -1.0f,
+                                 "Distance used to compute the local density of a point"};
+
+  Gaudi::Property<int> pointsPerBin{this, "PointsPerBin", 10,
+                                    "Average number of points that are to be found inside a bin"};
 };
 
 #endif
