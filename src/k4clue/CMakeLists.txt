@@ -53,7 +53,7 @@ target_compile_options(ClueGaudiAlgorithmWrapper PUBLIC
 ExternalData_Add_Test(k4clue_tests NAME gaudiWrapper
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   COMMAND bash -c "k4run ${PROJECT_SOURCE_DIR}/gaudi_opts/clue_gaudi_wrapper.py \
-    --EventDataSvc.input DATA{${PROJECT_SOURCE_DIR}/test/input_files/20240905_gammaFromVertex_10GeV_uniform_10events_reco_edm4hep.root} \
+    --IOSvc.Input DATA{${PROJECT_SOURCE_DIR}/test/input_files/20240905_gammaFromVertex_10GeV_uniform_10events_reco_edm4hep.root} \
     --ClueGaudiAlgorithmWrapperName.OutputLevel 2 --CLUEAnalysis.OutputLevel 2")
 
 set_tests_properties(gaudiWrapper PROPERTIES FAIL_REGULAR_EXPRESSION "ERROR;Failed")
