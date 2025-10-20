@@ -326,8 +326,7 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const CaloHitColl& EB_calo_c
                                                     const CaloHitColl& EE_calo_coll) const {
 
   // Get collection metadata cellID which is valid for both EB and EE
-  const std::string cellIDstr = k4FWCore::getParameter<std::string>("ECalBarrel__CellIDEncoding", this).value_or("");
-  std::cout << "cellIDstr " << cellIDstr << std::endl;
+  const std::string cellIDstr = k4FWCore::getParameter<std::string>(podio::collMetadataParamName("ECalBarrelCollection", edm4hep::labels::CellIDEncoding), this).value_or("");
   const BitFieldCoder bf(cellIDstr);
 
   // Output CLUE clusters
@@ -405,8 +404,9 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const CaloHitColl& EB_calo_c
   transformClustersInCaloHits(finalClusters, finalCaloHits);
   info() << "Saved " << finalCaloHits.size() << " clusters as calo hits" << endmsg;
 
-  // To be fixed in the future:
   // Add CellIDEncodingString to CLUE clusters and CLUE calo hits
+  k4FWCore::putParameter("CLUEClustersAsHits__CellIDEncoding", cellIDstr, this);
+  k4FWCore::putParameter("CLUEClusters__CellIDEncoding", cellIDstr, this);
 
   // Cleaning
   clue_hit_coll.vect.clear();
