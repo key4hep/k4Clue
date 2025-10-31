@@ -41,7 +41,7 @@ k4run clicRec_e4h_input_gun_clue.py --EventDataSvc.input gamma_10GeV_edm4hep.roo
 
 #Run CLUE standalone
 cp ../../k4Clue/gaudi_opts/clue_gaudi_wrapper.py .
-k4run clue_gaudi_wrapper.py --EventDataSvc.input my_output.root
+k4run clue_gaudi_wrapper.py --IOSvc.Input my_output.root
 ```
 
 In case you have changed something from the original repo and you have rebuild the package, you should use `source build/k4clueenv.sh` to make `k4run` aware of your new changes.

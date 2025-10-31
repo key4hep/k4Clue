@@ -19,10 +19,9 @@
 #ifndef CLUE_HISTOGRAMS_H
 #define CLUE_HISTOGRAMS_H
 
-#include "Gaudi/Algorithm.h"
+#include "Gaudi/Property.h"
 #include "GaudiKernel/ITHistSvc.h"
-#include "k4FWCore/DataHandle.h"
-#include "k4FWCore/MetaDataHandle.h"
+#include "k4FWCore/Consumer.h"
 
 #include "CLUECalorimeterHit.h"
 #include <edm4hep/CaloHitSimCaloHitLinkCollection.h>
@@ -33,43 +32,45 @@
 #include <edm4hep/EventHeaderCollection.h>
 #include <edm4hep/MCParticleCollection.h>
 
-#include "TGraph.h"
 #include "TH1F.h"
+#include "TTree.h"
 
-class CLUENtuplizer : public Gaudi::Algorithm {
+using CaloHitColl = edm4hep::CalorimeterHitCollection;
+using ClueHitColl = clue::CLUECalorimeterHitCollection;
+using ClusterColl = edm4hep::ClusterCollection;
+using MCPartColl = edm4hep::MCParticleCollection;
+using ClusterMCLinkColl = edm4hep::ClusterMCParticleLinkCollection;
 
-public:
-  /// Constructor.
-  CLUENtuplizer(const std::string& name, ISvcLocator* svcLoc);
+struct CLUENtuplizer final
+    : k4FWCore::Consumer<void(const CaloHitColl& EB_calo_coll, const CaloHitColl& EE_calo_coll,
+                              const ClusterColl& cluster_coll, /*const ClueHitColl& clue_calo_coll,*/
+                              const edm4hep::EventHeaderCollection& ev_handle, const MCPartColl& mcp_handle,
+                              const ClusterMCLinkColl& clustersLink_handle)> {
+  CLUENtuplizer(const std::string& name, ISvcLocator* svcLoc)
+      : Consumer(name, svcLoc,
+                 {KeyValues("BarrelCaloHitsCollection", {"ECALBarrel"}),
+                  KeyValues("EndcapCaloHitsCollection", {"ECALEndcap"}), KeyValues("OutputClusters", {"CLUEClusters"}),
+                  // KeyValues("OutputClustersAsHits", {"CLUEClustersAsHits"}),
+                  KeyValues("EventHeader", {"EventHeader"}), KeyValues("MCParticles", {"MCParticles"}),
+                  KeyValues("ClusterLinks", {"ClusterMCTruthLink"})}) {}
+
   /// Initialize.
-  virtual StatusCode initialize();
+  StatusCode initialize() override;
   /// Initialize tree.
   void initializeTrees();
   /// Clean tree.
   void cleanTrees() const;
-  /// Execute.
-  virtual StatusCode execute(const EventContext&) const;
   /// Finalize.
-  virtual StatusCode finalize();
+  StatusCode finalize() override;
+
+  void operator()(const CaloHitColl& EB_calo_coll, const CaloHitColl& EE_calo_coll,
+                  const ClusterColl& cluster_coll, /*const ClueHitColl& clue_calo_coll,*/
+                  const edm4hep::EventHeaderCollection& evs, const MCPartColl& mcps,
+                  const ClusterMCLinkColl& linksClus) const override;
 
 private:
-  mutable const clue::CLUECalorimeterHitCollection* clue_calo_coll;
-  std::string ClusterCollectionName;
-  mutable const edm4hep::ClusterCollection* cluster_coll;
-  mutable const edm4hep::CalorimeterHitCollection* EB_calo_coll;
-  mutable const edm4hep::CalorimeterHitCollection* EE_calo_coll;
-  mutable k4FWCore::DataHandle<edm4hep::CalorimeterHitCollection> EB_calo_handle{"BarrelInputHits",
-                                                                                 Gaudi::DataHandle::Reader, this};
-  mutable k4FWCore::DataHandle<edm4hep::CalorimeterHitCollection> EE_calo_handle{"EndcapInputHits",
-                                                                                 Gaudi::DataHandle::Reader, this};
-  mutable k4FWCore::DataHandle<edm4hep::EventHeaderCollection> ev_handle{"EventHeader", Gaudi::DataHandle::Reader,
-                                                                         this};
-  mutable k4FWCore::DataHandle<edm4hep::MCParticleCollection> mcp_handle{"MCParticles", Gaudi::DataHandle::Reader,
-                                                                         this};
-  mutable k4FWCore::DataHandle<edm4hep::ClusterMCParticleLinkCollection> clustersLink_handle{"ClusterMCTruthLink",
-                                                                                     Gaudi::DataHandle::Reader, this};
-  k4FWCore::MetaDataHandle<std::string> cellIDHandle{EB_calo_handle, edm4hep::labels::CellIDEncoding,
-                                                     Gaudi::DataHandle::Reader};
+  Gaudi::Property<std::string> ClusterCollectionName{this, "ClusterCollection", "CLUEClusters",
+                                                     "Name of the cluster collection to save"};
 
   SmartIF<ITHistSvc> m_ths; ///< THistogram service
 

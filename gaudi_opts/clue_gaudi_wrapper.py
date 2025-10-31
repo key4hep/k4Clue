@@ -17,55 +17,32 @@
 # limitations under the License.
 #
 from Gaudi.Configuration import WARNING, DEBUG
+from Configurables import ClueGaudiAlgorithmWrapper3D, CLUENtuplizer, THistSvc, EventDataSvc
+from k4FWCore import ApplicationMgr, IOSvc
 
-from Configurables import k4DataSvc, MarlinProcessorWrapper
-
-from Configurables import PodioInput
-from Configurables import ClueGaudiAlgorithmWrapper3D
-from Configurables import CLUENtuplizer
-from Configurables import THistSvc
-from Configurables import PodioOutput
-from Configurables import ApplicationMgr
-
-algList = []
-
-evtsvc = k4DataSvc('EventDataSvc')
-# evtsvc.input =
-
-inp = PodioInput('InputReader')
-inp.collections = [
-  'EventHeader',
-  'MCParticles',
-  'ECALBarrel',
-  'ECALEndcap',
-#  'CalohitMCTruthLink',
-]
-inp.OutputLevel = WARNING
-
-MyAIDAProcessor = MarlinProcessorWrapper("MyAIDAProcessor")
-MyAIDAProcessor.OutputLevel = WARNING
-MyAIDAProcessor.ProcessorType = "AIDAProcessor"
-MyAIDAProcessor.Parameters = {"FileName": ["histograms_clue_standalone"],
-                    "FileType": ["root"],
-                    "Compress": ["1"],
-                    }
+iosvc = IOSvc()
+# iosvc.Input =
+iosvc.Output = "clueReco.root"
 
 dc = 30
 rho = 0.1
 dm = 120
-MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper3D("ClueGaudiAlgorithmWrapperName")
-MyClueGaudiAlgorithmWrapper.BarrelCaloHitsCollection = "ECALBarrel"
-MyClueGaudiAlgorithmWrapper.EndcapCaloHitsCollection = "ECALEndcap"
-MyClueGaudiAlgorithmWrapper.CriticalDistance = dc
-MyClueGaudiAlgorithmWrapper.MinLocalDensity = rho
-MyClueGaudiAlgorithmWrapper.FollowerDistance = dm
-MyClueGaudiAlgorithmWrapper.OutputLevel = DEBUG
 
-MyCLUENtuplizer = CLUENtuplizer("CLUEAnalysis")
-MyCLUENtuplizer.ClusterCollection = "CLUEClusters"
-MyCLUENtuplizer.BarrelCaloHitsCollection = "ECALBarrel"
-MyCLUENtuplizer.EndcapCaloHitsCollection = "ECALEndcap"
-MyCLUENtuplizer.OutputLevel = WARNING
+MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper3D("ClueGaudiAlgorithmWrapperName",
+    BarrelCaloHitsCollection = ["ECALBarrel"],
+    EndcapCaloHitsCollection = ["ECALEndcap"],
+    CriticalDistance = dc,
+    MinLocalDensity = rho,
+    FollowerDistance = dm,
+    OutputLevel = DEBUG
+)
+
+MyCLUENtuplizer = CLUENtuplizer("CLUEAnalysis",
+    ClusterCollection = "CLUEClusters",
+    BarrelCaloHitsCollection = ["ECALBarrel"],
+    EndcapCaloHitsCollection = ["ECALEndcap"],
+    OutputLevel = WARNING
+)
 
 str_params = str(rho).replace(".","p") + "_" + str(dc).replace(".","p") + "_" + str(dm).replace(".","p")
 filename = "rec DATAFILE='k4clue_analysis_output_3D_"+str_params+".root' TYP='ROOT' OPT='RECREATE'"
@@ -75,19 +52,9 @@ THistSvc().PrintAll = False
 THistSvc().AutoSave = True
 THistSvc().AutoFlush = True
 
-out = PodioOutput("out")
-out.filename = "my_output_clue_standalone.root"
-out.outputCommands = ["keep *"]
-
-algList.append(inp)
-algList.append(MyAIDAProcessor)
-algList.append(MyClueGaudiAlgorithmWrapper)
-#algList.append(MyCLUENtuplizer)
-algList.append(out)
-
-ApplicationMgr( TopAlg = algList,
+ApplicationMgr( TopAlg = [MyClueGaudiAlgorithmWrapper, MyCLUENtuplizer],
                 EvtSel = 'NONE',
                 EvtMax   = 3,
-                ExtSvc = [evtsvc],
+                ExtSvc = [EventDataSvc("EventDataSvc")],
                 OutputLevel=WARNING
               )
