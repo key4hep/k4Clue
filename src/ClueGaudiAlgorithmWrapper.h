@@ -74,25 +74,25 @@ struct ClueGaudiAlgorithmWrapper final
 
 private:
   // Total amount of EE+ and EE- layers (80)
-  int maxLayerPerSide = 40;
+  int m_maxLayerPerSide = 40;
 
   // CLUE Algo
-  mutable std::optional<clue::Clusterer<nDim>> clueAlgo_;
-  mutable std::optional<clue::Queue> queue_;
+  mutable std::optional<clue::Clusterer<nDim>> m_clueAlgo;
+  mutable std::optional<clue::Queue> m_queue;
 
-  Gaudi::Property<float> dc{this, "CriticalDistance", 1.0f, "Distance used to compute the local density of a point"};
+  Gaudi::Property<float> m_dc{this, "CriticalDistance", 1.0f, "Distance used to compute the local density of a point"};
 
-  Gaudi::Property<float> rhoc{this, "MinLocalDensity", 1.0f,
-                              "Minimum energy density of a point to not be considered an outlier"};
+  Gaudi::Property<float> m_rhoc{this, "MinLocalDensity", 1.0f,
+                                "Minimum energy density of a point to not be considered an outlier"};
 
-  Gaudi::Property<float> dm{this, "FollowerDistance", 1.0f,
-                            "Critical distance for follower search and cluster expansion"};
+  Gaudi::Property<float> m_dm{this, "FollowerDistance", 1.0f,
+                              "Critical distance for follower search and cluster expansion"};
 
-  Gaudi::Property<float> seed_dc{this, "SeedCriticalDistance", -1.0f,
-                                 "Distance used to compute the local density of a point"};
+  Gaudi::Property<float> m_seed_dc{this, "SeedCriticalDistance", -1.0f,
+                                   "Distance used to compute the local density of a point"};
 
-  Gaudi::Property<int> pointsPerBin{this, "PointsPerBin", 10,
-                                    "Average number of points that are to be found inside a bin"};
+  Gaudi::Property<int> m_pointsPerBin{this, "PointsPerBin", 10,
+                                      "Average number of points that are to be found inside a bin"};
 };
 
 #endif

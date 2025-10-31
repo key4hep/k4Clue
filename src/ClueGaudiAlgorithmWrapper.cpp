@@ -45,10 +45,10 @@ StatusCode ClueGaudiAlgorithmWrapper<nDim>::initialize() {
 
   auto const platform = alpaka::Platform<Acc>{};
   Dev const devAcc(alpaka::getDevByIdx(platform, 0u));
-  queue_ = std::make_optional<Queue>(devAcc);
+  m_queue = std::make_optional<Queue>(devAcc);
 
   auto start = std::chrono::high_resolution_clock::now();
-  clueAlgo_ = std::make_optional<clue::Clusterer<nDim>>(*queue_, dc, rhoc, dm, seed_dc, pointsPerBin);
+  m_clueAlgo = std::make_optional<clue::Clusterer<nDim>>(*m_queue, m_dc, m_rhoc, m_dm, m_seed_dc, m_pointsPerBin);
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
   info() << "ClueGaudiAlgorithmWrapper: Set up time: " << elapsed.count() * 1000 << " ms" << endmsg;
@@ -87,16 +87,14 @@ template <uint8_t nDim>
 void ClueGaudiAlgorithmWrapper<nDim>::printTimingReport(std::vector<float>& vals, int repeats,
                                                         const std::string label) {
   int precision = 2;
-  float mean = 0.f;
-  float sigma = 0.f;
   exclude_stats_outliers(vals);
-  std::tie(mean, sigma) = stats(vals);
+  auto [mean, sigma] = stats(vals);
   std::cout << label << " 1 outliers(" << repeats << "/" << vals.size() << ") " << std::fixed
             << std::setprecision(precision) << mean << " +/- " << sigma << " [ms]" << std::endl;
   exclude_stats_outliers(vals);
-  std::tie(mean, sigma) = stats(vals);
+  auto [mean2, sigma2] = stats(vals);
   std::cout << label << " 2 outliers(" << repeats << "/" << vals.size() << ") " << std::fixed
-            << std::setprecision(precision) << mean << " +/- " << sigma << " [ms]" << std::endl;
+            << std::setprecision(precision) << mean2 << " +/- " << sigma2 << " [ms]" << std::endl;
 }
 
 template <uint8_t nDim>
@@ -122,7 +120,7 @@ ClueGaudiAlgorithmWrapper<nDim>::fillCLUEPoints(const std::vector<clue::CLUECalo
   }
 
   // Construct and return the PointsSoA object
-  return clue::PointsHost<nDim>(*queue_, nPoints, floatBuffer, intBuffer);
+  return clue::PointsHost<nDim>(*m_queue, nPoints, floatBuffer, intBuffer);
 }
 
 template <uint8_t nDim>
@@ -138,17 +136,17 @@ std::vector<std::vector<int>> ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vect
   auto cluePoints = fillCLUEPoints(clue_hits, floatBuffer.data(), intBuffer.data(), isBarrel);
 
   // Run CLUE
-  info() << "Running CLUEAlgo on device " << alpaka::getName(alpaka::getDev(*queue_)) << endmsg;
+  info() << "Running CLUEAlgo on device " << alpaka::getName(alpaka::getDev(*m_queue)) << endmsg;
 
   // measure excution time of make_clusters
   clue::FlatKernel kernel(0.5f);
   auto start = std::chrono::high_resolution_clock::now();
-  clueAlgo_->make_clusters(*queue_, cluePoints, kernel, 512);
+  m_clueAlgo->make_clusters(*m_queue, cluePoints, kernel, 512);
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
   info() << "ClueGaudiAlgorithmWrapper: Elapsed time: " << elapsed.count() * 1000 << " ms" << endmsg;
 
-  clueClusters = clueAlgo_->getClusters(cluePoints);
+  clueClusters = m_clueAlgo->getClusters(cluePoints);
 
   info() << "Finished running CLUE algorithm" << endmsg;
 
@@ -218,7 +216,7 @@ void ClueGaudiAlgorithmWrapper<2>::fillFinalClusters(std::vector<clue::CLUECalor
                                                      ClusterColl& clusters, const CaloHitColl& EB_calo_coll,
                                                      const CaloHitColl& EE_calo_coll) const {
   for (auto cl : clusterMap) {
-    std::vector<std::vector<int>> clustersLayer(maxLayerPerSide * 2);
+    std::vector<std::vector<int>> clustersLayer(m_maxLayerPerSide * 2);
     for (auto index : cl) {
       clustersLayer[clue_hits[index].getLayer()].push_back(index);
     }
@@ -326,7 +324,10 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const CaloHitColl& EB_calo_c
                                                     const CaloHitColl& EE_calo_coll) const {
 
   // Get collection metadata cellID which is valid for both EB and EE
-  const std::string cellIDstr = k4FWCore::getParameter<std::string>(podio::collMetadataParamName("ECalBarrelCollection", edm4hep::labels::CellIDEncoding), this).value_or("");
+  const std::string cellIDstr =
+      k4FWCore::getParameter<std::string>(
+          podio::collMetadataParamName("ECalBarrelCollection", edm4hep::labels::CellIDEncoding), this)
+          .value_or("");
   const BitFieldCoder bf(cellIDstr);
 
   // Output CLUE clusters
@@ -373,7 +374,7 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const CaloHitColl& EB_calo_c
     } else {
       clue_hit_coll_endcap.vect.push_back(
           clue::CLUECalorimeterHit(calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::endcap,
-                                   bf.get(calo_hit.getCellID(), "layer") + maxLayerPerSide));
+                                   bf.get(calo_hit.getCellID(), "layer") + m_maxLayerPerSide));
     }
   }
 
