@@ -93,6 +93,9 @@ private:
 
   Gaudi::Property<int> m_pointsPerBin{this, "PointsPerBin", 10,
                                       "Average number of points that are to be found inside a bin"};
+
+  Gaudi::Property<std::string> m_CLUECaloHitCollName{this, "CLUEHitCollName", "CLUECalorimeterHitCollection",
+                                                     "Name of the collection of CLUE calorimeter hits"};
 };
 
 #endif

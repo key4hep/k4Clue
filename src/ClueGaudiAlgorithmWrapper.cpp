@@ -394,9 +394,9 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const CaloHitColl& EB_calo_c
 
   // Save CLUE calo hits
   auto pCHV = std::make_unique<clue::CLUECalorimeterHitCollection>(clue_hit_coll);
-  const StatusCode scStatusV = eventSvc()->registerObject("/Event/CLUECalorimeterHitCollection", pCHV.release());
+  const StatusCode scStatusV = eventSvc()->registerObject("/Event/" + m_CLUECaloHitCollName, pCHV.release());
   if (scStatusV.isFailure()) {
-    throw std::runtime_error("Failed to register CLUECalorimeterHitCollection");
+    throw std::runtime_error("Failed to register " + m_CLUECaloHitCollName);
   }
   info() << "Saved " << clue_hit_coll.vect.size() << " CLUE calo hits in total. " << endmsg;
 
@@ -406,8 +406,8 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const CaloHitColl& EB_calo_c
   info() << "Saved " << finalCaloHits.size() << " clusters as calo hits" << endmsg;
 
   // Add CellIDEncodingString to CLUE clusters and CLUE calo hits
-  k4FWCore::putParameter("CLUEClustersAsHits__CellIDEncoding", cellIDstr, this);
-  k4FWCore::putParameter("CLUEClusters__CellIDEncoding", cellIDstr, this);
+  for (auto i = 0u; i < outputLocationsSize(); ++i)
+    k4FWCore::putParameter(outputLocations(i)[0] + "__CellIDEncoding", cellIDstr, this);
 
   // Cleaning
   clue_hit_coll.vect.clear();

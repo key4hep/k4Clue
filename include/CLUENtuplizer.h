@@ -66,6 +66,8 @@ struct CLUENtuplizer final
                   const ClusterMCLinkColl& linksClus) const override;
 
 private:
+  Gaudi::Property<std::string> m_CLUECaloHitCollName{this, "CLUEHitCollName", "CLUECalorimeterHitCollection",
+                                                     "Name of the collection of CLUE calorimeter hits"};
   SmartIF<ITHistSvc> m_ths; ///< THistogram service
 
   mutable TTree* t_hits{nullptr};

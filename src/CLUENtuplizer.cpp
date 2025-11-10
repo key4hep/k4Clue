@@ -92,7 +92,7 @@ void CLUENtuplizer::operator()(const CaloHitColl& EB_calo_coll, const CaloHitCol
   info() << "MC Particles = " << mcps.size() << " (of which primaries = " << mcps_primary << ")" << endmsg;
 
   DataObject* pStatus = nullptr;
-  StatusCode scStatus = eventSvc()->retrieveObject("/Event/CLUECalorimeterHitCollection", pStatus);
+  StatusCode scStatus = eventSvc()->retrieveObject("/Event/"+m_CLUECaloHitCollName, pStatus);
   clue::CLUECalorimeterHitCollection* clue_calo_coll;
   if (scStatus.isSuccess()) {
     clue_calo_coll = static_cast<clue::CLUECalorimeterHitCollection*>(pStatus);
