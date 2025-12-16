@@ -340,7 +340,7 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const CaloHitColl& EB_calo_c
 
   debug() << "ClueGaudiAlgorithmWrapper: Total number of calo hits: " << int(EB_calo_coll.size() + EE_calo_coll.size())
           << endmsg;
-  info() << "Processing " << EB_calo_coll.size() << " caloHits in ECAL Barrel." << endmsg;
+  info() << "Processing " << EB_calo_coll.size() << " caloHits in the barrel." << endmsg;
 
   // Fill CLUECaloHits in the barrel
   for (const auto& calo_hit : EB_calo_coll) {
@@ -354,17 +354,17 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const CaloHitColl& EB_calo_c
   // Run CLUE in the barrel
   if (!clue_hit_coll_barrel.vect.empty()) {
     auto clueClustersBarrel = runAlgo(clue_hit_coll_barrel.vect);
-    info() << "Produced " << clueClustersBarrel.size() << " clusters in ECAL Barrel" << endmsg;
+    info() << "Produced " << clueClustersBarrel.size() << " clusters in the barrel" << endmsg;
 
     clue_hit_coll.vect.insert(clue_hit_coll.vect.end(), clue_hit_coll_barrel.vect.begin(),
                               clue_hit_coll_barrel.vect.end());
 
     fillFinalClusters(clue_hit_coll_barrel.vect, clueClustersBarrel, finalClusters, EB_calo_coll, EE_calo_coll);
-    debug() << "Saved " << finalClusters.size() << " clusters using ECAL Barrel hits" << endmsg;
+    debug() << "Saved " << finalClusters.size() << " clusters using barrel hits" << endmsg;
   }
   uint32_t barrelOffset = finalClusters.size();
 
-  info() << "Processing " << EE_calo_coll.size() << " caloHits in ECAL Endcap." << endmsg;
+  info() << "Processing " << EE_calo_coll.size() << " caloHits in the endcap." << endmsg;
 
   // Fill CLUECaloHits in the endcap
   for (const auto& calo_hit : EE_calo_coll) {
@@ -381,13 +381,13 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const CaloHitColl& EB_calo_c
   // Run CLUE in the endcap
   if (!clue_hit_coll_endcap.vect.empty()) {
     auto clueClustersEndcap = runAlgo(clue_hit_coll_endcap.vect, false, barrelOffset);
-    info() << "Produced " << clueClustersEndcap.size() << " clusters in ECAL Endcap" << endmsg;
+    info() << "Produced " << clueClustersEndcap.size() << " clusters in the endcap" << endmsg;
 
     clue_hit_coll.vect.insert(clue_hit_coll.vect.end(), clue_hit_coll_endcap.vect.begin(),
                               clue_hit_coll_endcap.vect.end());
 
     fillFinalClusters(clue_hit_coll_endcap.vect, clueClustersEndcap, finalClusters, EB_calo_coll, EE_calo_coll);
-    debug() << "Saved " << finalClusters.size() - barrelOffset << " clusters using ECAL Endcap hits" << endmsg;
+    debug() << "Saved " << finalClusters.size() - barrelOffset << " clusters using endcap hits" << endmsg;
   }
 
   info() << "Saved " << finalClusters.size() << " CLUE clusters in total." << endmsg;
