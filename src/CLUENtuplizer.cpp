@@ -28,6 +28,8 @@ using namespace DDSegmentation;
 DECLARE_COMPONENT(CLUENtuplizer)
 
 StatusCode CLUENtuplizer::initialize() {
+  const std::string ClusterCollectionName = inputLocations("InputClusters")[0];
+
   if (Gaudi::Algorithm::initialize().isFailure())
     return StatusCode::FAILURE;
 
@@ -43,7 +45,7 @@ StatusCode CLUENtuplizer::initialize() {
     return StatusCode::FAILURE;
   }
 
-  t_clusters = new TTree(TString((std::string)ClusterCollectionName), "Clusters ntuple");
+  t_clusters = new TTree(TString(ClusterCollectionName), "Clusters ntuple");
   if (m_ths->regTree("/rec/" + ClusterCollectionName, t_clusters).isFailure()) {
     error() << "Couldn't register clusters tree" << endmsg;
     return StatusCode::FAILURE;
@@ -74,11 +76,11 @@ StatusCode CLUENtuplizer::initialize() {
 }
 
 void CLUENtuplizer::operator()(const CaloHitColl& EB_calo_coll, const CaloHitColl& EE_calo_coll,
-                               const ClusterColl& cluster_coll, /*const ClueHitColl& clue_calo_coll,*/
+                               const ClusterColl& cluster_coll,
                                const edm4hep::EventHeaderCollection& evs, const MCPartColl& mcps,
                                const ClusterMCLinkColl& linksClus) const {
+  const std::string ClusterCollectionName = inputLocations("InputClusters")[0];
   evNum = evs[0].getEventNumber();
-  // evNum = 0;
   info() << "Event number = " << evNum << endmsg;
 
   int mcps_primary = 0;
@@ -90,7 +92,7 @@ void CLUENtuplizer::operator()(const CaloHitColl& EB_calo_coll, const CaloHitCol
   info() << "MC Particles = " << mcps.size() << " (of which primaries = " << mcps_primary << ")" << endmsg;
 
   DataObject* pStatus = nullptr;
-  StatusCode scStatus = eventSvc()->retrieveObject("/Event/CLUECalorimeterHitCollection", pStatus);
+  StatusCode scStatus = eventSvc()->retrieveObject("/Event/"+m_CLUECaloHitCollName, pStatus);
   clue::CLUECalorimeterHitCollection* clue_calo_coll;
   if (scStatus.isSuccess()) {
     clue_calo_coll = static_cast<clue::CLUECalorimeterHitCollection*>(pStatus);
@@ -98,7 +100,7 @@ void CLUENtuplizer::operator()(const CaloHitColl& EB_calo_coll, const CaloHitCol
     throw std::runtime_error("CLUE hits collection not available");
   }
 
-  debug() << "ECAL Calorimeter Hits Size = " << EB_calo_coll.size() + EE_calo_coll.size() << endmsg;
+  debug() << "All calorimeter hits Size = " << EB_calo_coll.size() + EE_calo_coll.size() << endmsg;
 
   // Get collection metadata cellID which is valid for both EB, EE and Clusters
   const std::string cellIDstr = k4FWCore::getParameter<std::string>(podio::collMetadataParamName("ECalBarrelCollection", edm4hep::labels::CellIDEncoding), this).value_or("");
