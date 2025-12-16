@@ -100,7 +100,7 @@ void CLUENtuplizer::operator()(const CaloHitColl& EB_calo_coll, const CaloHitCol
     throw std::runtime_error("CLUE hits collection not available");
   }
 
-  debug() << "ECAL Calorimeter Hits Size = " << EB_calo_coll.size() + EE_calo_coll.size() << endmsg;
+  debug() << "All calorimeter hits Size = " << EB_calo_coll.size() + EE_calo_coll.size() << endmsg;
 
   // Get collection metadata cellID which is valid for both EB, EE and Clusters
   const std::string cellIDstr = k4FWCore::getParameter<std::string>(podio::collMetadataParamName("ECalBarrelCollection", edm4hep::labels::CellIDEncoding), this).value_or("");
