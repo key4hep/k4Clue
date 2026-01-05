@@ -178,6 +178,7 @@ void ClueGaudiAlgorithmWrapper<nDim>::fillFinalClusters(std::vector<clue::CLUECa
                                                         ClusterColl& clusters, const CaloHitColl& EB_calo_coll,
                                                         const CaloHitColl& EE_calo_coll) const {
   for (auto cl : clusterMap) {
+    if (cl.empty()) continue;
     auto cluster = clusters.create();
     unsigned int maxEnergyIndex = 0;
     float maxEnergyValue = 0.f;
