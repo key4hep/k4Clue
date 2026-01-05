@@ -51,7 +51,8 @@ StatusCode ClueGaudiAlgorithmWrapper<nDim>::initialize() {
   m_clueAlgo = std::make_optional<clue::Clusterer<nDim>>(*m_queue, m_dc, m_rhoc, m_dm, m_seed_dc, m_pointsPerBin);
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
-  info() << "ClueGaudiAlgorithmWrapper: Set up time: " << elapsed.count() * 1000 << " ms" << endmsg;
+  debug() << "ClueGaudiAlgorithmWrapper: Set up time: " << elapsed.count() * 1000 << " ms" << endmsg;
+  info() << "CLUEAlgo will run on device " << alpaka::getName(devAcc) << endmsg;
 
   return Algorithm::initialize();
 }
@@ -136,7 +137,7 @@ std::vector<std::vector<int>> ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vect
   auto cluePoints = fillCLUEPoints(clue_hits, floatBuffer.data(), intBuffer.data(), isBarrel);
 
   // Run CLUE
-  info() << "Running CLUEAlgo on device " << alpaka::getName(alpaka::getDev(*m_queue)) << endmsg;
+  debug() << "Running CLUEAlgo on device " << alpaka::getName(alpaka::getDev(*m_queue)) << endmsg;
 
   // measure excution time of make_clusters
   clue::FlatKernel kernel(0.5f);
@@ -148,7 +149,7 @@ std::vector<std::vector<int>> ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vect
 
   clueClusters = m_clueAlgo->getClusters(cluePoints);
 
-  info() << "Finished running CLUE algorithm" << endmsg;
+  debug() << "Finished running CLUE algorithm" << endmsg;
 
   // Including CLUE info in cluePoints
   for (int32_t i = 0; i < cluePoints.size(); i++) {
@@ -201,7 +202,7 @@ void ClueGaudiAlgorithmWrapper<nDim>::fillFinalClusters(std::vector<clue::CLUECa
                     sumEnergyErrSquared += pow(elem.getEnergyError() / (1. * elem.getEnergy()), 2);
                   });
     cluster.setEnergy(energy);
-    cluster.setEnergyError(sqrt(sumEnergyErrSquared));
+    cluster.setEnergyError(std::sqrt(sumEnergyErrSquared));
 
     calculatePosition(&cluster);
 
@@ -338,9 +339,9 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const CaloHitColl& EB_calo_c
   clue::CLUECalorimeterHitCollection clue_hit_coll_barrel;
   clue::CLUECalorimeterHitCollection clue_hit_coll_endcap;
 
-  debug() << "ClueGaudiAlgorithmWrapper: Total number of calo hits: " << int(EB_calo_coll.size() + EE_calo_coll.size())
-          << endmsg;
-  info() << "Processing " << EB_calo_coll.size() << " caloHits in the barrel." << endmsg;
+  info() << "ClueGaudiAlgorithmWrapper: Total number of calo hits: " << int(EB_calo_coll.size() + EE_calo_coll.size())
+         << " (" << EB_calo_coll.size() << " in the barrel and " << EE_calo_coll.size() << " in the endcap)" << endmsg;
+  debug() << "Processing " << EB_calo_coll.size() << " caloHits in the barrel." << endmsg;
 
   // Fill CLUECaloHits in the barrel
   for (const auto& calo_hit : EB_calo_coll) {
@@ -364,7 +365,7 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const CaloHitColl& EB_calo_c
   }
   uint32_t barrelOffset = finalClusters.size();
 
-  info() << "Processing " << EE_calo_coll.size() << " caloHits in the endcap." << endmsg;
+  debug() << "Processing " << EE_calo_coll.size() << " caloHits in the endcap." << endmsg;
 
   // Fill CLUECaloHits in the endcap
   for (const auto& calo_hit : EE_calo_coll) {
@@ -398,12 +399,12 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const CaloHitColl& EB_calo_c
   if (scStatusV.isFailure()) {
     throw std::runtime_error("Failed to register " + m_CLUECaloHitCollName);
   }
-  info() << "Saved " << clue_hit_coll.vect.size() << " CLUE calo hits in total. " << endmsg;
+  debug() << "Saved " << clue_hit_coll.vect.size() << " CLUE calo hits in total. " << endmsg;
 
   // Save clusters as calo hits and add cellID to them
   auto finalCaloHits = CaloHitColl();
   transformClustersInCaloHits(finalClusters, finalCaloHits);
-  info() << "Saved " << finalCaloHits.size() << " clusters as calo hits" << endmsg;
+  debug() << "Saved " << finalCaloHits.size() << " clusters as calo hits" << endmsg;
 
   // Add CellIDEncodingString to CLUE clusters and CLUE calo hits
   for (auto i = 0u; i < outputLocationsSize(); ++i)

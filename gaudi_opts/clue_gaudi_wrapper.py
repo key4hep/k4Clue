@@ -16,7 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from Gaudi.Configuration import WARNING, DEBUG
+from Gaudi.Configuration import WARNING, INFO
 from Configurables import ClueGaudiAlgorithmWrapper3D, CLUENtuplizer, THistSvc, EventDataSvc
 from k4FWCore import ApplicationMgr, IOSvc
 
@@ -34,7 +34,7 @@ MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper3D("ClueGaudiAlgorithmWra
     CriticalDistance = dc,
     MinLocalDensity = rho,
     FollowerDistance = dm,
-    OutputLevel = DEBUG
+    OutputLevel = INFO
 )
 
 MyCLUENtuplizer = CLUENtuplizer("CLUEAnalysis",
