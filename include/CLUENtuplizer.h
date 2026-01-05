@@ -49,7 +49,7 @@ struct CLUENtuplizer final
       : Consumer(name, svcLoc,
                  {KeyValues("BarrelCaloHitsCollection", {"ECALBarrel"}),
                   KeyValues("EndcapCaloHitsCollection", {"ECALEndcap"}), KeyValues("InputClusters", {"CLUEClusters"}),
-                  KeyValues("EventHeader", {"EventHeader"}), KeyValues("MCParticles", {"MCParticles"}),
+                  KeyValue("EventHeader", "EventHeader"), KeyValue("MCParticles", "MCParticles"),
                   KeyValues("ClusterLinks", {"ClusterMCTruthLink"})}) {}
 
   /// Initialize.

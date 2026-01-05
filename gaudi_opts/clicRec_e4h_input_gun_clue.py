@@ -1790,13 +1790,14 @@ VertexFinderUnconstrained.Parameters = {
 
 from Configurables import ClueGaudiAlgorithmWrapper3D
 
-MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper3D("ClueGaudiAlgorithmWrapperName")
-MyClueGaudiAlgorithmWrapper.OutputLevel = INFO
-MyClueGaudiAlgorithmWrapper.BarrelCaloHitsCollection = "ECALBarrel"
-MyClueGaudiAlgorithmWrapper.EndcapCaloHitsCollection = "ECALEndcap"
-MyClueGaudiAlgorithmWrapper.CriticalDistance = 30
-MyClueGaudiAlgorithmWrapper.MinLocalDensity = 0.1
-MyClueGaudiAlgorithmWrapper.FollowerDistance = 120
+MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper3D("ClueGaudiAlgorithmWrapperName",
+    BarrelCaloHitsCollection = "ECALBarrel",
+    EndcapCaloHitsCollection = "ECALEndcap",
+    CriticalDistance = 30,
+    MinLocalDensity = 0.1,
+    FollowerDistance = 120,
+    OutputLevel = DEBUG
+)
 
 # EDM4hep to LCIO converter
 ClueAlgorithmEDM4hepConv = EDM4hep2LcioTool("MyDDMarlinPandoraEDM4hep2lcioConv")
@@ -1810,11 +1811,11 @@ ClueAlgorithmEDM4hepConv.OutputLevel = DEBUG
 MyDDMarlinPandora.EDM4hep2LcioTool=ClueAlgorithmEDM4hepConv
 
 from Configurables import CLUENtuplizer
-MyCLUENtuplizer = CLUENtuplizer("CLUEAnalysis")
-MyCLUENtuplizer.OutputLevel = DEBUG
-MyCLUENtuplizer.ClusterCollection = "CLUEClusters"
-MyCLUENtuplizer.BarrelCaloHitsCollection = "ECALBarrel"
-MyCLUENtuplizer.EndcapCaloHitsCollection = "ECALEndcap"
+MyCLUENtuplizer = CLUENtuplizer("CLUEAnalysis",
+    BarrelCaloHitsCollection = ["ECALBarrel"],
+    EndcapCaloHitsCollection = ["ECALEndcap"],
+    OutputLevel = WARNING
+)
 
 from Configurables import THistSvc
 THistSvc().Output = ["rec DATAFILE='k4clue_analysis_output.root' TYP='ROOT' OPT='RECREATE'"]

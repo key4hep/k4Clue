@@ -43,12 +43,12 @@ struct ClueGaudiAlgorithmWrapper final
   ClueGaudiAlgorithmWrapper(const std::string& name, ISvcLocator* svcLoc)
       : MultiTransformer(name, svcLoc,
                          {
-                             KeyValues("BarrelCaloHitsCollection", {"ECALBarrel"}),
-                             KeyValues("EndcapCaloHitsCollection", {"ECALEndcap"}),
+                             KeyValue("BarrelCaloHitsCollection", "ECALBarrel"),
+                             KeyValue("EndcapCaloHitsCollection", "ECALEndcap"),
                          },
                          {
-                             KeyValues("OutputClusters", {"CLUEClusters"}),
-                             KeyValues("OutputClustersAsHits", {"CLUEClustersAsHits"}),
+                             KeyValue("OutputClusters", "CLUEClusters"),
+                             KeyValue("OutputClustersAsHits", "CLUEClustersAsHits"),
                          }) {}
 
   retType operator()(const CaloHitColl& EB_calo_coll, const CaloHitColl& EE_calo_coll) const override;
