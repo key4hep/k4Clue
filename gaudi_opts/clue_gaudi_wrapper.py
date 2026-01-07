@@ -16,7 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from Gaudi.Configuration import WARNING, DEBUG
+from Gaudi.Configuration import WARNING, INFO
 from Configurables import ClueGaudiAlgorithmWrapper3D, CLUENtuplizer, THistSvc, EventDataSvc
 from k4FWCore import ApplicationMgr, IOSvc
 
@@ -29,16 +29,15 @@ rho = 0.1
 dm = 120
 
 MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper3D("ClueGaudiAlgorithmWrapperName",
-    BarrelCaloHitsCollection = ["ECALBarrel"],
-    EndcapCaloHitsCollection = ["ECALEndcap"],
+    BarrelCaloHitsCollection = "ECALBarrel",
+    EndcapCaloHitsCollection = "ECALEndcap",
     CriticalDistance = dc,
     MinLocalDensity = rho,
     FollowerDistance = dm,
-    OutputLevel = DEBUG
+    OutputLevel = INFO
 )
 
 MyCLUENtuplizer = CLUENtuplizer("CLUEAnalysis",
-    ClusterCollection = "CLUEClusters",
     BarrelCaloHitsCollection = ["ECALBarrel"],
     EndcapCaloHitsCollection = ["ECALEndcap"],
     OutputLevel = WARNING

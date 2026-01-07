@@ -43,15 +43,13 @@ using ClusterMCLinkColl = edm4hep::ClusterMCParticleLinkCollection;
 
 struct CLUENtuplizer final
     : k4FWCore::Consumer<void(const CaloHitColl& EB_calo_coll, const CaloHitColl& EE_calo_coll,
-                              const ClusterColl& cluster_coll, /*const ClueHitColl& clue_calo_coll,*/
-                              const edm4hep::EventHeaderCollection& ev_handle, const MCPartColl& mcp_handle,
-                              const ClusterMCLinkColl& clustersLink_handle)> {
+                              const ClusterColl& cluster_coll, const edm4hep::EventHeaderCollection& ev_handle,
+                              const MCPartColl& mcp_handle, const ClusterMCLinkColl& clustersLink_handle)> {
   CLUENtuplizer(const std::string& name, ISvcLocator* svcLoc)
       : Consumer(name, svcLoc,
                  {KeyValues("BarrelCaloHitsCollection", {"ECALBarrel"}),
-                  KeyValues("EndcapCaloHitsCollection", {"ECALEndcap"}), KeyValues("OutputClusters", {"CLUEClusters"}),
-                  // KeyValues("OutputClustersAsHits", {"CLUEClustersAsHits"}),
-                  KeyValues("EventHeader", {"EventHeader"}), KeyValues("MCParticles", {"MCParticles"}),
+                  KeyValues("EndcapCaloHitsCollection", {"ECALEndcap"}), KeyValues("InputClusters", {"CLUEClusters"}),
+                  KeyValue("EventHeader", "EventHeader"), KeyValue("MCParticles", "MCParticles"),
                   KeyValues("ClusterLinks", {"ClusterMCTruthLink"})}) {}
 
   /// Initialize.
@@ -63,15 +61,13 @@ struct CLUENtuplizer final
   /// Finalize.
   StatusCode finalize() override;
 
-  void operator()(const CaloHitColl& EB_calo_coll, const CaloHitColl& EE_calo_coll,
-                  const ClusterColl& cluster_coll, /*const ClueHitColl& clue_calo_coll,*/
+  void operator()(const CaloHitColl& EB_calo_coll, const CaloHitColl& EE_calo_coll, const ClusterColl& cluster_coll,
                   const edm4hep::EventHeaderCollection& evs, const MCPartColl& mcps,
                   const ClusterMCLinkColl& linksClus) const override;
 
 private:
-  Gaudi::Property<std::string> ClusterCollectionName{this, "ClusterCollection", "CLUEClusters",
-                                                     "Name of the cluster collection to save"};
-
+  Gaudi::Property<std::string> m_CLUECaloHitCollName{this, "CLUEHitCollName", "CLUECalorimeterHitCollection",
+                                                     "Name of the collection of CLUE calorimeter hits"};
   SmartIF<ITHistSvc> m_ths; ///< THistogram service
 
   mutable TTree* t_hits{nullptr};

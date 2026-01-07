@@ -51,7 +51,8 @@ StatusCode ClueGaudiAlgorithmWrapper<nDim>::initialize() {
   m_clueAlgo = std::make_optional<clue::Clusterer<nDim>>(*m_queue, m_dc, m_rhoc, m_dm, m_seed_dc, m_pointsPerBin);
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
-  info() << "ClueGaudiAlgorithmWrapper: Set up time: " << elapsed.count() * 1000 << " ms" << endmsg;
+  debug() << "ClueGaudiAlgorithmWrapper: Set up time: " << elapsed.count() * 1000 << " ms" << endmsg;
+  info() << "CLUEAlgo will run on device " << alpaka::getName(devAcc) << endmsg;
 
   return Algorithm::initialize();
 }
@@ -136,7 +137,7 @@ std::vector<std::vector<int>> ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vect
   auto cluePoints = fillCLUEPoints(clue_hits, floatBuffer.data(), intBuffer.data(), isBarrel);
 
   // Run CLUE
-  info() << "Running CLUEAlgo on device " << alpaka::getName(alpaka::getDev(*m_queue)) << endmsg;
+  debug() << "Running CLUEAlgo on device " << alpaka::getName(alpaka::getDev(*m_queue)) << endmsg;
 
   // measure excution time of make_clusters
   clue::FlatKernel kernel(0.5f);
@@ -148,7 +149,7 @@ std::vector<std::vector<int>> ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vect
 
   clueClusters = m_clueAlgo->getClusters(cluePoints);
 
-  info() << "Finished running CLUE algorithm" << endmsg;
+  debug() << "Finished running CLUE algorithm" << endmsg;
 
   // Including CLUE info in cluePoints
   for (int32_t i = 0; i < cluePoints.size(); i++) {
@@ -177,6 +178,7 @@ void ClueGaudiAlgorithmWrapper<nDim>::fillFinalClusters(std::vector<clue::CLUECa
                                                         ClusterColl& clusters, const CaloHitColl& EB_calo_coll,
                                                         const CaloHitColl& EE_calo_coll) const {
   for (auto cl : clusterMap) {
+    if (cl.empty()) continue;
     auto cluster = clusters.create();
     unsigned int maxEnergyIndex = 0;
     float maxEnergyValue = 0.f;
@@ -201,7 +203,7 @@ void ClueGaudiAlgorithmWrapper<nDim>::fillFinalClusters(std::vector<clue::CLUECa
                     sumEnergyErrSquared += pow(elem.getEnergyError() / (1. * elem.getEnergy()), 2);
                   });
     cluster.setEnergy(energy);
-    cluster.setEnergyError(sqrt(sumEnergyErrSquared));
+    cluster.setEnergyError(std::sqrt(sumEnergyErrSquared));
 
     calculatePosition(&cluster);
 
@@ -338,9 +340,9 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const CaloHitColl& EB_calo_c
   clue::CLUECalorimeterHitCollection clue_hit_coll_barrel;
   clue::CLUECalorimeterHitCollection clue_hit_coll_endcap;
 
-  debug() << "ClueGaudiAlgorithmWrapper: Total number of calo hits: " << int(EB_calo_coll.size() + EE_calo_coll.size())
-          << endmsg;
-  info() << "Processing " << EB_calo_coll.size() << " caloHits in ECAL Barrel." << endmsg;
+  info() << "ClueGaudiAlgorithmWrapper: Total number of calo hits: " << int(EB_calo_coll.size() + EE_calo_coll.size())
+         << " (" << EB_calo_coll.size() << " in the barrel and " << EE_calo_coll.size() << " in the endcap)" << endmsg;
+  debug() << "Processing " << EB_calo_coll.size() << " caloHits in the barrel." << endmsg;
 
   // Fill CLUECaloHits in the barrel
   for (const auto& calo_hit : EB_calo_coll) {
@@ -354,17 +356,17 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const CaloHitColl& EB_calo_c
   // Run CLUE in the barrel
   if (!clue_hit_coll_barrel.vect.empty()) {
     auto clueClustersBarrel = runAlgo(clue_hit_coll_barrel.vect);
-    info() << "Produced " << clueClustersBarrel.size() << " clusters in ECAL Barrel" << endmsg;
+    info() << "Produced " << clueClustersBarrel.size() << " clusters in the barrel" << endmsg;
 
     clue_hit_coll.vect.insert(clue_hit_coll.vect.end(), clue_hit_coll_barrel.vect.begin(),
                               clue_hit_coll_barrel.vect.end());
 
     fillFinalClusters(clue_hit_coll_barrel.vect, clueClustersBarrel, finalClusters, EB_calo_coll, EE_calo_coll);
-    debug() << "Saved " << finalClusters.size() << " clusters using ECAL Barrel hits" << endmsg;
+    debug() << "Saved " << finalClusters.size() << " clusters using barrel hits" << endmsg;
   }
   uint32_t barrelOffset = finalClusters.size();
 
-  info() << "Processing " << EE_calo_coll.size() << " caloHits in ECAL Endcap." << endmsg;
+  debug() << "Processing " << EE_calo_coll.size() << " caloHits in the endcap." << endmsg;
 
   // Fill CLUECaloHits in the endcap
   for (const auto& calo_hit : EE_calo_coll) {
@@ -381,33 +383,33 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const CaloHitColl& EB_calo_c
   // Run CLUE in the endcap
   if (!clue_hit_coll_endcap.vect.empty()) {
     auto clueClustersEndcap = runAlgo(clue_hit_coll_endcap.vect, false, barrelOffset);
-    info() << "Produced " << clueClustersEndcap.size() << " clusters in ECAL Endcap" << endmsg;
+    info() << "Produced " << clueClustersEndcap.size() << " clusters in the endcap" << endmsg;
 
     clue_hit_coll.vect.insert(clue_hit_coll.vect.end(), clue_hit_coll_endcap.vect.begin(),
                               clue_hit_coll_endcap.vect.end());
 
     fillFinalClusters(clue_hit_coll_endcap.vect, clueClustersEndcap, finalClusters, EB_calo_coll, EE_calo_coll);
-    debug() << "Saved " << finalClusters.size() - barrelOffset << " clusters using ECAL Endcap hits" << endmsg;
+    debug() << "Saved " << finalClusters.size() - barrelOffset << " clusters using endcap hits" << endmsg;
   }
 
   info() << "Saved " << finalClusters.size() << " CLUE clusters in total." << endmsg;
 
   // Save CLUE calo hits
   auto pCHV = std::make_unique<clue::CLUECalorimeterHitCollection>(clue_hit_coll);
-  const StatusCode scStatusV = eventSvc()->registerObject("/Event/CLUECalorimeterHitCollection", pCHV.release());
+  const StatusCode scStatusV = eventSvc()->registerObject("/Event/" + m_CLUECaloHitCollName, pCHV.release());
   if (scStatusV.isFailure()) {
-    throw std::runtime_error("Failed to register CLUECalorimeterHitCollection");
+    throw std::runtime_error("Failed to register " + m_CLUECaloHitCollName);
   }
-  info() << "Saved " << clue_hit_coll.vect.size() << " CLUE calo hits in total. " << endmsg;
+  debug() << "Saved " << clue_hit_coll.vect.size() << " CLUE calo hits in total. " << endmsg;
 
   // Save clusters as calo hits and add cellID to them
   auto finalCaloHits = CaloHitColl();
   transformClustersInCaloHits(finalClusters, finalCaloHits);
-  info() << "Saved " << finalCaloHits.size() << " clusters as calo hits" << endmsg;
+  debug() << "Saved " << finalCaloHits.size() << " clusters as calo hits" << endmsg;
 
   // Add CellIDEncodingString to CLUE clusters and CLUE calo hits
-  k4FWCore::putParameter("CLUEClustersAsHits__CellIDEncoding", cellIDstr, this);
-  k4FWCore::putParameter("CLUEClusters__CellIDEncoding", cellIDstr, this);
+  for (auto i = 0u; i < outputLocationsSize(); ++i)
+    k4FWCore::putParameter(outputLocations(i)[0] + "__CellIDEncoding", cellIDstr, this);
 
   // Cleaning
   clue_hit_coll.vect.clear();
