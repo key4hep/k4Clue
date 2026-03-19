@@ -63,11 +63,11 @@ struct ClueGaudiAlgorithmWrapper final
 
   clue::PointsHost<nDim> fillCLUEPoints(const std::vector<clue::CLUECalorimeterHit>& clue_hits, float* floatBuffer,
                                         int* intBuffer, const bool isBarrel) const;
-  std::vector<std::vector<int>> runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, const bool isBarrel = true,
-                                        const uint32_t offset = 0) const;
+  clue::AssociationMapHost runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, const bool isBarrel = true,
+                                   const uint32_t offset = 0) const;
 
   void fillFinalClusters(std::vector<clue::CLUECalorimeterHit> const& clue_hits,
-                         std::vector<std::vector<int>> const& clusterMap, ClusterColl& clusters,
+                         clue::AssociationMapHost const& clusterMap, ClusterColl& clusters,
                          const CaloHitColl& EB_calo_coll, const CaloHitColl& EE_calo_coll) const;
   void calculatePosition(edm4hep::MutableCluster* cluster) const;
   void transformClustersInCaloHits(ClusterColl& clusters, CaloHitColl& caloHits) const;
