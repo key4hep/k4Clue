@@ -29,12 +29,15 @@ using namespace dd4hep;
 using namespace DDSegmentation;
 
 #if defined(ALPAKA_ACC_GPU_CUDA_ENABLED)
+DECLARE_COMPONENT_WITH_ID(ClueGaudiAlgorithmWrapper<4>, "ClueGaudiAlgorithmWrapperCUDA4D")
 DECLARE_COMPONENT_WITH_ID(ClueGaudiAlgorithmWrapper<3>, "ClueGaudiAlgorithmWrapperCUDA3D")
 DECLARE_COMPONENT_WITH_ID(ClueGaudiAlgorithmWrapper<2>, "ClueGaudiAlgorithmWrapperCUDA2D")
 #elif defined(ALPAKA_ACC_GPU_HIP_ENABLED)
+DECLARE_COMPONENT_WITH_ID(ClueGaudiAlgorithmWrapper<4>, "ClueGaudiAlgorithmWrapperHIP4D")
 DECLARE_COMPONENT_WITH_ID(ClueGaudiAlgorithmWrapper<3>, "ClueGaudiAlgorithmWrapperHIP3D")
 DECLARE_COMPONENT_WITH_ID(ClueGaudiAlgorithmWrapper<2>, "ClueGaudiAlgorithmWrapperHIP2D")
 #else
+DECLARE_COMPONENT_WITH_ID(ClueGaudiAlgorithmWrapper<4>, "ClueGaudiAlgorithmWrapper4D")
 DECLARE_COMPONENT_WITH_ID(ClueGaudiAlgorithmWrapper<3>, "ClueGaudiAlgorithmWrapper3D")
 DECLARE_COMPONENT_WITH_ID(ClueGaudiAlgorithmWrapper<2>, "ClueGaudiAlgorithmWrapper2D")
 #endif
@@ -118,8 +121,10 @@ ClueGaudiAlgorithmWrapper<nDim>::fillCLUEPoints(const std::vector<clue::CLUECalo
     // } else {
     floatBuffer[i] = clue_hits[i].getPosition().x;           // Fill x coordinates
     floatBuffer[nPoints + i] = clue_hits[i].getPosition().y; // Fill y coordinates
-    if constexpr (nDim == 3)
+    if constexpr (nDim >= 3)
       floatBuffer[nPoints * 2 + i] = clue_hits[i].getPosition().z; // Fill z coordinates
+    if constexpr (nDim >= 4)
+      floatBuffer[nPoints * 3 + i] = clue_hits[i].getTime(); // Fill time coordinates
     floatBuffer[nPoints * nDim + i] = clue_hits[i].getEnergy();    // Fill weights
     //}
   }
