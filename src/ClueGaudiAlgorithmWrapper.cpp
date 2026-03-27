@@ -39,20 +39,16 @@ DECLARE_COMPONENT_WITH_ID(ClueGaudiAlgorithmWrapper<2>, "ClueGaudiAlgorithmWrapp
 
 template <uint8_t nDim>
 StatusCode ClueGaudiAlgorithmWrapper<nDim>::initialize() {
-  using Acc = clue::internal::Acc;
-  using Dev = clue::Device;
-  using Queue = clue::Queue;
+  m_queue = clue::get_queue(0u);
 
-  auto const platform = alpaka::Platform<Acc>{};
-  Dev const devAcc(alpaka::getDevByIdx(platform, 0u));
-  m_queue = std::make_optional<Queue>(devAcc);
-
+  const auto seeding_distance = (m_seed_dc == -1.f) ? m_dc : m_seed_dc;
   auto start = std::chrono::high_resolution_clock::now();
-  m_clueAlgo = std::make_optional<clue::Clusterer<nDim>>(*m_queue, m_dc, m_rhoc, m_dm, m_seed_dc, m_pointsPerBin);
+  m_clueAlgo =
+      std::make_optional<clue::Clusterer<nDim>>(*m_queue, m_dc, m_rhoc, m_dm, seeding_distance, m_pointsPerBin);
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
   debug() << "ClueGaudiAlgorithmWrapper: Set up time: " << elapsed.count() * 1000 << " ms" << endmsg;
-  info() << "CLUEAlgo will run on device " << alpaka::getName(devAcc) << endmsg;
+  info() << "CLUEAlgo will run on device " << alpaka::getName(alpaka::getDev(*m_queue)) << endmsg;
 
   return Algorithm::initialize();
 }
@@ -125,11 +121,8 @@ ClueGaudiAlgorithmWrapper<nDim>::fillCLUEPoints(const std::vector<clue::CLUECalo
 }
 
 template <uint8_t nDim>
-std::vector<std::vector<int>> ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits,
-                                                                       const bool isBarrel,
-                                                                       const uint32_t offset) const {
-  std::vector<std::vector<int>> clueClusters;
-
+clue::AssociationMapHost ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits,
+                                                                  const bool isBarrel, const uint32_t offset) const {
   // Fill CLUE inputs
   size_t nPoints = clue_hits.size();
   std::vector<float> floatBuffer(nPoints * (nDim + 1));
@@ -140,14 +133,13 @@ std::vector<std::vector<int>> ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vect
   debug() << "Running CLUEAlgo on device " << alpaka::getName(alpaka::getDev(*m_queue)) << endmsg;
 
   // measure excution time of make_clusters
-  clue::FlatKernel kernel(0.5f);
   auto start = std::chrono::high_resolution_clock::now();
-  m_clueAlgo->make_clusters(*m_queue, cluePoints, kernel, 512);
+  m_clueAlgo->make_clusters(*m_queue, cluePoints);
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
   info() << "ClueGaudiAlgorithmWrapper: Elapsed time: " << elapsed.count() * 1000 << " ms" << endmsg;
 
-  clueClusters = m_clueAlgo->getClusters(cluePoints);
+  auto clueClusters = m_clueAlgo->getClusters(cluePoints);
 
   debug() << "Finished running CLUE algorithm" << endmsg;
 
@@ -157,10 +149,7 @@ std::vector<std::vector<int>> ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vect
     clue_hits[i].setClusterIndex(cluePoints.clusterIndexes()[i] + offset);
     verbose() << "CLUE Point #" << i << " : (x,y,z) = (" << clue_hits[i].getPosition().x << ","
               << clue_hits[i].getPosition().y << "," << clue_hits[i].getPosition().z << ")";
-    if (cluePoints.isSeed()[i] == 1) {
-      verbose() << " is seed" << endmsg;
-      clue_hits[i].setStatus(clue::CLUECalorimeterHit::Status::seed);
-    } else if (cluePoints.clusterIndexes()[i] == -1) {
+    if (cluePoints.clusterIndexes()[i] == -1) {
       verbose() << " is outlier" << endmsg;
       clue_hits[i].setStatus(clue::CLUECalorimeterHit::Status::outlier);
     } else {
@@ -174,15 +163,16 @@ std::vector<std::vector<int>> ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vect
 
 template <uint8_t nDim>
 void ClueGaudiAlgorithmWrapper<nDim>::fillFinalClusters(std::vector<clue::CLUECalorimeterHit> const& clue_hits,
-                                                        std::vector<std::vector<int>> const& clusterMap,
+                                                        clue::AssociationMapHost const& clusterMap,
                                                         ClusterColl& clusters, const CaloHitColl& EB_calo_coll,
                                                         const CaloHitColl& EE_calo_coll) const {
-  for (auto cl : clusterMap) {
-    if (cl.empty()) continue;
+  for (auto cl = 0u; cl < clusterMap.size(); ++cl) {
+    if (clusterMap.empty(cl))
+      continue;
     auto cluster = clusters.create();
     unsigned int maxEnergyIndex = 0;
     float maxEnergyValue = 0.f;
-    for (auto index : cl) {
+    for (auto index : clusterMap[cl]) {
       if (clue_hits[index].inBarrel()) {
         cluster.addToHits(EB_calo_coll.at(index));
       }
@@ -214,12 +204,12 @@ void ClueGaudiAlgorithmWrapper<nDim>::fillFinalClusters(std::vector<clue::CLUECa
 
 template <>
 void ClueGaudiAlgorithmWrapper<2>::fillFinalClusters(std::vector<clue::CLUECalorimeterHit> const& clue_hits,
-                                                     std::vector<std::vector<int>> const& clusterMap,
-                                                     ClusterColl& clusters, const CaloHitColl& EB_calo_coll,
+                                                     clue::AssociationMapHost const& clusterMap, ClusterColl& clusters,
+                                                     const CaloHitColl& EB_calo_coll,
                                                      const CaloHitColl& EE_calo_coll) const {
-  for (auto cl : clusterMap) {
+  for (auto cl = 0u; cl < clusterMap.size(); ++cl) {
     std::vector<std::vector<int>> clustersLayer(m_maxLayerPerSide * 2);
-    for (auto index : cl) {
+    for (auto index : clusterMap[cl]) {
       clustersLayer[clue_hits[index].getLayer()].push_back(index);
     }
     for (auto clLay : clustersLayer) {
@@ -228,7 +218,7 @@ void ClueGaudiAlgorithmWrapper<2>::fillFinalClusters(std::vector<clue::CLUECalor
       auto cluster = clusters.create();
       unsigned int maxEnergyIndex = 0;
       float maxEnergyValue = 0.f;
-      for (auto index : cl) {
+      for (auto index : clusterMap[cl]) {
         if (clue_hits[index].inBarrel()) {
           cluster.addToHits(EB_calo_coll.at(index));
         }
