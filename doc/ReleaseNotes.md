@@ -1,3 +1,16 @@
+# v01-01-00
+
+* 2026-01-07 AuroraPerego ([PR#74](https://github.com/key4hep/k4Clue/pull/74))
+  - Remove ECAL-specific `cout` as the code can also run in HCAL
+  - Make the hits collection name configurable
+  - Take the clusters collection name from the input collection instead of the configuration for consistency
+
+* 2025-12-16 Juan Miguel Carceller ([PR#75](https://github.com/key4hep/k4Clue/pull/75))
+  - Exclude release notes from the license headers for pre-commit
+
+* 2025-11-25 Juan Miguel Carceller ([PR#73](https://github.com/key4hep/k4Clue/pull/73))
+  - Bump the minimum required version of CMake to 3.12
+
 # v01-00-09
 
 * 2025-11-05 Juan Miguel Carceller ([PR#72](https://github.com/key4hep/k4Clue/pull/72))
