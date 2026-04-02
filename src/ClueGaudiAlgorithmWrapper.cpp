@@ -124,8 +124,8 @@ ClueGaudiAlgorithmWrapper<nDim>::fillCLUEPoints(const std::vector<clue::CLUECalo
     if constexpr (nDim >= 3)
       floatBuffer[nPoints * 2 + i] = clue_hits[i].getPosition().z; // Fill z coordinates
     if constexpr (nDim >= 4)
-      floatBuffer[nPoints * 3 + i] = clue_hits[i].getTime(); // Fill time coordinates
-    floatBuffer[nPoints * nDim + i] = clue_hits[i].getEnergy();    // Fill weights
+      floatBuffer[nPoints * 3 + i] = clue_hits[i].getTime();    // Fill time coordinates
+    floatBuffer[nPoints * nDim + i] = clue_hits[i].getEnergy(); // Fill weights
     //}
   }
 
@@ -177,8 +177,31 @@ clue::AssociationMapHost ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vector<cl
 template <uint8_t nDim>
 void ClueGaudiAlgorithmWrapper<nDim>::fillFinalClusters(std::vector<clue::CLUECalorimeterHit> const& clue_hits,
                                                         clue::AssociationMapHost const& clusterMap,
-                                                        ClusterColl& clusters, const CaloHitColl& EB_calo_coll,
-                                                        const CaloHitColl& EE_calo_coll) const {
+                                                        ClusterColl& clusters,
+                                                        const std::vector<const CaloHitColl*>& EB_calo_coll,
+                                                        const std::vector<const CaloHitColl*>& EE_calo_coll) const {
+  // Precompute cumulative offsets once
+  auto makeOffsets = [](const std::vector<const CaloHitColl*>& colls) {
+    std::vector<size_t> offsets;
+    offsets.reserve(colls.size());
+    size_t acc = 0;
+    for (const auto& c : colls) {
+      offsets.push_back(acc);
+      acc += c->size();
+    }
+    return offsets;
+  };
+
+  const auto ebOffsets = makeOffsets(EB_calo_coll);
+  const auto eeOffsets = makeOffsets(EE_calo_coll);
+
+  auto resolveIndex = [](const std::vector<size_t>& offsets, size_t globalIndex) -> std::pair<size_t, size_t> {
+    // upper_bound finds the first offset > globalIndex, so the correct coll is the one before
+    auto it = std::upper_bound(offsets.begin(), offsets.end(), globalIndex);
+    size_t collIdx = std::distance(offsets.begin(), it) - 1;
+    return {collIdx, globalIndex - offsets[collIdx]};
+  };
+
   for (auto cl = 0u; cl < clusterMap.size(); ++cl) {
     if (clusterMap.empty(cl))
       continue;
@@ -187,10 +210,12 @@ void ClueGaudiAlgorithmWrapper<nDim>::fillFinalClusters(std::vector<clue::CLUECa
     float maxEnergyValue = 0.f;
     for (auto index : clusterMap[cl]) {
       if (clue_hits[index].inBarrel()) {
-        cluster.addToHits(EB_calo_coll.at(index));
+        auto [collIdx, localIdx] = resolveIndex(ebOffsets, index);
+        cluster.addToHits(EB_calo_coll[collIdx]->at(localIdx));
       }
       if (clue_hits[index].inEndcap()) {
-        cluster.addToHits(EE_calo_coll.at(index));
+        auto [collIdx, localIdx] = resolveIndex(eeOffsets, index);
+        cluster.addToHits(EE_calo_coll[collIdx]->at(localIdx));
       }
 
       if (clue_hits[index].getEnergy() > maxEnergyValue) {
@@ -218,8 +243,30 @@ void ClueGaudiAlgorithmWrapper<nDim>::fillFinalClusters(std::vector<clue::CLUECa
 template <>
 void ClueGaudiAlgorithmWrapper<2>::fillFinalClusters(std::vector<clue::CLUECalorimeterHit> const& clue_hits,
                                                      clue::AssociationMapHost const& clusterMap, ClusterColl& clusters,
-                                                     const CaloHitColl& EB_calo_coll,
-                                                     const CaloHitColl& EE_calo_coll) const {
+                                                     const std::vector<const CaloHitColl*>& EB_calo_coll,
+                                                     const std::vector<const CaloHitColl*>& EE_calo_coll) const {
+  // Precompute cumulative offsets once
+  auto makeOffsets = [](const std::vector<const CaloHitColl*>& colls) {
+    std::vector<size_t> offsets;
+    offsets.reserve(colls.size());
+    size_t acc = 0;
+    for (const auto& c : colls) {
+      offsets.push_back(acc);
+      acc += c->size();
+    }
+    return offsets;
+  };
+
+  const auto ebOffsets = makeOffsets(EB_calo_coll);
+  const auto eeOffsets = makeOffsets(EE_calo_coll);
+
+  auto resolveIndex = [](const std::vector<size_t>& offsets, size_t globalIndex) -> std::pair<size_t, size_t> {
+    // upper_bound finds the first offset > globalIndex, so the correct coll is the one before
+    auto it = std::upper_bound(offsets.begin(), offsets.end(), globalIndex);
+    size_t collIdx = std::distance(offsets.begin(), it) - 1;
+    return {collIdx, globalIndex - offsets[collIdx]};
+  };
+
   for (auto cl = 0u; cl < clusterMap.size(); ++cl) {
     std::vector<std::vector<int>> clustersLayer(m_maxLayerPerSide * 2);
     for (auto index : clusterMap[cl]) {
@@ -233,10 +280,12 @@ void ClueGaudiAlgorithmWrapper<2>::fillFinalClusters(std::vector<clue::CLUECalor
       float maxEnergyValue = 0.f;
       for (auto index : clusterMap[cl]) {
         if (clue_hits[index].inBarrel()) {
-          cluster.addToHits(EB_calo_coll.at(index));
+          auto [collIdx, localIdx] = resolveIndex(ebOffsets, index);
+          cluster.addToHits(EB_calo_coll[collIdx]->at(localIdx));
         }
         if (clue_hits[index].inEndcap()) {
-          cluster.addToHits(EE_calo_coll.at(index));
+          auto [collIdx, localIdx] = resolveIndex(eeOffsets, index);
+          cluster.addToHits(EE_calo_coll[collIdx]->at(localIdx));
         }
 
         if (clue_hits[index].getEnergy() > maxEnergyValue) {
@@ -325,8 +374,8 @@ void ClueGaudiAlgorithmWrapper<nDim>::transformClustersInCaloHits(ClusterColl& c
 }
 
 template <uint8_t nDim>
-retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const CaloHitColl& EB_calo_coll,
-                                                    const CaloHitColl& EE_calo_coll) const {
+retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const std::vector<const CaloHitColl*>& EB_calo_coll,
+                                                    const std::vector<const CaloHitColl*>& EE_calo_coll) const {
 
   // Get collection metadata cellID which is valid for both EB and EE
   const std::string cellIDstr =
@@ -341,18 +390,17 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const CaloHitColl& EB_calo_c
   clue::CLUECalorimeterHitCollection clue_hit_coll_barrel;
   clue::CLUECalorimeterHitCollection clue_hit_coll_endcap;
 
-  info() << "ClueGaudiAlgorithmWrapper: Total number of calo hits: " << int(EB_calo_coll.size() + EE_calo_coll.size())
-         << " (" << EB_calo_coll.size() << " in the barrel and " << EE_calo_coll.size() << " in the endcap)" << endmsg;
-  debug() << "Processing " << EB_calo_coll.size() << " caloHits in the barrel." << endmsg;
-
   // Fill CLUECaloHits in the barrel
-  for (const auto& calo_hit : EB_calo_coll) {
-    // Cut on a specific layer for noise studies
-    // if(bf.get( calo_hit.getCellID(), "layer") == 6){
-    clue_hit_coll_barrel.vect.push_back(clue::CLUECalorimeterHit(
-        calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::barrel, bf.get(calo_hit.getCellID(), "layer")));
-    //}
+  for (const auto& coll : EB_calo_coll) {
+    for (const auto& calo_hit : *coll) {
+      // Cut on a specific layer for noise studies
+      // if(bf.get( calo_hit.getCellID(), "layer") == 6){
+      clue_hit_coll_barrel.vect.push_back(clue::CLUECalorimeterHit(
+          calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::barrel, bf.get(calo_hit.getCellID(), "layer")));
+      //}
+    }
   }
+  info() << "Processing " << clue_hit_coll_barrel.vect.size() << " caloHits in the barrel." << endmsg;
 
   // Run CLUE in the barrel
   if (!clue_hit_coll_barrel.vect.empty()) {
@@ -367,19 +415,20 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const CaloHitColl& EB_calo_c
   }
   uint32_t barrelOffset = finalClusters.size();
 
-  debug() << "Processing " << EE_calo_coll.size() << " caloHits in the endcap." << endmsg;
-
   // Fill CLUECaloHits in the endcap
-  for (const auto& calo_hit : EE_calo_coll) {
-    if (bf.get(calo_hit.getCellID(), "side") < 0 || bf.get(calo_hit.getCellID(), "side") > 1) {
-      clue_hit_coll_endcap.vect.push_back(clue::CLUECalorimeterHit(
-          calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::endcap, bf.get(calo_hit.getCellID(), "layer")));
-    } else {
-      clue_hit_coll_endcap.vect.push_back(
-          clue::CLUECalorimeterHit(calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::endcap,
-                                   bf.get(calo_hit.getCellID(), "layer") + m_maxLayerPerSide));
+  for (const auto& coll : EE_calo_coll) {
+    for (const auto& calo_hit : *coll) {
+      if (bf.get(calo_hit.getCellID(), "side") < 0 || bf.get(calo_hit.getCellID(), "side") > 1) {
+        clue_hit_coll_endcap.vect.push_back(clue::CLUECalorimeterHit(
+            calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::endcap, bf.get(calo_hit.getCellID(), "layer")));
+      } else {
+        clue_hit_coll_endcap.vect.push_back(
+            clue::CLUECalorimeterHit(calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::endcap,
+                                     bf.get(calo_hit.getCellID(), "layer") + m_maxLayerPerSide));
+      }
     }
   }
+  info() << "Processing " << clue_hit_coll_endcap.vect.size() << " caloHits in the endcap." << endmsg;
 
   // Run CLUE in the endcap
   if (!clue_hit_coll_endcap.vect.empty()) {

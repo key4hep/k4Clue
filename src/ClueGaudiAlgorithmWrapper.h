@@ -38,20 +38,22 @@ using retType = std::tuple<ClusterColl, CaloHitColl>;
 
 template <uint8_t nDim>
 struct ClueGaudiAlgorithmWrapper final
-    : k4FWCore::MultiTransformer<retType(const CaloHitColl& EB_calo_coll, const CaloHitColl& EE_calo_coll)> {
+    : k4FWCore::MultiTransformer<retType(const std::vector<const CaloHitColl*>& EB_calo_coll,
+                                         const std::vector<const CaloHitColl*>& EE_calo_coll)> {
 
   ClueGaudiAlgorithmWrapper(const std::string& name, ISvcLocator* svcLoc)
       : MultiTransformer(name, svcLoc,
                          {
-                             KeyValue("BarrelCaloHitsCollection", "ECALBarrel"),
-                             KeyValue("EndcapCaloHitsCollection", "ECALEndcap"),
+                             KeyValues("BarrelCaloHitsCollection", {"ECALBarrel"}),
+                             KeyValues("EndcapCaloHitsCollection", {"ECALEndcap"}),
                          },
                          {
                              KeyValue("OutputClusters", "CLUEClusters"),
                              KeyValue("OutputClustersAsHits", "CLUEClustersAsHits"),
                          }) {}
 
-  retType operator()(const CaloHitColl& EB_calo_coll, const CaloHitColl& EE_calo_coll) const override;
+  retType operator()(const std::vector<const CaloHitColl*>& EB_calo_coll,
+                     const std::vector<const CaloHitColl*>& EE_calo_coll) const override;
 
   StatusCode initialize() override;
   StatusCode finalize() override;
@@ -68,7 +70,8 @@ struct ClueGaudiAlgorithmWrapper final
 
   void fillFinalClusters(std::vector<clue::CLUECalorimeterHit> const& clue_hits,
                          clue::AssociationMapHost const& clusterMap, ClusterColl& clusters,
-                         const CaloHitColl& EB_calo_coll, const CaloHitColl& EE_calo_coll) const;
+                         const std::vector<const CaloHitColl*>& EB_calo_coll,
+                         const std::vector<const CaloHitColl*>& EE_calo_coll) const;
   void calculatePosition(edm4hep::MutableCluster* cluster) const;
   void transformClustersInCaloHits(ClusterColl& clusters, CaloHitColl& caloHits) const;
 

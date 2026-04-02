@@ -29,8 +29,8 @@ rho = 0.1
 dm = 120
 
 MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper3D("ClueGaudiAlgorithmWrapperName",
-    BarrelCaloHitsCollection = "ECALBarrel",
-    EndcapCaloHitsCollection = "ECALEndcap",
+    BarrelCaloHitsCollection = ["ECALBarrel", "HCALBarrel"],
+    EndcapCaloHitsCollection = ["ECALEndcap", "HCALEndcap"],
     CriticalDistance = dc,
     MinLocalDensity = rho,
     FollowerDistance = dm,
@@ -38,8 +38,6 @@ MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper3D("ClueGaudiAlgorithmWra
 )
 
 MyCLUENtuplizer = CLUENtuplizer("CLUEAnalysis",
-    BarrelCaloHitsCollection = ["ECALBarrel"],
-    EndcapCaloHitsCollection = ["ECALEndcap"],
     OutputLevel = WARNING
 )
 
