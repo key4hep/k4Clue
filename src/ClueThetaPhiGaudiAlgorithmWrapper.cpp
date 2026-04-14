@@ -54,16 +54,16 @@ ClueThetaPhiGaudiAlgorithmWrapper::fillCLUEPoints(const std::vector<clue::CLUECa
     float x = clue_hits[i].getPosition().x;
     float y = clue_hits[i].getPosition().y;
     float z = clue_hits[i].getPosition().z;
-    
+
     float r = std::sqrt(x * x + y * y + z * z);
     float theta = (r > 0) ? std::acos(z / r) : 0.0f;  // theta in [0, pi]
     float phi = std::atan2(y, x);                       // phi in [-pi, pi]
-    
+
     // Normalize phi to [0, 2*pi] for periodic distance calculation
     if (phi < 0) {
       phi += 2.0f * M_PI;
     }
-    
+
     floatBuffer[i] = theta;                          // Fill theta coordinates
     floatBuffer[nPoints + i] = phi;                  // Fill phi coordinates
     floatBuffer[nPoints * 2 + i] = clue_hits[i].getEnergy(); // Fill weights
@@ -111,7 +111,7 @@ std::vector<std::vector<int>> ClueThetaPhiGaudiAlgorithmWrapper::runAlgo(std::ve
 
   auto assocMap = cluePoints.clusters();
   clueClusters.resize(nClusters);
-  
+
   // Use equal_range to get all points for each cluster
   for (int32_t clusterId = 0; clusterId < nClusters; ++clusterId) {
     auto range = assocMap.equal_range(clusterId);
