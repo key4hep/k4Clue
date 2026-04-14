@@ -25,6 +25,7 @@ set(ExternalData_URL_TEMPLATES
 
 set(SOURCES
   ${PROJECT_SOURCE_DIR}/src/ClueGaudiAlgorithmWrapper.cpp
+  ${PROJECT_SOURCE_DIR}/src/ClueThetaPhiGaudiAlgorithmWrapper.cpp
   ${PROJECT_SOURCE_DIR}/src/CLUECalorimeterHit.cpp
   ${PROJECT_SOURCE_DIR}/src/CLUENtuplizer.cpp
 )
