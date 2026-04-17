@@ -28,6 +28,8 @@
 using namespace dd4hep;
 using namespace DDSegmentation;
 
+constexpr float C_MM_NS_SQUARED = 299.792458f*299.792458f;
+
 #if defined(ALPAKA_ACC_GPU_CUDA_ENABLED)
 DECLARE_COMPONENT_WITH_ID(ClueGaudiAlgorithmWrapper<4>, "ClueGaudiAlgorithmWrapperCUDA4D")
 DECLARE_COMPONENT_WITH_ID(ClueGaudiAlgorithmWrapper<3>, "ClueGaudiAlgorithmWrapperCUDA3D")
@@ -143,11 +145,16 @@ clue::AssociationMapHost ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vector<cl
   auto cluePoints = fillCLUEPoints(clue_hits, floatBuffer.data(), intBuffer.data(), isBarrel);
 
   // Run CLUE
-  debug() << "Running CLUEAlgo on device " << alpaka::getName(alpaka::getDev(*m_queue)) << endmsg;
+  debug() << "Running CLUEAlgo on device " << alpaka::getName(alpaka::getDev(*m_queue)) << " in " << nDim << "D" << endmsg;
 
   // measure excution time of make_clusters
   auto start = std::chrono::high_resolution_clock::now();
-  m_clueAlgo->make_clusters(*m_queue, cluePoints);
+  if constexpr(nDim==4) {
+    auto metric = clue::metrics::WeightedEuclidean<nDim>(1.f, 1.f, 1.f, C_MM_NS_SQUARED);
+    m_clueAlgo->make_clusters(*m_queue, cluePoints, metric);
+  } else {
+    m_clueAlgo->make_clusters(*m_queue, cluePoints);
+  }
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
   info() << "ClueGaudiAlgorithmWrapper: Elapsed time: " << elapsed.count() * 1000 << " ms" << endmsg;
