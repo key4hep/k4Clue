@@ -61,9 +61,8 @@ struct ClueGaudiAlgorithmWrapper final
   void printTimingReport(std::vector<float>& vals, int repeats, const std::string label);
 
   clue::PointsHost<nDim> fillCLUEPoints(const std::vector<clue::CLUECalorimeterHit>& clue_hits, float* floatBuffer,
-                                        int* intBuffer, const bool isBarrel) const;
-  clue::AssociationMapHost runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, const bool isBarrel = true,
-                                   const uint32_t offset = 0) const;
+                                        int* intBuffer, const bool cartesian) const;
+  clue::AssociationMapHost runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, const uint32_t offset = 0, const bool cartesian = true) const;
 
   void fillFinalClusters(std::vector<clue::CLUECalorimeterHit> const& clue_hits,
                          clue::AssociationMapHost const& clusterMap, ClusterColl& clusters,
