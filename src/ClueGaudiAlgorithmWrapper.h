@@ -38,22 +38,19 @@ using retType = std::tuple<ClusterColl, CaloHitColl>;
 
 template <uint8_t nDim>
 struct ClueGaudiAlgorithmWrapper final
-    : k4FWCore::MultiTransformer<retType(const std::vector<const CaloHitColl*>& EB_calo_coll,
-                                         const std::vector<const CaloHitColl*>& EE_calo_coll)> {
+    : k4FWCore::MultiTransformer<retType(const std::vector<const CaloHitColl*>& calo_coll)> {
 
   ClueGaudiAlgorithmWrapper(const std::string& name, ISvcLocator* svcLoc)
       : MultiTransformer(name, svcLoc,
                          {
-                             KeyValues("BarrelCaloHitsCollection", {"ECALBarrel"}),
-                             KeyValues("EndcapCaloHitsCollection", {"ECALEndcap"}),
+                             KeyValues("CaloHitsCollections", {"ECALBarrel", "ECALEndcap"}),
                          },
                          {
                              KeyValue("OutputClusters", "CLUEClusters"),
                              KeyValue("OutputClustersAsHits", "CLUEClustersAsHits"),
                          }) {}
 
-  retType operator()(const std::vector<const CaloHitColl*>& EB_calo_coll,
-                     const std::vector<const CaloHitColl*>& EE_calo_coll) const override;
+  retType operator()(const std::vector<const CaloHitColl*>& calo_coll) const override;
 
   StatusCode initialize() override;
   StatusCode finalize() override;
@@ -70,8 +67,7 @@ struct ClueGaudiAlgorithmWrapper final
 
   void fillFinalClusters(std::vector<clue::CLUECalorimeterHit> const& clue_hits,
                          clue::AssociationMapHost const& clusterMap, ClusterColl& clusters,
-                         const std::vector<const CaloHitColl*>& EB_calo_coll,
-                         const std::vector<const CaloHitColl*>& EE_calo_coll) const;
+                         const std::vector<const CaloHitColl*>& calo_coll) const;
   void calculatePosition(edm4hep::MutableCluster* cluster) const;
   void transformClustersInCaloHits(ClusterColl& clusters, CaloHitColl& caloHits) const;
 
@@ -99,6 +95,9 @@ private:
 
   Gaudi::Property<std::string> m_CLUECaloHitCollName{this, "CLUEHitCollName", "CLUECalorimeterHitCollection",
                                                      "Name of the collection of CLUE calorimeter hits"};
+
+  Gaudi::Property<int> m_singlePass{this, "strategy", 1,
+                                      "strategy to treat different collections"};
 };
 
 #endif
