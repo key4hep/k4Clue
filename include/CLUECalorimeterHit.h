@@ -71,6 +71,9 @@ public:
   /// Access the eta
   float getEta() const;
 
+  /// Access the theta
+  float getTheta() const;
+
   /// Access the phi
   float getPhi() const;
 
@@ -80,6 +83,7 @@ public:
   /// Set hit transverse global position, pseudorapidity and phi
   void setR();
   void setEta();
+  void setTheta();
   void setPhi();
 
   void setRho(float rho) { m_rho = rho; }
@@ -88,9 +92,10 @@ public:
   void setClusterIndex(int32_t clIdx) { m_clusterIndex = clIdx; }
 
 private:
-  float m_eta;
-  float m_phi;
   float m_r;
+  float m_eta;
+  float m_theta;
+  float m_phi;
   float m_rho;
   float m_delta;
   uint8_t m_detectorRegion;

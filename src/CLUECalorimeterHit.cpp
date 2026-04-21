@@ -24,6 +24,7 @@ namespace clue {
 CLUECalorimeterHit::CLUECalorimeterHit(const CalorimeterHit& ch) : CalorimeterHit(ch) {
   setR();
   setEta();
+  setTheta();
   setPhi();
 }
 
@@ -32,6 +33,7 @@ CLUECalorimeterHit::CLUECalorimeterHit(const CalorimeterHit& ch, const CLUECalor
     : CalorimeterHit(ch), m_detectorRegion(detRegion), m_layer(layer) {
   setR();
   setEta();
+  setTheta();
   setPhi();
 }
 
@@ -42,6 +44,7 @@ CLUECalorimeterHit::CLUECalorimeterHit(const CalorimeterHit& ch, const CLUECalor
       m_clusterIndex(clusterIndex) {
   setR();
   setEta();
+  setTheta();
   setPhi();
 }
 
@@ -55,10 +58,16 @@ float CLUECalorimeterHit::getRho() const { return m_rho; }
 float CLUECalorimeterHit::getDelta() const { return m_delta; }
 float CLUECalorimeterHit::getR() const { return m_r; }
 float CLUECalorimeterHit::getEta() const { return m_eta; }
+float CLUECalorimeterHit::getTheta() const { return m_theta; }
 float CLUECalorimeterHit::getPhi() const { return m_phi; }
 int32_t CLUECalorimeterHit::getClusterIndex() const { return m_clusterIndex; };
 
 void CLUECalorimeterHit::setEta() { m_eta = -1. * log(tan(atan2(m_r, getPosition().z) / 2.)); }
+
+void CLUECalorimeterHit::setTheta() {
+  float r = std::sqrt(getPosition().x * getPosition().x + getPosition().y * getPosition().y + getPosition().z * getPosition().z);
+  m_theta = (r > 0) ? std::acos(getPosition().z / r) : 0.0f;
+}
 
 void CLUECalorimeterHit::setPhi() { m_phi = atan2(getPosition().y, getPosition().x); }
 
