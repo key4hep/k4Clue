@@ -57,11 +57,16 @@ StatusCode ClueGaudiAlgorithmWrapper<nDim>::initialize() {
   debug() << "ClueGaudiAlgorithmWrapper: Set up time: " << elapsed.count() * 1000 << " ms" << endmsg;
   info() << "CLUEAlgo will run on device " << alpaka::getName(alpaka::getDev(*m_queue)) << endmsg;
 
-  // Add CellIDEncodingString to CLUE clusters and CLUE calo hits
-  const std::string cellIDstr =
-      k4FWCore::getCellIDEncoding(inputLocations("BarrelCaloHitsCollection")[0], this).value_or("");
-  for (auto i = 0u; i < outputLocationsSize(); ++i)
-    k4FWCore::putCellIDEncoding(outputLocations(i)[0], cellIDstr, this);
+  if (m_strategyName == "PerDetectorRegion") {
+    m_strategy = Strategy::PerDetectorRegion;
+  } else if (m_strategyName == "MergeCollections") {
+    m_strategy = Strategy::MergeCollections;
+  } else if (m_strategyName == "PerCollection") {
+    m_strategy = Strategy::PerCollection;
+  } else {
+    error() << "Unknown strategy: " << m_strategyName << endmsg;
+    return StatusCode::FAILURE;
+  }
 
   return Algorithm::initialize();
 }
@@ -370,17 +375,13 @@ void ClueGaudiAlgorithmWrapper<nDim>::transformClustersInCaloHits(ClusterColl& c
 template <uint8_t nDim>
 retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const std::vector<const CaloHitColl*>& calo_coll) const {
 
-  const std::vector<std::string> ClusterCollectionsNames = inputLocations("CaloHitsCollections");
-  for (auto s : ClusterCollectionsNames)
-    std::cout <<  s << std::endl;
-
   // Output CLUE clusters
   auto finalClusters = ClusterColl();
 
   // Output CLUE calo hits
   clue::CLUECalorimeterHitCollection clue_hit_coll;
 
-  if (m_singlePass) {
+  if (m_strategy == Strategy::MergeCollections) {
     for (const auto& coll : calo_coll) {
       for (const auto& calo_hit : *coll) {
         clue_hit_coll.vect.push_back(clue::CLUECalorimeterHit(calo_hit.clone()));
@@ -397,7 +398,7 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const std::vector<const Calo
     } else {
       info() << "No calorimeter hits to process, skipping CLUE algorithm" << endmsg;
     }
-  } else {
+  } else if (m_strategy == Strategy::PerCollection) {
     int offset = 0;
     for (const auto& coll : calo_coll) {
       clue::CLUECalorimeterHitCollection clue_hit_coll_tmp;
@@ -420,6 +421,12 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const std::vector<const Calo
       }
       offset += clue_hit_coll_tmp.vect.size();
     }
+  } else {
+
+  const std::vector<std::string> ClusterCollectionsNames = inputLocations("CaloHitsCollections");
+  for (auto s : ClusterCollectionsNames)
+    std::cout <<  s << std::endl;
+  // keep layers here AND LOOK for barrel/endcap in collection name
   }
 
   // Get collection metadata cellID which is valid for both EB and EE

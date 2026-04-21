@@ -70,6 +70,12 @@ struct ClueGaudiAlgorithmWrapper final
   void calculatePosition(edm4hep::MutableCluster* cluster) const;
   void transformClustersInCaloHits(ClusterColl& clusters, CaloHitColl& caloHits) const;
 
+  enum class Strategy {
+    PerCollection,
+    MergeCollections,
+    PerDetectorRegion
+  };
+
 private:
   // Total amount of EE+ and EE- layers (80)
   int m_maxLayerPerSide = 40;
@@ -95,8 +101,10 @@ private:
   Gaudi::Property<std::string> m_CLUECaloHitCollName{this, "CLUEHitCollName", "CLUECalorimeterHitCollection",
                                                      "Name of the collection of CLUE calorimeter hits"};
 
-  Gaudi::Property<int> m_singlePass{this, "strategy", 1,
+  Gaudi::Property<std::string> m_strategyName{this, "strategy", "MergeCollections",
                                       "strategy to treat different collections"};
+  Strategy m_strategy;
+
 };
 
 #endif
