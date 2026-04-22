@@ -65,7 +65,8 @@ int32_t CLUECalorimeterHit::getClusterIndex() const { return m_clusterIndex; };
 void CLUECalorimeterHit::setEta() { m_eta = -1. * log(tan(atan2(m_r, getPosition().z) / 2.)); }
 
 void CLUECalorimeterHit::setTheta() {
-  float r = std::sqrt(getPosition().x * getPosition().x + getPosition().y * getPosition().y + getPosition().z * getPosition().z);
+  float r = std::sqrt(getPosition().x * getPosition().x + getPosition().y * getPosition().y +
+                      getPosition().z * getPosition().z);
   m_theta = (r > 0) ? std::acos(getPosition().z / r) : 0.0f;
 }
 

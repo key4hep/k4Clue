@@ -68,21 +68,14 @@ struct ClueGaudiAlgorithmWrapper final
                          clue::AssociationMapHost const& clusterMap, ClusterColl& clusters,
                          const std::vector<const CaloHitColl*>& calo_coll) const;
   void fillFinalClustersPerLayer(std::vector<clue::CLUECalorimeterHit> const& clue_hits,
-                         clue::AssociationMapHost const& clusterMap, ClusterColl& clusters,
-                         const std::vector<const CaloHitColl*>& calo_coll) const;
+                                 clue::AssociationMapHost const& clusterMap, ClusterColl& clusters,
+                                 const std::vector<const CaloHitColl*>& calo_coll) const;
   void calculatePosition(edm4hep::MutableCluster* cluster) const;
   void transformClustersInCaloHits(ClusterColl& clusters, CaloHitColl& caloHits) const;
 
-  enum class Coordinate {
-    Cartesian,
-    Polar
-  };
+  enum class Coordinate { Cartesian, Polar };
 
-  enum class Strategy {
-    PerCollection,
-    MergeCollections,
-    PerDetectorRegion
-  };
+  enum class Strategy { PerCollection, MergeCollections, PerDetectorRegion };
 
 private:
   // Total amount of EE+ and EE- layers (80)
@@ -110,13 +103,12 @@ private:
                                                      "Name of the collection of CLUE calorimeter hits"};
 
   Gaudi::Property<std::string> m_strategyName{this, "strategy", "MergeCollections",
-                                      "strategy to treat different collections"};
+                                              "strategy to treat different collections"};
   Strategy m_strategy;
 
   Gaudi::Property<std::string> m_coordinateName{this, "coordinate", "Cartesian",
-                                      "coordinates to use to cluster points"};
+                                                "coordinates to use to cluster points"};
   Coordinate m_coordinate;
-
 };
 
 #endif

@@ -163,8 +163,8 @@ clue::AssociationMapHost ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vector<cl
   auto cluePoints = fillCLUEPoints(clue_hits, floatBuffer.data(), intBuffer.data());
 
   // Run CLUE
-  debug() << "Running CLUEAlgo on device " << alpaka::getName(alpaka::getDev(*m_queue)) << " in " << (uint16_t)nDim << "D"
-          << endmsg;
+  debug() << "Running CLUEAlgo on device " << alpaka::getName(alpaka::getDev(*m_queue)) << " in " << (uint16_t)nDim
+          << "D" << endmsg;
 
   // measure excution time of make_clusters
   auto start = std::chrono::high_resolution_clock::now();
@@ -422,7 +422,8 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const std::vector<const Calo
       for (const auto& calo_hit : *coll) {
         clue_hit_coll_tmp.vect.push_back(clue::CLUECalorimeterHit(calo_hit.clone()));
       }
-      info() << "Processing " << clue_hit_coll_tmp.vect.size() << " caloHits in collection " << ClusterCollectionsNames[collIndex] << "." << endmsg;
+      info() << "Processing " << clue_hit_coll_tmp.vect.size() << " caloHits in collection "
+             << ClusterCollectionsNames[collIndex] << "." << endmsg;
       collIndex++;
 
       if (!clue_hit_coll_tmp.vect.empty()) {
@@ -466,17 +467,16 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const std::vector<const Calo
       } else if (collName.find("Endcap") != std::string::npos) {
         for (const auto& calo_hit : *coll) {
           if (bf.get(calo_hit.getCellID(), "side") < 0 || bf.get(calo_hit.getCellID(), "side") > 1) {
-            clue_hit_coll_tmp.vect.push_back(
-                clue::CLUECalorimeterHit(calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::endcap,
-                                         bf.get(calo_hit.getCellID(), "layer")));
+            clue_hit_coll_tmp.vect.push_back(clue::CLUECalorimeterHit(calo_hit.clone(),
+                                                                      clue::CLUECalorimeterHit::DetectorRegion::endcap,
+                                                                      bf.get(calo_hit.getCellID(), "layer")));
           } else {
             clue_hit_coll_tmp.vect.push_back(
                 clue::CLUECalorimeterHit(calo_hit.clone(), clue::CLUECalorimeterHit::DetectorRegion::endcap,
                                          bf.get(calo_hit.getCellID(), "layer") + m_maxLayerPerSide));
           }
         }
-      }
-      else
+      } else
         throw std::runtime_error("With 'PerDetectorRegion' strategy the collection must be Barrel or Endcap");
 
       info() << "Processing " << clue_hit_coll_tmp.vect.size() << " caloHits " << collName << "." << endmsg;
