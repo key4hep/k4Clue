@@ -61,8 +61,8 @@ struct ClueGaudiAlgorithmWrapper final
   void printTimingReport(std::vector<float>& vals, int repeats, const std::string label);
 
   clue::PointsHost<nDim> fillCLUEPoints(const std::vector<clue::CLUECalorimeterHit>& clue_hits, float* floatBuffer,
-                                        int* intBuffer, const bool cartesian) const;
-  clue::AssociationMapHost runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, const uint32_t offset = 0, const bool cartesian = true) const;
+                                        int* intBuffer) const;
+  clue::AssociationMapHost runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, const uint32_t offset = 0) const;
 
   void fillFinalClusters(std::vector<clue::CLUECalorimeterHit> const& clue_hits,
                          clue::AssociationMapHost const& clusterMap, ClusterColl& clusters,
@@ -72,6 +72,11 @@ struct ClueGaudiAlgorithmWrapper final
                          const std::vector<const CaloHitColl*>& calo_coll) const;
   void calculatePosition(edm4hep::MutableCluster* cluster) const;
   void transformClustersInCaloHits(ClusterColl& clusters, CaloHitColl& caloHits) const;
+
+  enum class Coordinate {
+    Cartesian,
+    Polar
+  };
 
   enum class Strategy {
     PerCollection,
@@ -107,6 +112,10 @@ private:
   Gaudi::Property<std::string> m_strategyName{this, "strategy", "MergeCollections",
                                       "strategy to treat different collections"};
   Strategy m_strategy;
+
+  Gaudi::Property<std::string> m_coordinateName{this, "coordinate", "Cartesian",
+                                      "coordinates to use to cluster points"};
+  Coordinate m_coordinate;
 
 };
 

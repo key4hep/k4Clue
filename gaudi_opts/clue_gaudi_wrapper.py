@@ -37,6 +37,7 @@ MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper3D("ClueGaudiAlgorithmWra
     FollowerDistance = dm,
     OutputLevel = INFO,
     strategy = "PerDetectorRegion", # "PerCollection" #
+    coordinate = "Polar", #"Cartesian"
 )
 
 MyCLUENtuplizer = CLUENtuplizer("CLUEAnalysis",
