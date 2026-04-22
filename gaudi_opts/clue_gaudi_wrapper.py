@@ -35,7 +35,8 @@ MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper3D("ClueGaudiAlgorithmWra
     CriticalDistance = dc,
     MinLocalDensity = rho,
     FollowerDistance = dm,
-    OutputLevel = INFO
+    OutputLevel = INFO,
+    strategy = "PerDetectorRegion", # "PerCollection" #
 )
 
 MyCLUENtuplizer = CLUENtuplizer("CLUEAnalysis",

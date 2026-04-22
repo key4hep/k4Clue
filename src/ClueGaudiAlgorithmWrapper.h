@@ -67,6 +67,9 @@ struct ClueGaudiAlgorithmWrapper final
   void fillFinalClusters(std::vector<clue::CLUECalorimeterHit> const& clue_hits,
                          clue::AssociationMapHost const& clusterMap, ClusterColl& clusters,
                          const std::vector<const CaloHitColl*>& calo_coll) const;
+  void fillFinalClustersPerLayer(std::vector<clue::CLUECalorimeterHit> const& clue_hits,
+                         clue::AssociationMapHost const& clusterMap, ClusterColl& clusters,
+                         const std::vector<const CaloHitColl*>& calo_coll) const;
   void calculatePosition(edm4hep::MutableCluster* cluster) const;
   void transformClustersInCaloHits(ClusterColl& clusters, CaloHitColl& caloHits) const;
 
