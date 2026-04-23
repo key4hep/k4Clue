@@ -139,7 +139,7 @@ ClueGaudiAlgorithmWrapper<nDim>::fillCLUEPoints(const std::vector<clue::CLUECalo
     }
   } else if (m_coordinate == Coordinate::Polar) {
     for (size_t i = 0; i < nPoints; ++i) {
-      floatBuffer[i] = clue_hits[i].getTheta();         // Fill eta coordinates
+      floatBuffer[i] = clue_hits[i].getTheta();         // Fill theta coordinates
       floatBuffer[nPoints + i] = clue_hits[i].getPhi(); // Fill phi coordinates
       if constexpr (nDim >= 3)
         floatBuffer[nPoints * 2 + i] = clue_hits[i].getPosition().z; // Fill z coordinates
