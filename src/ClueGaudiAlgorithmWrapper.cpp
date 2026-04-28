@@ -53,7 +53,8 @@ StatusCode ClueGaudiAlgorithmWrapper<nDim>::initialize() {
   info() << "CLUEAlgo will run on device " << alpaka::getName(alpaka::getDev(*m_queue)) << endmsg;
 
   // Add CellIDEncodingString to CLUE clusters and CLUE calo hits
-  const std::string cellIDstr = k4FWCore::getCellIDEncoding("EcalBarrelCollection", this).value_or("");
+  const std::string cellIDstr =
+      k4FWCore::getCellIDEncoding(inputLocations("BarrelCaloHitsCollection")[0], this).value_or("");
   for (auto i = 0u; i < outputLocationsSize(); ++i)
     k4FWCore::putCellIDEncoding(outputLocations(i)[0], cellIDstr, this);
 
@@ -323,7 +324,8 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const CaloHitColl& EB_calo_c
                                                     const CaloHitColl& EE_calo_coll) const {
 
   // Get collection metadata cellID which is valid for both EB and EE
-  const std::string cellIDstr = k4FWCore::getCellIDEncoding("EcalBarrelCollection", this).value_or("");
+  const std::string cellIDstr =
+      k4FWCore::getCellIDEncoding(inputLocations("BarrelCaloHitsCollection")[0], this).value_or("");
   const BitFieldCoder bf(cellIDstr);
 
   // Output CLUE clusters
