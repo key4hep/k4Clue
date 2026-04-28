@@ -316,10 +316,7 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const CaloHitColl& EB_calo_c
                                                     const CaloHitColl& EE_calo_coll) const {
 
   // Get collection metadata cellID which is valid for both EB and EE
-  const std::string cellIDstr =
-      k4FWCore::getParameter<std::string>(
-          podio::collMetadataParamName("ECalBarrelCollection", edm4hep::labels::CellIDEncoding), this)
-          .value_or("");
+  const std::string cellIDstr = k4FWCore::getCellIDEncoding("EcalBarrelCollection", this).value_or("");
   const BitFieldCoder bf(cellIDstr);
 
   // Output CLUE clusters
