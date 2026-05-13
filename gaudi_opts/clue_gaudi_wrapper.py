@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 from Gaudi.Configuration import WARNING, INFO
-from Configurables import ClueGaudiAlgorithmWrapper3D, CLUENtuplizer, THistSvc, EventDataSvc
+from Configurables import ClueGaudiAlgorithmWrapper3D, CLUENtuplizer, THistSvc, EventDataSvc, MetadataSvc
 from k4FWCore import ApplicationMgr, IOSvc
 
 iosvc = IOSvc()
@@ -54,6 +54,6 @@ THistSvc().AutoFlush = True
 ApplicationMgr( TopAlg = [MyClueGaudiAlgorithmWrapper, MyCLUENtuplizer],
                 EvtSel = 'NONE',
                 EvtMax   = 3,
-                ExtSvc = [EventDataSvc("EventDataSvc")],
+                ExtSvc = [EventDataSvc("EventDataSvc"), MetadataSvc("MetadataSvc")],
                 OutputLevel=WARNING
               )
