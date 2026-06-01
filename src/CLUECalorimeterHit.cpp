@@ -21,32 +21,17 @@
 
 namespace clue {
 
-CLUECalorimeterHit::CLUECalorimeterHit(const CalorimeterHit& ch) : CalorimeterHit(ch) {
-  setR();
-  setEta();
-  setTheta();
-  setPhi();
-}
+CLUECalorimeterHit::CLUECalorimeterHit(const CalorimeterHit& ch) : CalorimeterHit(ch) {}
 
 CLUECalorimeterHit::CLUECalorimeterHit(const CalorimeterHit& ch, const CLUECalorimeterHit::DetectorRegion detRegion,
                                        const int layer)
-    : CalorimeterHit(ch), m_detectorRegion(detRegion), m_layer(layer) {
-  setR();
-  setEta();
-  setTheta();
-  setPhi();
-}
+    : CalorimeterHit(ch), m_detectorRegion(detRegion), m_layer(layer) {}
 
 CLUECalorimeterHit::CLUECalorimeterHit(const CalorimeterHit& ch, const CLUECalorimeterHit::DetectorRegion detRegion,
                                        const int layer, const CLUECalorimeterHit::Status status, const int clusterIndex,
                                        const float rho, const float delta)
     : CalorimeterHit(ch), m_rho(rho), m_delta(delta), m_detectorRegion(detRegion), m_status(status), m_layer(layer),
-      m_clusterIndex(clusterIndex) {
-  setR();
-  setEta();
-  setTheta();
-  setPhi();
-}
+      m_clusterIndex(clusterIndex) {}
 
 uint32_t CLUECalorimeterHit::getLayer() const { return m_layer; }
 bool CLUECalorimeterHit::inBarrel() const { return (m_detectorRegion == barrel ? true : false); }
@@ -56,24 +41,36 @@ bool CLUECalorimeterHit::isSeed() const { return (m_status == seed ? true : fals
 bool CLUECalorimeterHit::isOutlier() const { return (m_status == outlier ? true : false); }
 float CLUECalorimeterHit::getRho() const { return m_rho; }
 float CLUECalorimeterHit::getDelta() const { return m_delta; }
-float CLUECalorimeterHit::getR() const { return m_r; }
-float CLUECalorimeterHit::getEta() const { return m_eta; }
-float CLUECalorimeterHit::getTheta() const { return m_theta; }
-float CLUECalorimeterHit::getPhi() const { return m_phi; }
 int32_t CLUECalorimeterHit::getClusterIndex() const { return m_clusterIndex; };
 
-void CLUECalorimeterHit::setEta() { m_eta = -1. * log(tan(atan2(m_r, getPosition().z) / 2.)); }
-
-void CLUECalorimeterHit::setTheta() {
-  float r = std::sqrt(getPosition().x * getPosition().x + getPosition().y * getPosition().y +
-                      getPosition().z * getPosition().z);
-  m_theta = (r > 0) ? std::acos(getPosition().z / r) : 0.0f;
+float CLUECalorimeterHit::getR() const {
+  const auto pos = getPosition();
+  return float(sqrt(pos.x * pos.x + pos.y * pos.y + pos.z * pos.z));
 }
 
-void CLUECalorimeterHit::setPhi() { m_phi = atan2(getPosition().y, getPosition().x); }
+float CLUECalorimeterHit::getTheta() const {
+  const auto pos = getPosition();
+  float r = getR();
+  return (r > 0) ? float(std::acos(pos.z / r)) : 0.0f;
+}
 
-void CLUECalorimeterHit::setR() {
-  m_r = float(sqrt(getPosition().x * getPosition().x + getPosition().y * getPosition().y));
+float CLUECalorimeterHit::getPhi() const {
+  const auto pos = getPosition();
+  return atan2(pos.y, pos.x);
+}
+
+float CLUECalorimeterHit::getEta() const {
+  float theta = getTheta();
+
+  if (theta <= 0) {
+    // return a large value for eta
+    return std::numeric_limits<float>::infinity();
+  } else if (theta >= M_PI) {
+    // return a large negative value for eta
+    return -std::numeric_limits<float>::infinity();
+  }
+
+  return -1. * float(log(tan(theta / 2.)));
 }
 
 } // namespace clue

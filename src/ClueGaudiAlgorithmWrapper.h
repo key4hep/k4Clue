@@ -101,6 +101,8 @@ private:
 
   Gaudi::Property<std::string> m_CLUECaloHitCollName{this, "CLUEHitCollName", "CLUECalorimeterHitCollection",
                                                      "Name of the collection of CLUE calorimeter hits"};
+  Gaudi::Property<bool> m_saveClustersAsHits{this, "SaveClustersAsHits", false,
+                                             "Whether to save clusters as hits in addition to regular clusters"};
 
   Gaudi::Property<std::string> m_strategyName{this, "strategy", "MergeCollections",
                                               "strategy to treat different collections"};
