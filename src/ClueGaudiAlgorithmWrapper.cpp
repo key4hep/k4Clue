@@ -45,25 +45,25 @@ DECLARE_COMPONENT_WITH_ID(ClueGaudiAlgorithmWrapper<2>, "ClueGaudiAlgorithmWrapp
 #endif
 
 namespace {
-  // Helper function to compute offsets for merged collections
-  std::vector<size_t> makeOffsets(const std::vector<const CaloHitColl*>& colls) {
-    std::vector<size_t> offsets;
-    offsets.reserve(colls.size());
-    size_t acc = 0;
-    for (const auto& c : colls) {
-      offsets.push_back(acc);
-      acc += c->size();
-    }
-    return offsets;
+// Helper function to compute offsets for merged collections
+std::vector<size_t> makeOffsets(const std::vector<const CaloHitColl*>& colls) {
+  std::vector<size_t> offsets;
+  offsets.reserve(colls.size());
+  size_t acc = 0;
+  for (const auto& c : colls) {
+    offsets.push_back(acc);
+    acc += c->size();
   }
+  return offsets;
+}
 
-  // Helper function to resolve global index back to collection and hit index
-  std::pair<size_t, size_t> resolveIndex(const std::vector<size_t>& offsets, size_t globalIndex) {
-    // upper_bound finds the first offset > globalIndex, so the correct coll is the one before
-    auto it = std::upper_bound(offsets.begin(), offsets.end(), globalIndex);
-    size_t collIdx = std::distance(offsets.begin(), it) - 1;
-    return {collIdx, globalIndex - offsets[collIdx]};
-  };
+// Helper function to resolve global index back to collection and hit index
+std::pair<size_t, size_t> resolveIndex(const std::vector<size_t>& offsets, size_t globalIndex) {
+  // upper_bound finds the first offset > globalIndex, so the correct coll is the one before
+  auto it = std::upper_bound(offsets.begin(), offsets.end(), globalIndex);
+  size_t collIdx = std::distance(offsets.begin(), it) - 1;
+  return {collIdx, globalIndex - offsets[collIdx]};
+};
 } // anonymous namespace
 
 template <uint8_t nDim>
@@ -71,13 +71,15 @@ StatusCode ClueGaudiAlgorithmWrapper<nDim>::initialize() {
   m_queue = clue::get_queue(0u);
 
   const auto seeding_distance = (m_seed_dc == -1.f) ? m_dc : m_seed_dc;
+  const auto outlier_distance = (m_dm == -1.f) ? m_dc : m_dm;
   auto start = std::chrono::high_resolution_clock::now();
-  m_clueAlgo =
-      std::make_optional<clue::Clusterer<nDim>>(*m_queue, m_dc, m_rhoc, m_dm, seeding_distance, m_pointsPerBin);
+  m_clueAlgo = std::make_optional<clue::Clusterer<nDim>>(*m_queue, m_dc, m_rhoc, outlier_distance, seeding_distance,
+                                                         m_pointsPerBin);
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = finish - start;
   debug() << "ClueGaudiAlgorithmWrapper: Set up time: " << elapsed.count() * 1000 << " ms" << endmsg;
-  info() << "CLUEAlgo will run on device " << alpaka::getName(alpaka::getDev(*m_queue)) << endmsg;
+  info() << "CLUEAlgo will run on device " << alpaka::getName(alpaka::getDev(*m_queue)) << " and params " << m_dc
+         << ", " << m_rhoc << ", " << outlier_distance << ", " << seeding_distance << endmsg;
 
   if (m_strategyName == "PerDetectorRegion") {
     m_strategy = Strategy::PerDetectorRegion;
@@ -95,9 +97,9 @@ StatusCode ClueGaudiAlgorithmWrapper<nDim>::initialize() {
   } else if (m_coordinateName == "Polar") {
     m_coordinate = Coordinate::Polar;
     // set periodic coordinates for CLUE algo
-    if (nDim==4) {
-      // CLUEstering metric cannot be weighted and periodic at the same time
-      error() << "Polar coordinates not supported for 4D clustering" << endmsg;
+    if (nDim == 4) {
+      // TODO: Implement custom metric weighted and periodic at the same time
+      error() << "Polar coordinates not yet supported for 4D clustering" << endmsg;
       return StatusCode::FAILURE;
     }
     std::vector<uint8_t> coord(nDim, 0);
@@ -178,10 +180,10 @@ ClueGaudiAlgorithmWrapper<nDim>::fillCLUEPoints(const std::vector<clue::CLUECalo
       }
 
       floatBuffer[i] = clue_hits[i].getTheta(); // Fill theta coordinates
-      floatBuffer[nPoints + i] = phi; // Fill phi coordinates
+      floatBuffer[nPoints + i] = phi;           // Fill phi coordinates
       if constexpr (nDim >= 3)
         floatBuffer[nPoints * 2 + i] = clue_hits[i].getPosition().z; // Fill z coordinates
-      floatBuffer[nPoints * nDim + i] = clue_hits[i].getEnergy(); // Fill weights
+      floatBuffer[nPoints * nDim + i] = clue_hits[i].getEnergy();    // Fill weights
     }
   } // if Cartesian or Polar (else should not happen due to checks in initialize())
 
@@ -204,16 +206,16 @@ clue::AssociationMapHost ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vector<cl
 
   // measure excution time of make_clusters
   auto start = std::chrono::high_resolution_clock::now();
-  if (m_coordinate==Coordinate::Cartesian) {
+  if (m_coordinate == Coordinate::Cartesian) {
     if constexpr (nDim == 4) {
       auto metric = clue::metrics::WeightedEuclidean<nDim>(1.f, 1.f, 1.f, C_MM_NS_SQUARED);
       m_clueAlgo->make_clusters(*m_queue, cluePoints, metric);
     } else {
       m_clueAlgo->make_clusters(*m_queue, cluePoints);
     }
-  } else if (m_coordinate==Coordinate::Polar) {
+  } else if (m_coordinate == Coordinate::Polar) {
     std::array<float, nDim> periods{}; // zero-initialize all to non-periodic
-    periods[1] = 2.0f * M_PI; // set phi coordinate as periodic
+    periods[1] = 2.0f * M_PI;          // set phi coordinate as periodic
     clue::PeriodicEuclideanMetric<nDim> metric(periods);
     m_clueAlgo->make_clusters(*m_queue, cluePoints, metric);
   } // if Cartesian or Polar (else should not happen due to checks in initialize())
@@ -259,23 +261,20 @@ void ClueGaudiAlgorithmWrapper<nDim>::fillFinalClusters(std::vector<clue::CLUECa
     auto cluster = clusters.create();
     unsigned int maxEnergyIndex = 0;
     float maxEnergyValue = 0.f;
+    float energy = 0.f;
+    float sumEnergyErrSquared = 0.f;
     for (auto index : clusterMap[cl]) {
       auto [collIdx, localIdx] = resolveIndex(collOffsets, index);
       cluster.addToHits(calo_coll[collIdx]->at(localIdx));
 
-      if (clue_hits[index].getEnergy() > maxEnergyValue) {
-        maxEnergyValue = clue_hits[index].getEnergy();
+      float hitEne = clue_hits[index].getEnergy();
+      if (hitEne > maxEnergyValue) {
+        maxEnergyValue = hitEne;
         maxEnergyIndex = index;
       }
-    } // for each hit index in cluster
-
-    float energy = 0.f;
-    float sumEnergyErrSquared = 0.f;
-    std::for_each(cluster.getHits().begin(), cluster.getHits().end(),
-                  [&energy, &sumEnergyErrSquared](edm4hep::CalorimeterHit elem) {
-                    energy += elem.getEnergy();
-                    sumEnergyErrSquared += pow(elem.getEnergyError() / (1. * elem.getEnergy()), 2);
-                  });
+      energy += hitEne;
+      sumEnergyErrSquared += pow(clue_hits[index].getEnergyError() / (1.f * hitEne), 2);
+    }
     cluster.setEnergy(energy);
     cluster.setEnergyError(std::sqrt(sumEnergyErrSquared));
 
@@ -307,23 +306,20 @@ void ClueGaudiAlgorithmWrapper<nDim>::fillFinalClustersPerLayer(
         auto cluster = clusters.create();
         unsigned int maxEnergyIndex = 0;
         float maxEnergyValue = 0.f;
+        float energy = 0.f;
+        float sumEnergyErrSquared = 0.f;
         for (auto index : clusterMap[cl]) {
           auto [collIdx, localIdx] = resolveIndex(collOffsets, index);
           cluster.addToHits(calo_coll[collIdx]->at(localIdx));
 
-          if (clue_hits[index].getEnergy() > maxEnergyValue) {
-            maxEnergyValue = clue_hits[index].getEnergy();
+          float hitEne = clue_hits[index].getEnergy();
+          if (hitEne > maxEnergyValue) {
+            maxEnergyValue = hitEne;
             maxEnergyIndex = index;
           }
-        } // for each hit index in cluster
-
-        float energy = 0.f;
-        float sumEnergyErrSquared = 0.f;
-        std::for_each(cluster.getHits().begin(), cluster.getHits().end(),
-                      [&energy, &sumEnergyErrSquared](edm4hep::CalorimeterHit elem) {
-                        energy += elem.getEnergy();
-                        sumEnergyErrSquared += pow(elem.getEnergyError() / (1. * elem.getEnergy()), 2);
-                      });
+          energy += hitEne;
+          sumEnergyErrSquared += pow(clue_hits[index].getEnergyError() / (1.f * hitEne), 2);
+        }
         cluster.setEnergy(energy);
         cluster.setEnergyError(sqrt(sumEnergyErrSquared));
 
@@ -535,7 +531,8 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const std::vector<const Calo
     // Get collection metadata cellID which is valid for both EB and EE
     const std::string cellIDstr =
         k4FWCore::getParameter<std::string>(
-            podio::collMetadataParamName(inputLocations("CaloHitsCollections")[0], edm4hep::labels::CellIDEncoding), this)
+            podio::collMetadataParamName(inputLocations("CaloHitsCollections")[0], edm4hep::labels::CellIDEncoding),
+            this)
             .value_or("");
     for (auto i = 0u; i < outputLocationsSize(); ++i)
       k4FWCore::putParameter(outputLocations(i)[0] + "__CellIDEncoding", cellIDstr, this);

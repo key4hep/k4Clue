@@ -90,7 +90,7 @@ private:
   Gaudi::Property<float> m_rhoc{this, "MinLocalDensity", 1.0f,
                                 "Minimum energy density of a point to not be considered an outlier"};
 
-  Gaudi::Property<float> m_dm{this, "FollowerDistance", 1.0f,
+  Gaudi::Property<float> m_dm{this, "FollowerDistance", -1.0f,
                               "Critical distance for follower search and cluster expansion"};
 
   Gaudi::Property<float> m_seed_dc{this, "SeedCriticalDistance", -1.0f,
