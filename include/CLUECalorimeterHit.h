@@ -30,7 +30,7 @@ public:
 
   enum Status { outlier = 0, follower, seed };
 
-  enum DetectorRegion { barrel = 0, endcap };
+  enum DetectorRegion { barrel = 0, endcap, single_region };
 
   /// constructors
   CLUECalorimeterHit(const CalorimeterHit& ch);

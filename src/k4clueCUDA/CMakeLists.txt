@@ -25,6 +25,7 @@ set(ExternalData_URL_TEMPLATES
 
 set(SOURCES_GPU
   ${PROJECT_SOURCE_DIR}/src/ClueGaudiAlgorithmWrapper.cpp
+  ${PROJECT_SOURCE_DIR}/src/ClueThetaPhiGaudiAlgorithmWrapper.cpp
 )
 
 set(SOURCES_CPU
