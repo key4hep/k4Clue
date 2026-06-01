@@ -38,20 +38,19 @@ using retType = std::tuple<ClusterColl, CaloHitColl>;
 
 template <uint8_t nDim>
 struct ClueGaudiAlgorithmWrapper final
-    : k4FWCore::MultiTransformer<retType(const CaloHitColl& EB_calo_coll, const CaloHitColl& EE_calo_coll)> {
+    : k4FWCore::MultiTransformer<retType(const std::vector<const CaloHitColl*>& calo_coll)> {
 
   ClueGaudiAlgorithmWrapper(const std::string& name, ISvcLocator* svcLoc)
       : MultiTransformer(name, svcLoc,
                          {
-                             KeyValue("BarrelCaloHitsCollection", "ECALBarrel"),
-                             KeyValue("EndcapCaloHitsCollection", "ECALEndcap"),
+                             KeyValues("CaloHitsCollections", {"ECALBarrel", "ECALEndcap"}),
                          },
                          {
                              KeyValue("OutputClusters", "CLUEClusters"),
                              KeyValue("OutputClustersAsHits", "CLUEClustersAsHits"),
                          }) {}
 
-  retType operator()(const CaloHitColl& EB_calo_coll, const CaloHitColl& EE_calo_coll) const override;
+  retType operator()(const std::vector<const CaloHitColl*>& calo_coll) const override;
 
   StatusCode initialize() override;
   StatusCode finalize() override;
@@ -62,15 +61,21 @@ struct ClueGaudiAlgorithmWrapper final
   void printTimingReport(std::vector<float>& vals, int repeats, const std::string label);
 
   clue::PointsHost<nDim> fillCLUEPoints(const std::vector<clue::CLUECalorimeterHit>& clue_hits, float* floatBuffer,
-                                        int* intBuffer, const bool isBarrel) const;
-  clue::AssociationMapHost runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, const bool isBarrel = true,
-                                   const uint32_t offset = 0) const;
+                                        int* intBuffer) const;
+  clue::AssociationMapHost runAlgo(std::vector<clue::CLUECalorimeterHit>& clue_hits, const uint32_t offset = 0) const;
 
   void fillFinalClusters(std::vector<clue::CLUECalorimeterHit> const& clue_hits,
                          clue::AssociationMapHost const& clusterMap, ClusterColl& clusters,
-                         const CaloHitColl& EB_calo_coll, const CaloHitColl& EE_calo_coll) const;
+                         const std::vector<const CaloHitColl*>& calo_coll) const;
+  void fillFinalClustersPerLayer(std::vector<clue::CLUECalorimeterHit> const& clue_hits,
+                                 clue::AssociationMapHost const& clusterMap, ClusterColl& clusters,
+                                 const std::vector<const CaloHitColl*>& calo_coll) const;
   void calculatePosition(edm4hep::MutableCluster* cluster) const;
   void transformClustersInCaloHits(ClusterColl& clusters, CaloHitColl& caloHits) const;
+
+  enum class Coordinate { Cartesian, Polar };
+
+  enum class Strategy { PerCollection, MergeCollections, PerDetectorRegion };
 
 private:
   // Total amount of EE+ and EE- layers (80)
@@ -85,7 +90,7 @@ private:
   Gaudi::Property<float> m_rhoc{this, "MinLocalDensity", 1.0f,
                                 "Minimum energy density of a point to not be considered an outlier"};
 
-  Gaudi::Property<float> m_dm{this, "FollowerDistance", 1.0f,
+  Gaudi::Property<float> m_dm{this, "FollowerDistance", -1.0f,
                               "Critical distance for follower search and cluster expansion"};
 
   Gaudi::Property<float> m_seed_dc{this, "SeedCriticalDistance", -1.0f,
@@ -96,6 +101,16 @@ private:
 
   Gaudi::Property<std::string> m_CLUECaloHitCollName{this, "CLUEHitCollName", "CLUECalorimeterHitCollection",
                                                      "Name of the collection of CLUE calorimeter hits"};
+  Gaudi::Property<bool> m_saveClustersAsHits{this, "SaveClustersAsHits", false,
+                                             "Whether to save clusters as hits in addition to regular clusters"};
+
+  Gaudi::Property<std::string> m_strategyName{this, "strategy", "MergeCollections",
+                                              "strategy to treat different collections"};
+  Strategy m_strategy;
+
+  Gaudi::Property<std::string> m_coordinateName{this, "coordinate", "Cartesian",
+                                                "coordinates to use to cluster points"};
+  Coordinate m_coordinate;
 };
 
 #endif

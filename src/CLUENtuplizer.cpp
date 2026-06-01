@@ -75,10 +75,8 @@ StatusCode CLUENtuplizer::initialize() {
   return StatusCode::SUCCESS;
 }
 
-void CLUENtuplizer::operator()(const CaloHitColl& EB_calo_coll, const CaloHitColl& EE_calo_coll,
-                               const ClusterColl& cluster_coll,
-                               const edm4hep::EventHeaderCollection& evs, const MCPartColl& mcps,
-                               const ClusterMCLinkColl& linksClus) const {
+void CLUENtuplizer::operator()(const ClusterColl& cluster_coll, const edm4hep::EventHeaderCollection& evs,
+                               const MCPartColl& mcps, const ClusterMCLinkColl& linksClus) const {
   const std::string ClusterCollectionName = inputLocations("InputClusters")[0];
   evNum = evs[0].getEventNumber();
   info() << "Event number = " << evNum << endmsg;
@@ -92,7 +90,7 @@ void CLUENtuplizer::operator()(const CaloHitColl& EB_calo_coll, const CaloHitCol
   info() << "MC Particles = " << mcps.size() << " (of which primaries = " << mcps_primary << ")" << endmsg;
 
   DataObject* pStatus = nullptr;
-  StatusCode scStatus = eventSvc()->retrieveObject("/Event/"+m_CLUECaloHitCollName, pStatus);
+  StatusCode scStatus = eventSvc()->retrieveObject("/Event/" + m_CLUECaloHitCollName, pStatus);
   clue::CLUECalorimeterHitCollection* clue_calo_coll;
   if (scStatus.isSuccess()) {
     clue_calo_coll = static_cast<clue::CLUECalorimeterHitCollection*>(pStatus);
@@ -100,10 +98,11 @@ void CLUENtuplizer::operator()(const CaloHitColl& EB_calo_coll, const CaloHitCol
     throw std::runtime_error("CLUE hits collection not available");
   }
 
-  debug() << "All calorimeter hits Size = " << EB_calo_coll.size() + EE_calo_coll.size() << endmsg;
-
   // Get collection metadata cellID which is valid for both EB, EE and Clusters
-  const std::string cellIDstr = k4FWCore::getParameter<std::string>(podio::collMetadataParamName("ECalBarrelCollection", edm4hep::labels::CellIDEncoding), this).value_or("");
+  const std::string cellIDstr =
+      k4FWCore::getParameter<std::string>(
+          podio::collMetadataParamName("ECalBarrelCollection", edm4hep::labels::CellIDEncoding), this)
+          .value_or("");
   const BitFieldCoder bf(cellIDstr);
   cleanTrees();
 

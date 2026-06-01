@@ -29,17 +29,17 @@ rho = 0.1
 dm = 120
 
 MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper3D("ClueGaudiAlgorithmWrapperName",
-    BarrelCaloHitsCollection = "ECALBarrel",
-    EndcapCaloHitsCollection = "ECALEndcap",
+    CaloHitsCollections = ["ECALBarrel", "HCALBarrel", "ECALEndcap", "HCALEndcap"],
     CriticalDistance = dc,
     MinLocalDensity = rho,
     FollowerDistance = dm,
-    OutputLevel = INFO
+    OutputLevel = INFO,
+    strategy = "MergeCollections", # "PerDetectorRegion", "PerCollection" , "MergeCollections"
+    coordinate = "Polar", # "Cartesian"
+    SaveClustersAsHits = True,
 )
 
 MyCLUENtuplizer = CLUENtuplizer("CLUEAnalysis",
-    BarrelCaloHitsCollection = ["ECALBarrel"],
-    EndcapCaloHitsCollection = ["ECALEndcap"],
     OutputLevel = WARNING
 )
 
