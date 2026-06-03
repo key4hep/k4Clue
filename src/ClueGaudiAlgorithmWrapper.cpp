@@ -110,6 +110,13 @@ StatusCode ClueGaudiAlgorithmWrapper<nDim>::initialize() {
     return StatusCode::FAILURE;
   }
 
+  // Add CellIDEncodingString to CLUE clusters and CLUE calo hits
+  // Get collection metadata cellID which is valid for both EB and EE
+  const std::string cellIDstr =
+      k4FWCore::getCellIDEncoding(inputLocations("CaloHitsCollections")[0], this).value_or("");
+  for (auto i = 0u; i < outputLocationsSize(); ++i)
+    k4FWCore::putCellIDEncoding(outputLocations(i)[0], cellIDstr, this);
+
   return Algorithm::initialize();
 }
 
@@ -527,15 +534,6 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const std::vector<const Calo
     transformClustersInCaloHits(finalClusters, finalCaloHits);
     debug() << "Saved " << finalCaloHits.size() << " clusters as calo hits" << endmsg;
 
-    // Add CellIDEncodingString to CLUE clusters and CLUE calo hits
-    // Get collection metadata cellID which is valid for both EB and EE
-    const std::string cellIDstr =
-        k4FWCore::getParameter<std::string>(
-            podio::collMetadataParamName(inputLocations("CaloHitsCollections")[0], edm4hep::labels::CellIDEncoding),
-            this)
-            .value_or("");
-    for (auto i = 0u; i < outputLocationsSize(); ++i)
-      k4FWCore::putParameter(outputLocations(i)[0] + "__CellIDEncoding", cellIDstr, this);
   } // if m_saveClustersAsHits
 
   // Cleaning
