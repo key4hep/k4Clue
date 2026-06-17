@@ -35,22 +35,18 @@
 #include "TH1F.h"
 #include "TTree.h"
 
-using CaloHitColl = edm4hep::CalorimeterHitCollection;
 using ClueHitColl = clue::CLUECalorimeterHitCollection;
 using ClusterColl = edm4hep::ClusterCollection;
 using MCPartColl = edm4hep::MCParticleCollection;
 using ClusterMCLinkColl = edm4hep::ClusterMCParticleLinkCollection;
 
 struct CLUENtuplizer final
-    : k4FWCore::Consumer<void(const CaloHitColl& EB_calo_coll, const CaloHitColl& EE_calo_coll,
-                              const ClusterColl& cluster_coll, const edm4hep::EventHeaderCollection& ev_handle,
+    : k4FWCore::Consumer<void(const ClusterColl& cluster_coll, const edm4hep::EventHeaderCollection& ev_handle,
                               const MCPartColl& mcp_handle, const ClusterMCLinkColl& clustersLink_handle)> {
   CLUENtuplizer(const std::string& name, ISvcLocator* svcLoc)
       : Consumer(name, svcLoc,
-                 {KeyValues("BarrelCaloHitsCollection", {"ECALBarrel"}),
-                  KeyValues("EndcapCaloHitsCollection", {"ECALEndcap"}), KeyValues("InputClusters", {"CLUEClusters"}),
-                  KeyValue("EventHeader", "EventHeader"), KeyValue("MCParticles", "MCParticles"),
-                  KeyValues("ClusterLinks", {"ClusterMCTruthLink"})}) {}
+                 {KeyValue("InputClusters", "CLUEClusters"), KeyValue("EventHeader", "EventHeader"),
+                  KeyValue("MCParticles", "MCParticles"), KeyValue("ClusterLinks", "ClusterMCTruthLink")}) {}
 
   /// Initialize.
   StatusCode initialize() override;
@@ -61,8 +57,7 @@ struct CLUENtuplizer final
   /// Finalize.
   StatusCode finalize() override;
 
-  void operator()(const CaloHitColl& EB_calo_coll, const CaloHitColl& EE_calo_coll, const ClusterColl& cluster_coll,
-                  const edm4hep::EventHeaderCollection& evs, const MCPartColl& mcps,
+  void operator()(const ClusterColl& cluster_coll, const edm4hep::EventHeaderCollection& evs, const MCPartColl& mcps,
                   const ClusterMCLinkColl& linksClus) const override;
 
 private:
