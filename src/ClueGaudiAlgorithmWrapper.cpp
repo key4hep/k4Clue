@@ -70,8 +70,8 @@ template <uint8_t nDim>
 StatusCode ClueGaudiAlgorithmWrapper<nDim>::initialize() {
   m_queue = clue::get_queue(0u);
 
-  const auto seeding_distance = (m_seed_dc == -1.f) ? m_dc : m_seed_dc;
-  const auto outlier_distance = (m_dm == -1.f) ? m_dc : m_dm;
+  const auto seeding_distance = (m_seed_dc < 0.f) ? m_dc : m_seed_dc;
+  const auto outlier_distance = (m_dm < 0.f) ? m_dc : m_dm;
   auto start = std::chrono::high_resolution_clock::now();
   m_clueAlgo = std::make_optional<clue::Clusterer<nDim>>(*m_queue, m_dc, m_rhoc, outlier_distance, seeding_distance,
                                                          m_pointsPerBin);
@@ -169,10 +169,11 @@ ClueGaudiAlgorithmWrapper<nDim>::fillCLUEPoints(const std::vector<clue::CLUECalo
 
   if (m_coordinate == Coordinate::Cartesian) {
     for (size_t i = 0; i < nPoints; ++i) {
-      floatBuffer[i] = clue_hits[i].getPosition().x;           // Fill x coordinates
-      floatBuffer[nPoints + i] = clue_hits[i].getPosition().y; // Fill y coordinates
+      const auto& position = clue_hits[i].getPosition();
+      floatBuffer[i] = position.x;           // Fill x coordinates
+      floatBuffer[nPoints + i] = position.y; // Fill y coordinates
       if constexpr (nDim >= 3)
-        floatBuffer[nPoints * 2 + i] = clue_hits[i].getPosition().z; // Fill z coordinates
+        floatBuffer[nPoints * 2 + i] = position.z; // Fill z coordinates
       if constexpr (nDim >= 4)
         floatBuffer[nPoints * 3 + i] = clue_hits[i].getTime();    // Fill time coordinates
       floatBuffer[nPoints * nDim + i] = clue_hits[i].getEnergy(); // Fill weights
@@ -315,7 +316,7 @@ void ClueGaudiAlgorithmWrapper<nDim>::fillFinalClustersPerLayer(
         float maxEnergyValue = 0.f;
         float energy = 0.f;
         float sumEnergyErrSquared = 0.f;
-        for (auto index : clusterMap[cl]) {
+        for (auto index : clLay) {
           auto [collIdx, localIdx] = resolveIndex(collOffsets, index);
           cluster.addToHits(calo_coll[collIdx]->at(localIdx));
 
@@ -463,10 +464,7 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const std::vector<const Calo
     const std::vector<std::string> ClusterCollectionsNames = inputLocations("CaloHitsCollections");
 
     // Get collection metadata cellID which is valid for both EB and EE
-    const std::string cellIDstr =
-        k4FWCore::getParameter<std::string>(
-            podio::collMetadataParamName(ClusterCollectionsNames[0], edm4hep::labels::CellIDEncoding), this)
-            .value_or("");
+    const std::string cellIDstr = k4FWCore::getCellIDEncoding(ClusterCollectionsNames[0], this).value_or("");
     const BitFieldCoder bf(cellIDstr);
 
     // Fill CLUECaloHits per region
