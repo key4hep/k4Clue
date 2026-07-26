@@ -22,23 +22,22 @@ set(ExternalData_URL_TEMPLATES
   "https://key4hep.web.cern.ch:443/testFiles/k4clue/inputData/clic/%(hash)"
 )
 
-set(SOURCES_WRAPPER
-  ${PROJECT_SOURCE_DIR}/src/ClueGaudiAlgorithmWrapper.cpp
-)
-
 set(SOURCES_COMMON
+  ${PROJECT_SOURCE_DIR}/src/ClueGaudiAlgorithmWrapper.cpp
   ${PROJECT_SOURCE_DIR}/src/CLUECalorimeterHit.cpp
 )
 
 set(SOURCES_CPU
-  ${SOURCES_WRAPPER}
   ${SOURCES_COMMON}
   ${PROJECT_SOURCE_DIR}/src/CLUENtuplizer.cpp
 )
 
 set(SOURCES_GPU_TARGET
-  ${SOURCES_WRAPPER}
   ${SOURCES_COMMON}
+)
+
+set(GPU_LANGUAGE_SOURCES
+  ${PROJECT_SOURCE_DIR}/src/ClueGaudiAlgorithmWrapper.cpp
 )
 
 gaudi_add_module(ClueGaudiAlgorithmWrapper
@@ -79,7 +78,7 @@ if(CMAKE_CUDA_COMPILER)
     CUDA_ARCHITECTURES 75
   )
 
-  set_source_files_properties(${SOURCES_WRAPPER} PROPERTIES LANGUAGE CUDA)
+  set_source_files_properties(${GPU_LANGUAGE_SOURCES} PROPERTIES LANGUAGE CUDA)
 
   target_compile_options(ClueGaudiAlgorithmWrapperCUDA PUBLIC
     $<$<COMPILE_LANGUAGE:CUDA>:-DALPAKA_ACC_GPU_CUDA_ENABLED --expt-relaxed-constexpr -gencode
@@ -104,7 +103,7 @@ if(CMAKE_HIP_COMPILER)
 
   target_link_libraries(ClueGaudiAlgorithmWrapperHIP PUBLIC clue::CLUEstering)
 
-  set_source_files_properties(${SOURCES_WRAPPER} PROPERTIES LANGUAGE HIP)
+  set_source_files_properties(${GPU_LANGUAGE_SOURCES} PROPERTIES LANGUAGE HIP)
 
   target_compile_options(ClueGaudiAlgorithmWrapperHIP PUBLIC
     $<$<COMPILE_LANGUAGE:HIP>:-DALPAKA_ACC_GPU_HIP_ENABLED>
