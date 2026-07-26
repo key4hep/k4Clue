@@ -243,7 +243,6 @@ clue::AssociationMapHost ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vector<cl
 
   // Including CLUE info in cluePoints
   const auto clusterIndexes = cluePoints.clusterIndexes();
-  const auto isSeed = cluePoints.isSeed();
   const auto& pointsView = cluePoints.view();
   for (int32_t i = 0; i < cluePoints.size(); i++) {
     // offset is 0 for the barrel and is the number of clusters in the barrel for the endcap
@@ -255,7 +254,7 @@ clue::AssociationMapHost ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vector<cl
     if (clusterIndexes[i] == -1) {
       verbose() << " is outlier" << endmsg;
       clue_hits[i].setStatus(clue::CLUECalorimeterHit::Status::outlier);
-    } else if (isSeed[i] != 0) {
+    } else if (cluePoints.isSeed()[i] != 0) {
       verbose() << " is seed of cluster #" << clusterIndexes[i] << endmsg;
       clue_hits[i].setStatus(clue::CLUECalorimeterHit::Status::seed);
     } else {
