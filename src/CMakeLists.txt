@@ -60,6 +60,23 @@ target_compile_options(ClueGaudiAlgorithmWrapper PUBLIC
   -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_SYNC_BACKEND
 )
 
+# ---------------------- Tests ----------------------
+ExternalData_Add_Test(k4clue_tests NAME gaudiWrapper
+  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+  COMMAND bash -c "k4run ${PROJECT_SOURCE_DIR}/gaudi_opts/clue_gaudi_wrapper.py \
+    --IOSvc.Input DATA{${PROJECT_SOURCE_DIR}/test/input_files/20240905_gammaFromVertex_10GeV_uniform_10events_reco_edm4hep.root} \
+    --ClueGaudiAlgorithmWrapperName.OutputLevel 2 --CLUEAnalysis.OutputLevel 2")
+
+set_tests_properties(gaudiWrapper PROPERTIES FAIL_REGULAR_EXPRESSION "ERROR;Failed")
+
+set_property(TEST gaudiWrapper APPEND PROPERTY ENVIRONMENT
+  "LD_LIBRARY_PATH=${PROJECT_BINARY_DIR}:${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}:${PROJECT_BINARY_DIR}/src:$<$<TARGET_EXISTS:ROOT::Core>:$<TARGET_FILE_DIR:ROOT::Core>>:$<$<TARGET_EXISTS:EDM4HEP::edm4hep>:$<TARGET_FILE_DIR:EDM4HEP::edm4hep>>:$ENV{LD_LIBRARY_PATH}")
+
+set_property(TEST gaudiWrapper APPEND PROPERTY ENVIRONMENT
+  "PYTHONPATH=${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/genConfDir:${PROJECT_BINARY_DIR}/src/genConfDir:$ENV{PYTHONPATH}")
+
+ExternalData_Add_Target(k4clue_tests)
+
 if(CMAKE_CUDA_COMPILER)
   gaudi_add_module(ClueGaudiAlgorithmWrapperCUDA
     SOURCES ${SOURCES_GPU_TARGET}
