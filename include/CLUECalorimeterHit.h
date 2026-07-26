@@ -80,12 +80,12 @@ public:
   void setClusterIndex(int32_t clIdx) { m_clusterIndex = clIdx; }
 
 private:
-  float m_rho;
-  float m_delta;
-  uint8_t m_detectorRegion;
-  uint8_t m_status;
-  uint32_t m_layer;
-  int32_t m_clusterIndex;
+  float m_rho{0.f};
+  float m_delta{0.f};
+  uint8_t m_detectorRegion{barrel};
+  uint8_t m_status{outlier};
+  uint32_t m_layer{0};
+  int32_t m_clusterIndex{-1};
 };
 
 class CLUECalorimeterHitCollection : public DataObject {
