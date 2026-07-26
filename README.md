@@ -97,7 +97,7 @@ The input files are using the EDM4HEP data format and the `ECALBarrel` and `ECAL
 
 The output file `output.root` contains `CLUEClusters` (currently also transformed as CaloHits in `CLUEClustersAsHits`).
 
-A simple recipe to run k4CLUE as part of the CLIC reconstruction chain can be found [here](docs/clic-recipe.md).
+A simple recipe to run k4CLUE as part of the CLIC reconstruction chain can be found [here](doc/clic-recipe.md).
 
 ## Package maintainers
 
