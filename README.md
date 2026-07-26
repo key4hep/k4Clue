@@ -18,7 +18,7 @@ limitations under the License.
 -->
 [![linux](https://github.com/key4hep/k4Clue/actions/workflows/test.yml/badge.svg)](https://github.com/key4hep/k4Clue/actions/workflows/test.yml)
 
-![Logo](plots/k4Clue_logo.png)
+![Logo](logo/k4Clue_logo.png)
 
 # k4CLUE: The CLUE algorithm for future colliders (on CPU and GPU)
 
