@@ -18,7 +18,7 @@ limitations under the License.
 -->
 [![linux](https://github.com/key4hep/k4Clue/actions/workflows/test.yml/badge.svg)](https://github.com/key4hep/k4Clue/actions/workflows/test.yml)
 
-![Logo](plots/k4Clue_logo.png)
+![Logo](logo/k4Clue_logo.png)
 
 # k4CLUE: The CLUE algorithm for future colliders (on CPU and GPU)
 
@@ -97,7 +97,7 @@ The input files are using the EDM4HEP data format and the `ECALBarrel` and `ECAL
 
 The output file `output.root` contains `CLUEClusters` (currently also transformed as CaloHits in `CLUEClustersAsHits`).
 
-A simple recipe to run k4CLUE as part of the CLIC reconstruction chain can be found [here](docs/clic-recipe.md).
+A simple recipe to run k4CLUE as part of the CLIC reconstruction chain can be found [here](doc/clic-recipe.md).
 
 ## Package maintainers
 
