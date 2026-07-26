@@ -17,27 +17,41 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ]]
 
-# CLUE as Gaudi algorithm
 include(ExternalData)
 set(ExternalData_URL_TEMPLATES
   "https://key4hep.web.cern.ch:443/testFiles/k4clue/inputData/clic/%(hash)"
 )
 
-set(SOURCES_GPU
+set(SOURCES
   ${PROJECT_SOURCE_DIR}/src/ClueGaudiAlgorithmWrapper.cpp
-)
-
-set(SOURCES_CPU
   ${PROJECT_SOURCE_DIR}/src/CLUECalorimeterHit.cpp
+  ${PROJECT_SOURCE_DIR}/src/CLUENtuplizer.cpp
+)
+set(SOURCES_GPU ${SOURCES})
+
+gaudi_add_module(ClueGaudiAlgorithmWrapper
+  SOURCES ${SOURCES}
+  LINK Gaudi::GaudiKernel
+  k4FWCore::k4FWCore
+  DD4hep::DDCore
+  EDM4HEP::edm4hep
+  alpaka
 )
 
-set(SOURCES ${SOURCES_CPU} ${SOURCES_GPU})
+target_include_directories(ClueGaudiAlgorithmWrapper PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+)
 
-# ---------------------- GPU: CUDA ----------------------
+target_link_libraries(ClueGaudiAlgorithmWrapper PUBLIC clue::CLUEstering)
+
+target_compile_options(ClueGaudiAlgorithmWrapper PUBLIC
+  -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED
+  -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_SYNC_BACKEND
+)
+
 if(CMAKE_CUDA_COMPILER)
-
   gaudi_add_module(ClueGaudiAlgorithmWrapperCUDA
-    SOURCES ${SOURCES}
+    SOURCES ${SOURCES_GPU}
     LINK Gaudi::GaudiKernel k4FWCore::k4FWCore DD4hep::DDCore EDM4HEP::edm4hep alpaka
   )
 
@@ -62,5 +76,26 @@ if(CMAKE_CUDA_COMPILER)
 
   target_link_libraries(ClueGaudiAlgorithmWrapperCUDA PUBLIC
     -L${CMAKE_CUDA_COMPILER}/../../lib64
+  )
+endif()
+
+if(CMAKE_HIP_COMPILER)
+  gaudi_add_module(ClueGaudiAlgorithmWrapperHIP
+    SOURCES ${SOURCES_GPU}
+    LINK Gaudi::GaudiKernel k4FWCore::k4FWCore DD4hep::DDCore EDM4HEP::edm4hep alpaka
+  )
+
+  target_include_directories(ClueGaudiAlgorithmWrapperHIP PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<$<COMPILE_LANGUAGE:HIP>:${hip_INCLUDE_DIRS}>
+  )
+
+  target_link_libraries(ClueGaudiAlgorithmWrapperHIP PUBLIC clue::CLUEstering)
+
+  set_source_files_properties(${SOURCES_GPU} PROPERTIES LANGUAGE HIP)
+
+  target_compile_options(ClueGaudiAlgorithmWrapperHIP PUBLIC
+    $<$<COMPILE_LANGUAGE:HIP>:-DALPAKA_ACC_GPU_HIP_ENABLED>
+    $<$<COMPILE_LANGUAGE:CXX>:-DALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_SYNC_BACKEND>
   )
 endif()

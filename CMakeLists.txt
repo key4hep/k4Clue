@@ -65,6 +65,4 @@ if(CMAKE_HIP_COMPILER)
 endif()
 
 # CLUE as Gaudi algorithm
-add_subdirectory(src/k4clue)
-add_subdirectory(src/k4clueCUDA)
-add_subdirectory(src/k4clueHIP)
+add_subdirectory(src)
