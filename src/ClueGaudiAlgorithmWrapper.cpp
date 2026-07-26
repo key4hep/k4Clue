@@ -244,17 +244,19 @@ clue::AssociationMapHost ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vector<cl
   // Including CLUE info in cluePoints
   const auto clusterIndexes = cluePoints.clusterIndexes();
   const auto& pointsView = cluePoints.view();
+  const auto rho = pointsView.rho();
   for (int32_t i = 0; i < cluePoints.size(); i++) {
     // offset is 0 for the barrel and is the number of clusters in the barrel for the endcap
-    clue_hits[i].setRho(pointsView.rho[i]);
-    clue_hits[i].setDelta(pointsView.delta[i]);
+    clue_hits[i].setRho(rho[i]);
+    // CLUEstering no longer retains the per-point delta after clustering.
+    // CLUECalorimeterHit keeps its zero-initialized diagnostic value.
     clue_hits[i].setClusterIndex(clusterIndexes[i] + offset);
     verbose() << "CLUE Point #" << i << " : (x,y,z) = (" << clue_hits[i].getPosition().x << ","
               << clue_hits[i].getPosition().y << "," << clue_hits[i].getPosition().z << ")";
     if (clusterIndexes[i] == -1) {
       verbose() << " is outlier" << endmsg;
       clue_hits[i].setStatus(clue::CLUECalorimeterHit::Status::outlier);
-    } else if (cluePoints.isSeed()[i] != 0) {
+    } else if (pointsView.is_seed()[i] != 0) {
       verbose() << " is seed of cluster #" << clusterIndexes[i] << endmsg;
       clue_hits[i].setStatus(clue::CLUECalorimeterHit::Status::seed);
     } else {
