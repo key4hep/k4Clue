@@ -22,15 +22,27 @@ set(ExternalData_URL_TEMPLATES
   "https://key4hep.web.cern.ch:443/testFiles/k4clue/inputData/clic/%(hash)"
 )
 
-set(SOURCES
+set(SOURCES_GPU
   ${PROJECT_SOURCE_DIR}/src/ClueGaudiAlgorithmWrapper.cpp
+)
+
+set(SOURCES_COMMON
   ${PROJECT_SOURCE_DIR}/src/CLUECalorimeterHit.cpp
+)
+
+set(SOURCES_CPU
+  ${SOURCES_GPU}
+  ${SOURCES_COMMON}
   ${PROJECT_SOURCE_DIR}/src/CLUENtuplizer.cpp
 )
-set(SOURCES_GPU ${SOURCES})
+
+set(SOURCES_GPU_TARGET
+  ${SOURCES_GPU}
+  ${SOURCES_COMMON}
+)
 
 gaudi_add_module(ClueGaudiAlgorithmWrapper
-  SOURCES ${SOURCES}
+  SOURCES ${SOURCES_CPU}
   LINK Gaudi::GaudiKernel
   k4FWCore::k4FWCore
   DD4hep::DDCore
@@ -51,7 +63,7 @@ target_compile_options(ClueGaudiAlgorithmWrapper PUBLIC
 
 if(CMAKE_CUDA_COMPILER)
   gaudi_add_module(ClueGaudiAlgorithmWrapperCUDA
-    SOURCES ${SOURCES_GPU}
+    SOURCES ${SOURCES_GPU_TARGET}
     LINK Gaudi::GaudiKernel k4FWCore::k4FWCore DD4hep::DDCore EDM4HEP::edm4hep alpaka
   )
 
@@ -81,7 +93,7 @@ endif()
 
 if(CMAKE_HIP_COMPILER)
   gaudi_add_module(ClueGaudiAlgorithmWrapperHIP
-    SOURCES ${SOURCES_GPU}
+    SOURCES ${SOURCES_GPU_TARGET}
     LINK Gaudi::GaudiKernel k4FWCore::k4FWCore DD4hep::DDCore EDM4HEP::edm4hep alpaka
   )
 
