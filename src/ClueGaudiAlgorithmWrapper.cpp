@@ -25,8 +25,6 @@
 
 #include <k4FWCore/MetadataUtils.h>
 
-#include <algorithm>
-
 using namespace dd4hep;
 using namespace DDSegmentation;
 
@@ -245,7 +243,6 @@ clue::AssociationMapHost ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vector<cl
 
   // Including CLUE info in cluePoints
   const auto clusterIndexes = cluePoints.clusterIndexes();
-  const auto seeds = m_clueAlgo->getSeeds();
   for (int32_t i = 0; i < cluePoints.size(); i++) {
     // offset is 0 for the barrel and is the number of clusters in the barrel for the endcap
     clue_hits[i].setClusterIndex(clusterIndexes[i] + offset);
@@ -254,9 +251,6 @@ clue::AssociationMapHost ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vector<cl
     if (clusterIndexes[i] == -1) {
       verbose() << " is outlier" << endmsg;
       clue_hits[i].setStatus(clue::CLUECalorimeterHit::Status::outlier);
-    } else if (std::ranges::find(seeds, i) != seeds.end()) {
-      verbose() << " is seed of cluster #" << clusterIndexes[i] << endmsg;
-      clue_hits[i].setStatus(clue::CLUECalorimeterHit::Status::seed);
     } else {
       verbose() << " is follower of cluster #" << clusterIndexes[i] << endmsg;
       clue_hits[i].setStatus(clue::CLUECalorimeterHit::Status::follower);
