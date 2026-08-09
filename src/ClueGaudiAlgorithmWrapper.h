@@ -104,6 +104,11 @@ private:
   Gaudi::Property<bool> m_saveClustersAsHits{this, "SaveClustersAsHits", false,
                                              "Whether to save clusters as hits in addition to regular clusters"};
 
+  Gaudi::Property<float> m_logWeightW0{this, "LogWeightW0", 4.6f,
+                                       "W0 of the logarithmic position weighting: a hit contributes with weight "
+                                       "max(0, W0 + log(E_hit / E_cluster)), so hits carrying less than exp(-W0) "
+                                       "of the cluster energy are dropped"};
+
   Gaudi::Property<std::string> m_strategyName{this, "strategy", "MergeCollections",
                                               "strategy to treat different collections"};
   Strategy m_strategy;
