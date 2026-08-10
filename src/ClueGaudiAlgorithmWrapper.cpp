@@ -415,7 +415,7 @@ void ClueGaudiAlgorithmWrapper<nDim>::calculatePosition(edm4hep::MutableCluster*
     if (Wi <= 0.f)
       continue;
 
-    const auto& pos = cluster->getHits(i).getPosition();
+    const auto pos = cluster->getHits(i).getPosition();
     const float dx = pos.x - x;
     const float dy = pos.y - y;
     const float dz = pos.z - z;
