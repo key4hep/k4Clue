@@ -380,7 +380,7 @@ void ClueGaudiAlgorithmWrapper<nDim>::calculatePosition(edm4hep::MutableCluster*
     if (rhEnergy <= 0.f)
       continue;
 
-    float Wi = std::max(w0 + std::log(rhEnergy / total_weight), 0.f);
+    const float Wi = std::max(w0 + std::log(rhEnergy / total_weight), 0.f);
     if (Wi <= 0.f)
       continue;
 
