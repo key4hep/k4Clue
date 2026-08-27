@@ -391,8 +391,6 @@ void ClueGaudiAlgorithmWrapper<nDim>::calculatePosition(edm4hep::MutableCluster*
   }
 
   if (total_weight_log <= 0.f) {
-    // Every hit is at or below exp(-W0) of the cluster energy, so all of them were rejected.
-    // Only reachable for many hits of comparable energy, i.e. LogWeightW0 is too tight.
     warning() << "All " << nHits << " hits of a cluster of energy " << total_weight
               << " fall below the LogWeightW0 = " << w0 << " cut (exp(-W0) = " << std::exp(-w0)
               << " of the cluster energy): leaving its position and position error unset" << endmsg;
