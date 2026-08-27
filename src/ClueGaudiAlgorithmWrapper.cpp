@@ -363,7 +363,6 @@ void ClueGaudiAlgorithmWrapper<nDim>::calculatePosition(edm4hep::MutableCluster*
     return;
   }
 
-  // Logarithmic weighting: hits below exp(-W0) of the cluster energy get zero weight and drop out.
   const float w0 = m_logWeightW0;
 
   const size_t nHits = cluster->hits_size();
