@@ -1,3 +1,36 @@
+# v01-01-01
+
+* 2026-08-29 SanghyunKo ([PR#83](https://github.com/key4hep/k4Clue/pull/83))
+  - Fix `calculatePosition` so that it fills physically meaningful values
+
+* 2026-08-18 Juan Miguel Carceller ([PR#82](https://github.com/key4hep/k4Clue/pull/82))
+  - Fix passing the right collection to `fillFinalClusters`. The problem is that `fillFinalClusters` uses `resolveIndex(collOffsets, index)` to map from a global index back to a collection and local index. But when processing per-collection, the indices in `clue_hit_coll_tmp` are local to that single collection, not global across all collections (for example, Collection 0 has 100 hits and then Collection 1 has 50 hits, then asking for index 30 for collection 1 will gives us index 30 of collection 0 because resolveIndex will think we are in collection 0). The fix is to create a vector containing only the current collection being processed.
+  - Make `hasMaxEnergy` be always a valid index (think of the counter example when every hit has energy 0 to see why the previous code sets it to index 0, which may not be a valid index)
+  - Avoid divisions and logarithms of zero
+  - Initialize class members
+
+* 2026-07-26 Juan Miguel Carceller ([PR#81](https://github.com/key4hep/k4Clue/pull/81))
+  - Consolidate the CPU, CUDA, and HIP CMake target definitions in src/CMakeLists.txt.
+
+* 2026-07-26 Juan Miguel Carceller ([PR#80](https://github.com/key4hep/k4Clue/pull/80))
+  - Remove old data files
+  - Remove a readme in the include folder
+  - Change the location of the logo to a new logo folder
+  - Move the contents of docs into doc to have a single folder for documentation
+
+* 2026-06-17 AuroraPerego ([PR#79](https://github.com/key4hep/k4Clue/pull/79))
+  - Enable the possibility to pass multiple collections to k4Clue, without the Barrel / Endcap separation
+  - Add the possibility to choose how to cluster these collections: all together, one at a time, divided per detector region  
+  - Implemented polar coordinates and the possibility to choose between those and Cartesian coordinates
+  - Implemented 4D clustering with weighted Euclidean metric
+  - refactor the `CLUECalorimeterHit` data format internally
+  - Add the option to not save the `CLUEClustersAsHIts` collection
+
+* 2026-05-13 Thomas Madlener ([PR#78](https://github.com/key4hep/k4Clue/pull/78))
+  - Set the CellID encoding string in `initialize` as doing it during the event loop will no longer work (see [key4hep/k4FWCore#400](https://github.com/key4hep/k4FWCore/pull/400)
+  - Switch to the newly available utilities for setting the cell id encoding (key4hep/k4FWCore#391](https://github.com/key4hep/k4FWCore/pull/391))
+  - Propagate the cell id encoding of the input collection downstream instead of using a hardcoded collection name.
+
 # v01-01-00
 
 * 2026-01-07 AuroraPerego ([PR#74](https://github.com/key4hep/k4Clue/pull/74))
