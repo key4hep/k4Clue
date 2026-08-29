@@ -363,34 +363,71 @@ void ClueGaudiAlgorithmWrapper<nDim>::calculatePosition(edm4hep::MutableCluster*
     return;
   }
 
+  const float w0 = m_logWeightW0;
+
+  const size_t nHits = cluster->hits_size();
+  std::vector<float> weights(nHits, 0.f);
+
   float total_weight_log = 0.f;
   float x_log = 0.f;
   float y_log = 0.f;
   float z_log = 0.f;
-  float error = 0.f;
-  float thresholdW0_ = 2.9f; // Min percentage of energy to contribute to the log-reweight position
 
-  for (size_t i = 0; i < cluster->hits_size(); i++) {
+  // First pass: the log weights and the weighted barycentre.
+  for (size_t i = 0; i < nHits; i++) {
     float rhEnergy = cluster->getHits(i).getEnergy();
     if (rhEnergy <= 0.f)
       continue;
 
-    float Wi = std::max(thresholdW0_ - std::log(rhEnergy / total_weight), 0.f);
+    const float Wi = std::max(w0 + std::log(rhEnergy / total_weight), 0.f);
     if (Wi <= 0.f)
       continue;
 
+    weights[i] = Wi;
     x_log += cluster->getHits(i).getPosition().x * Wi;
     y_log += cluster->getHits(i).getPosition().y * Wi;
     z_log += cluster->getHits(i).getPosition().z * Wi;
     total_weight_log += Wi;
-    error += 1.f / Wi;
   }
 
-  if (total_weight_log != 0.) {
-    float inv_tot_weight_log = 1.f / total_weight_log;
-    cluster->setPosition({x_log * inv_tot_weight_log, y_log * inv_tot_weight_log, z_log * inv_tot_weight_log});
-    cluster->setPositionError({error, 0.f, error, 0.f, 0.f, error});
+  if (total_weight_log <= 0.f) {
+    warning() << "All " << nHits << " hits of a cluster of energy " << total_weight
+              << " fall below the LogWeightW0 = " << w0 << " cut (exp(-W0) = " << std::exp(-w0)
+              << " of the cluster energy): leaving its position and position error unset" << endmsg;
+    return;
   }
+
+  const float inv_tot_weight_log = 1.f / total_weight_log;
+  const float x = x_log * inv_tot_weight_log;
+  const float y = y_log * inv_tot_weight_log;
+  const float z = z_log * inv_tot_weight_log;
+  cluster->setPosition({x, y, z});
+
+  // Second pass: the covariance of the hit positions about that barycentre, using the same log
+  // weights.  The position error has to be a squared length, so the previous sum of 1/Wi -- which
+  // is dimensionless -- could not be one.
+  float cxx = 0.f, cxy = 0.f, cyy = 0.f, cxz = 0.f, cyz = 0.f, czz = 0.f;
+  for (size_t i = 0; i < nHits; i++) {
+    const float Wi = weights[i];
+    if (Wi <= 0.f)
+      continue;
+
+    const auto pos = cluster->getHits(i).getPosition();
+    const float dx = pos.x - x;
+    const float dy = pos.y - y;
+    const float dz = pos.z - z;
+
+    cxx += Wi * dx * dx;
+    cyy += Wi * dy * dy;
+    czz += Wi * dz * dz;
+    cxy += Wi * dx * dy;
+    cxz += Wi * dx * dz;
+    cyz += Wi * dy * dz;
+  }
+
+  // edm4hep packs the covariance as the lower triangle: {xx, xy, yy, xz, yz, zz}
+  cluster->setPositionError({cxx * inv_tot_weight_log, cxy * inv_tot_weight_log, cyy * inv_tot_weight_log,
+                             cxz * inv_tot_weight_log, cyz * inv_tot_weight_log, czz * inv_tot_weight_log});
 
   return;
 }
