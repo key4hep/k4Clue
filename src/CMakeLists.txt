@@ -55,6 +55,10 @@ target_include_directories(ClueGaudiAlgorithmWrapper PUBLIC
 
 target_link_libraries(ClueGaudiAlgorithmWrapper PUBLIC clue::CLUEstering)
 
+if(CLUEstering_VERSION VERSION_LESS 2.12.0)
+  target_compile_definitions(ClueGaudiAlgorithmWrapper PRIVATE K4CLUE_USE_CLUESTERING_POINTS_PER_TILE)
+endif()
+
 target_compile_options(ClueGaudiAlgorithmWrapper PUBLIC
   -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_ENABLED
   -DALPAKA_ACC_CPU_B_SEQ_T_SEQ_SYNC_BACKEND
@@ -89,6 +93,10 @@ if(CMAKE_CUDA_COMPILER)
 
   target_link_libraries(ClueGaudiAlgorithmWrapperCUDA PUBLIC clue::CLUEstering)
 
+  if(CLUEstering_VERSION VERSION_LESS 2.12.0)
+    target_compile_definitions(ClueGaudiAlgorithmWrapperCUDA PRIVATE K4CLUE_USE_CLUESTERING_POINTS_PER_TILE)
+  endif()
+
   set_target_properties(ClueGaudiAlgorithmWrapperCUDA PROPERTIES
     CUDA_STANDARD 20
     CXX_STANDARD 20
@@ -119,6 +127,10 @@ if(CMAKE_HIP_COMPILER)
   )
 
   target_link_libraries(ClueGaudiAlgorithmWrapperHIP PUBLIC clue::CLUEstering)
+
+  if(CLUEstering_VERSION VERSION_LESS 2.12.0)
+    target_compile_definitions(ClueGaudiAlgorithmWrapperHIP PRIVATE K4CLUE_USE_CLUESTERING_POINTS_PER_TILE)
+  endif()
 
   set_source_files_properties(${GPU_LANGUAGE_SOURCES} PROPERTIES LANGUAGE HIP)
 
