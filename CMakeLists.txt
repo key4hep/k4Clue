@@ -20,7 +20,7 @@ cmake_minimum_required(VERSION 3.12)
 
 project(
   k4CLUE
-  VERSION 1.0
+  VERSION 1.1.1
   DESCRIPTION "k4CLUE: CLUE for future colliders calorimeters"
   LANGUAGES CXX)
 
