@@ -28,9 +28,9 @@ if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set (CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/install" CACHE PATH "default install path" FORCE)
 endif()
 
-include(cmake/Key4hepConfig.cmake)
-
 include(GNUInstallDirs)
+
+include(cmake/Key4hepConfig.cmake)
 
 find_package(DD4hep REQUIRED)
 find_package(EDM4HEP REQUIRED)
