@@ -96,8 +96,10 @@ private:
   Gaudi::Property<float> m_seed_dc{this, "SeedCriticalDistance", -1.0f,
                                    "Distance used to compute the local density of a point"};
 
+#if defined(K4CLUE_USE_CLUESTERING_POINTS_PER_TILE)
   Gaudi::Property<int> m_pointsPerBin{this, "PointsPerBin", 10,
                                       "Average number of points that are to be found inside a bin"};
+#endif
 
   Gaudi::Property<std::string> m_CLUECaloHitCollName{this, "CLUEHitCollName", "CLUECalorimeterHitCollection",
                                                      "Name of the collection of CLUE calorimeter hits"};
