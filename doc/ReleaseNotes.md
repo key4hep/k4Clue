@@ -1,3 +1,11 @@
+# v01-01-02
+
+* 2026-11-03 Juan Miguel Carceller ([PR#86](https://github.com/key4hep/k4Clue/pull/86))
+  - Initialize install directories before setting the install RPATH.
+
+* 2026-11-01 Juan Miguel Carceller ([PR#85](https://github.com/key4hep/k4Clue/pull/85))
+  - Update the CMake project version to 1.1.1 to match tag v01-01-01.
+
 # v01-01-01
 
 * 2026-08-29 SanghyunKo ([PR#83](https://github.com/key4hep/k4Clue/pull/83))
