@@ -17,11 +17,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ]]
 
-include(ExternalData)
-set(ExternalData_URL_TEMPLATES
-  "https://key4hep.web.cern.ch:443/testFiles/k4clue/inputData/clic/%(hash)"
-)
-
 set(SOURCES_COMMON
   ${PROJECT_SOURCE_DIR}/src/ClueGaudiAlgorithmWrapper.cpp
   ${PROJECT_SOURCE_DIR}/src/CLUECalorimeterHit.cpp
@@ -61,21 +56,28 @@ target_compile_options(ClueGaudiAlgorithmWrapper PUBLIC
 )
 
 # ---------------------- Tests ----------------------
-ExternalData_Add_Test(k4clue_tests NAME gaudiWrapper
-  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-  COMMAND bash -c "k4run ${PROJECT_SOURCE_DIR}/gaudi_opts/clue_gaudi_wrapper.py \
-    --IOSvc.Input DATA{${PROJECT_SOURCE_DIR}/test/input_files/20240905_gammaFromVertex_10GeV_uniform_10events_reco_edm4hep.root} \
-    --ClueGaudiAlgorithmWrapperName.OutputLevel 2 --CLUEAnalysis.OutputLevel 2")
+if(BUILD_TESTING)
+  include(ExternalData)
+  set(ExternalData_URL_TEMPLATES
+    "https://key4hep.web.cern.ch:443/testFiles/k4clue/inputData/clic/%(hash)"
+  )
 
-set_tests_properties(gaudiWrapper PROPERTIES FAIL_REGULAR_EXPRESSION "ERROR;Failed")
+  ExternalData_Add_Test(k4clue_tests NAME gaudiWrapper
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+    COMMAND bash -c "k4run ${PROJECT_SOURCE_DIR}/gaudi_opts/clue_gaudi_wrapper.py \
+      --IOSvc.Input DATA{${PROJECT_SOURCE_DIR}/test/input_files/20240905_gammaFromVertex_10GeV_uniform_10events_reco_edm4hep.root} \
+      --ClueGaudiAlgorithmWrapperName.OutputLevel 2 --CLUEAnalysis.OutputLevel 2")
 
-set_property(TEST gaudiWrapper APPEND PROPERTY ENVIRONMENT
-  "LD_LIBRARY_PATH=${PROJECT_BINARY_DIR}:${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}:${PROJECT_BINARY_DIR}/src:$<$<TARGET_EXISTS:ROOT::Core>:$<TARGET_FILE_DIR:ROOT::Core>>:$<$<TARGET_EXISTS:EDM4HEP::edm4hep>:$<TARGET_FILE_DIR:EDM4HEP::edm4hep>>:$ENV{LD_LIBRARY_PATH}")
+  set_tests_properties(gaudiWrapper PROPERTIES FAIL_REGULAR_EXPRESSION "ERROR;Failed")
 
-set_property(TEST gaudiWrapper APPEND PROPERTY ENVIRONMENT
-  "PYTHONPATH=${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/genConfDir:${PROJECT_BINARY_DIR}/src/genConfDir:$ENV{PYTHONPATH}")
+  set_property(TEST gaudiWrapper APPEND PROPERTY ENVIRONMENT
+    "LD_LIBRARY_PATH=${PROJECT_BINARY_DIR}:${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}:${PROJECT_BINARY_DIR}/src:$<$<TARGET_EXISTS:ROOT::Core>:$<TARGET_FILE_DIR:ROOT::Core>>:$<$<TARGET_EXISTS:EDM4HEP::edm4hep>:$<TARGET_FILE_DIR:EDM4HEP::edm4hep>>:$ENV{LD_LIBRARY_PATH}")
 
-ExternalData_Add_Target(k4clue_tests)
+  set_property(TEST gaudiWrapper APPEND PROPERTY ENVIRONMENT
+    "PYTHONPATH=${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/genConfDir:${PROJECT_BINARY_DIR}/src/genConfDir:$ENV{PYTHONPATH}")
+
+  ExternalData_Add_Target(k4clue_tests)
+endif()
 
 if(CMAKE_CUDA_COMPILER)
   gaudi_add_module(ClueGaudiAlgorithmWrapperCUDA
