@@ -34,7 +34,7 @@
 using CaloHitColl = edm4hep::CalorimeterHitCollection;
 using ClusterColl = edm4hep::ClusterCollection;
 
-using retType = std::tuple<ClusterColl, CaloHitColl>;
+using retType = std::tuple<ClusterColl, CaloHitColl, CaloHitColl>;
 
 template <uint8_t nDim>
 struct ClueGaudiAlgorithmWrapper final
@@ -48,6 +48,7 @@ struct ClueGaudiAlgorithmWrapper final
                          {
                              KeyValue("OutputClusters", "CLUEClusters"),
                              KeyValue("OutputClustersAsHits", "CLUEClustersAsHits"),
+                             KeyValue("OutputClusterCells", "CLUEClusterCells"),
                          }) {}
 
   retType operator()(const std::vector<const CaloHitColl*>& calo_coll) const override;
@@ -66,10 +67,12 @@ struct ClueGaudiAlgorithmWrapper final
 
   void fillFinalClusters(std::vector<clue::CLUECalorimeterHit> const& clue_hits,
                          clue::AssociationMapHost const& clusterMap, ClusterColl& clusters,
-                         const std::vector<const CaloHitColl*>& calo_coll) const;
+                         const std::vector<const CaloHitColl*>& calo_coll, CaloHitColl& clusterCells) const;
   void fillFinalClustersPerLayer(std::vector<clue::CLUECalorimeterHit> const& clue_hits,
                                  clue::AssociationMapHost const& clusterMap, ClusterColl& clusters,
-                                 const std::vector<const CaloHitColl*>& calo_coll) const;
+                                 const std::vector<const CaloHitColl*>& calo_coll, CaloHitColl& clusterCells) const;
+  void addHitToCluster(edm4hep::MutableCluster& cluster, const edm4hep::CalorimeterHit& hit,
+                       CaloHitColl& clusterCells) const;
   void calculatePosition(edm4hep::MutableCluster* cluster) const;
   void transformClustersInCaloHits(ClusterColl& clusters, CaloHitColl& caloHits) const;
 
@@ -103,6 +106,9 @@ private:
                                                      "Name of the collection of CLUE calorimeter hits"};
   Gaudi::Property<bool> m_saveClustersAsHits{this, "SaveClustersAsHits", false,
                                              "Whether to save clusters as hits in addition to regular clusters"};
+
+  Gaudi::Property<bool> m_saveClusterCells{this, "SaveClusterCells", false,
+                                           "Whether to fill OutputClusterCells with copies of the clustered cells"};
 
   Gaudi::Property<float> m_logWeightW0{this, "LogWeightW0", 4.6f,
                                        "W0 of the logarithmic position weighting: a hit contributes with weight "

@@ -96,6 +96,7 @@ CLUE parameters and input/output file name are contained in `gaudi_opts/clue_gau
 The input files are using the EDM4HEP data format and the `ECALBarrel` and `ECALEndcap` CalorimeterHit collections are required.
 
 The output file `output.root` contains `CLUEClusters` (currently also transformed as CaloHits in `CLUEClustersAsHits`).
+If `SaveClusterCells = True` is set, the output also contains `CLUEClusterCells`, a collection of copies of the calorimeter hits assigned to the clusters; the `hits` of each cluster in `CLUEClusters` then point to these copies instead of to the original hits.
 
 A simple recipe to run k4CLUE as part of the CLIC reconstruction chain can be found [here](doc/clic-recipe.md).
 

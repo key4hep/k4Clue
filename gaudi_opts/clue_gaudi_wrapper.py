@@ -37,6 +37,7 @@ MyClueGaudiAlgorithmWrapper = ClueGaudiAlgorithmWrapper3D("ClueGaudiAlgorithmWra
     strategy = "MergeCollections", # "PerDetectorRegion", "PerCollection" , "MergeCollections"
     coordinate = "Polar", # "Cartesian"
     SaveClustersAsHits = True,
+    SaveClusterCells = True,
 )
 
 MyCLUENtuplizer = CLUENtuplizer("CLUEAnalysis",
