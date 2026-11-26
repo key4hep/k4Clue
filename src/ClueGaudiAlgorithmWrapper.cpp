@@ -260,11 +260,26 @@ clue::AssociationMapHost ClueGaudiAlgorithmWrapper<nDim>::runAlgo(std::vector<cl
   return clueClusters;
 }
 
+// Link a hit to a cluster: either the original hit or, if SaveClusterCells is set, a copy stored in clusterCells
+template <uint8_t nDim>
+void ClueGaudiAlgorithmWrapper<nDim>::addHitToCluster(edm4hep::MutableCluster& cluster,
+                                                      const edm4hep::CalorimeterHit& hit,
+                                                      CaloHitColl& clusterCells) const {
+  if (m_saveClusterCells) {
+    auto copy = hit.clone();
+    clusterCells.push_back(copy);
+    cluster.addToHits(copy);
+  } else {
+    cluster.addToHits(hit);
+  }
+}
+
 template <uint8_t nDim>
 void ClueGaudiAlgorithmWrapper<nDim>::fillFinalClusters(std::vector<clue::CLUECalorimeterHit> const& clue_hits,
                                                         clue::AssociationMapHost const& clusterMap,
                                                         ClusterColl& clusters,
-                                                        const std::vector<const CaloHitColl*>& calo_coll) const {
+                                                        const std::vector<const CaloHitColl*>& calo_coll,
+                                                        CaloHitColl& clusterCells) const {
   // Precompute cumulative offsets once
   const auto collOffsets = makeOffsets(calo_coll);
 
@@ -280,7 +295,7 @@ void ClueGaudiAlgorithmWrapper<nDim>::fillFinalClusters(std::vector<clue::CLUECa
     bool hasMaxEnergy = false;
     for (auto index : clusterMap[cl]) {
       auto [collIdx, localIdx] = resolveIndex(collOffsets, index);
-      cluster.addToHits(calo_coll[collIdx]->at(localIdx));
+      addHitToCluster(cluster, calo_coll[collIdx]->at(localIdx), clusterCells);
 
       float hitEne = clue_hits[index].getEnergy();
       if (!hasMaxEnergy || hitEne > maxEnergyValue) {
@@ -306,7 +321,7 @@ void ClueGaudiAlgorithmWrapper<nDim>::fillFinalClusters(std::vector<clue::CLUECa
 template <uint8_t nDim>
 void ClueGaudiAlgorithmWrapper<nDim>::fillFinalClustersPerLayer(
     std::vector<clue::CLUECalorimeterHit> const& clue_hits, clue::AssociationMapHost const& clusterMap,
-    ClusterColl& clusters, const std::vector<const CaloHitColl*>& calo_coll) const {
+    ClusterColl& clusters, const std::vector<const CaloHitColl*>& calo_coll, CaloHitColl& clusterCells) const {
   if constexpr (nDim == 2) {
     // Precompute cumulative offsets once
     const auto collOffsets = makeOffsets(calo_coll);
@@ -328,7 +343,7 @@ void ClueGaudiAlgorithmWrapper<nDim>::fillFinalClustersPerLayer(
         bool hasMaxEnergy = false;
         for (auto index : clLay) {
           auto [collIdx, localIdx] = resolveIndex(collOffsets, index);
-          cluster.addToHits(calo_coll[collIdx]->at(localIdx));
+          addHitToCluster(cluster, calo_coll[collIdx]->at(localIdx), clusterCells);
 
           float hitEne = clue_hits[index].getEnergy();
           if (!hasMaxEnergy || hitEne > maxEnergyValue) {
@@ -349,7 +364,7 @@ void ClueGaudiAlgorithmWrapper<nDim>::fillFinalClustersPerLayer(
       } // for each layer
     } // for clusterMap (each cluster)
   } else {
-    fillFinalClusters(clue_hits, clusterMap, clusters, calo_coll);
+    fillFinalClusters(clue_hits, clusterMap, clusters, calo_coll, clusterCells);
   }
 
   return;
@@ -469,6 +484,9 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const std::vector<const Calo
   // Output CLUE clusters
   auto finalClusters = ClusterColl();
 
+  // Output copies of the clustered cells (filled only if SaveClusterCells is true)
+  auto finalClusterCells = CaloHitColl();
+
   // Output CLUE calo hits
   clue::CLUECalorimeterHitCollection clue_hit_coll;
 
@@ -484,7 +502,7 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const std::vector<const Calo
       auto clueClusters = runAlgo(clue_hit_coll.vect);
       info() << "Produced " << clueClusters.size() << " clusters" << endmsg;
 
-      fillFinalClusters(clue_hit_coll.vect, clueClusters, finalClusters, calo_coll);
+      fillFinalClusters(clue_hit_coll.vect, clueClusters, finalClusters, calo_coll, finalClusterCells);
       debug() << "Saved " << finalClusters.size() << " clusters in total" << endmsg;
     } else {
       info() << "No calorimeter hits to process, skipping CLUE algorithm" << endmsg;
@@ -507,7 +525,7 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const std::vector<const Calo
         auto clueClusters = runAlgo(clue_hit_coll_tmp.vect, offset);
         info() << "Produced " << clueClusters.size() << " clusters" << endmsg;
 
-        fillFinalClusters(clue_hit_coll_tmp.vect, clueClusters, finalClusters, currentCaloColl);
+        fillFinalClusters(clue_hit_coll_tmp.vect, clueClusters, finalClusters, currentCaloColl, finalClusterCells);
 
         clue_hit_coll.vect.insert(clue_hit_coll.vect.end(), clue_hit_coll_tmp.vect.begin(),
                                   clue_hit_coll_tmp.vect.end());
@@ -560,7 +578,8 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const std::vector<const Calo
         auto clueClusters = runAlgo(clue_hit_coll_tmp.vect, offset);
         info() << "Produced " << clueClusters.size() << " clusters" << endmsg;
 
-        fillFinalClustersPerLayer(clue_hit_coll_tmp.vect, clueClusters, finalClusters, currentCaloColl);
+        fillFinalClustersPerLayer(clue_hit_coll_tmp.vect, clueClusters, finalClusters, currentCaloColl,
+                                  finalClusterCells);
 
         clue_hit_coll.vect.insert(clue_hit_coll.vect.end(), clue_hit_coll_tmp.vect.begin(),
                                   clue_hit_coll_tmp.vect.end());
@@ -596,7 +615,7 @@ retType ClueGaudiAlgorithmWrapper<nDim>::operator()(const std::vector<const Calo
   // Cleaning
   clue_hit_coll.vect.clear();
 
-  return std::make_tuple(std::move(finalClusters), std::move(finalCaloHits));
+  return std::make_tuple(std::move(finalClusters), std::move(finalCaloHits), std::move(finalClusterCells));
 }
 
 template <uint8_t nDim>
